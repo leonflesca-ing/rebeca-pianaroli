@@ -131,6 +131,12 @@
       color: var(--warn);
     }
 
+    .btn.music-on {
+      background: linear-gradient(135deg, var(--pink), var(--pink-2));
+      border-color: transparent;
+      color: var(--white);
+    }
+
     .layout {
       display: grid;
       grid-template-columns: minmax(0, 1fr) 390px;
@@ -594,6 +600,7 @@
         <p>Personal Trainer</p>
       </div>
       <div class="actions">
+        <button class="btn" id="musicBtn" type="button">Musica</button>
         <button class="btn" id="historyBtn">Historial</button>
         <button class="btn" id="exportBtn">Exportar</button>
         <button class="btn" id="importBtn">Importar</button>
@@ -618,6 +625,8 @@
       </aside>
     </section>
   </main>
+
+  <audio id="musicPlayer" src="./assets/audio/jamaican-bam-bam.mp3" preload="auto" loop></audio>
 
   <div class="modal" id="editorModal">
     <div class="modal-card">
@@ -678,6 +687,7 @@
 
   <script>
     const storageKey = "rebecaTrainerApp:v6";
+    const MUSIC_SOURCE = "./assets/audio/jamaican-bam-bam.mp3";
     const TOTAL_ROUNDS = 4;
     const starterRoutine = [
       day("d1", "RUTINA SABRINA", "Ejercicios cargados", [
@@ -805,6 +815,8 @@
       detail: document.getElementById("detail"),
       detailHead: document.getElementById("detailHead"),
       historyBtn: document.getElementById("historyBtn"),
+      musicBtn: document.getElementById("musicBtn"),
+      musicPlayer: document.getElementById("musicPlayer"),
       exportBtn: document.getElementById("exportBtn"),
       importBtn: document.getElementById("importBtn"),
       editorBtn: document.getElementById("editorBtn"),
@@ -1101,6 +1113,27 @@
       if (display) display.textContent = formatClock(timer.left);
     }
 
+    function updateMusicButton() {
+      const playing = !els.musicPlayer.paused;
+      els.musicBtn.textContent = playing ? "Pausar musica" : "Musica";
+      els.musicBtn.classList.toggle("music-on", playing);
+    }
+
+    async function toggleMusic() {
+      if (els.musicPlayer.paused) {
+        try {
+          if (!els.musicPlayer.currentSrc) els.musicPlayer.src = MUSIC_SOURCE;
+          if (els.musicPlayer.readyState === 0) els.musicPlayer.load();
+          await els.musicPlayer.play();
+        } catch {
+          alert("Toca de nuevo el boton Musica para iniciar el audio.");
+        }
+      } else {
+        els.musicPlayer.pause();
+      }
+      updateMusicButton();
+    }
+
     els.tabs.addEventListener("click", event => {
       const btn = event.target.closest("[data-day]");
       if (!btn) return;
@@ -1161,6 +1194,11 @@
       state.view = state.view === "history" ? "routine" : "history";
       render();
     });
+
+    els.musicBtn.addEventListener("click", toggleMusic);
+    els.musicPlayer.addEventListener("play", updateMusicButton);
+    els.musicPlayer.addEventListener("pause", updateMusicButton);
+    els.musicPlayer.addEventListener("ended", updateMusicButton);
 
     els.exportBtn.addEventListener("click", () => {
       const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
