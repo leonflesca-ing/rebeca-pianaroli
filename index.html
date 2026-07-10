@@ -78,7 +78,7 @@
     .brand-mark img {
       width: 100%;
       height: 100%;
-      object-fit: cover;
+      object-fit: contain;
     }
 
     .brand h1 {
@@ -278,7 +278,7 @@
     .thumb video, .video-frame video {
       width: 100%;
       height: 100%;
-      object-fit: cover;
+      object-fit: contain;
       display: block;
       background: var(--black);
     }
@@ -645,22 +645,19 @@
   <input class="file-actions" id="importFile" type="file" accept="application/json">
 
   <script>
-    const storageKey = "rebecaTrainerApp:v1";
+    const storageKey = "rebecaTrainerApp:v2";
     const starterRoutine = [
-      day("d1", "Dia 1", "Tren inferior", [
-        exercise("d1-1", "Sentadilla goblet", "3", "12", 75, "Piernas", "", "Mantener el pecho alto y bajar controlado."),
-        exercise("d1-2", "Puente de gluteos", "4", "15", 60, "Gluteos", "", "Pausa arriba y apretar fuerte gluteos."),
-        exercise("d1-3", "Estocadas alternas", "3", "10 por pierna", 75, "Piernas", "", "Rodilla estable y paso firme.")
-      ]),
-      day("d2", "Dia 2", "Tren superior", [
-        exercise("d2-1", "Remo con banda", "3", "12", 60, "Espalda", "", "Llevar codos hacia atras sin encoger hombros."),
-        exercise("d2-2", "Press de hombros", "3", "10-12", 75, "Hombros", "", "Empujar vertical y controlar la bajada."),
-        exercise("d2-3", "Curl de biceps", "3", "12", 60, "Brazos", "", "Codos fijos y sin balancear.")
-      ]),
-      day("d3", "Dia 3", "Full body", [
-        exercise("d3-1", "Peso muerto rumano", "3", "12", 75, "Posterior", "", "Bisagra de cadera con espalda neutra."),
-        exercise("d3-2", "Plancha", "3", "30-45 s", 45, "Core", "", "Cuerpo en linea y abdomen firme."),
-        exercise("d3-3", "Abdominal crunch", "3", "15", 45, "Abdominales", "", "Subir sin tirar del cuello.")
+      day("d1", "Rutina", "Ejercicios cargados", [
+        exercise(
+          "d1-1",
+          "Elevacion de rodillas con mancuernas",
+          "1",
+          "20",
+          60,
+          "Piernas, core",
+          "./assets/videos/elevacion-de-rodillas-con-mancuernas-x20.mov",
+          "Video cargado desde el archivo original."
+        )
       ])
     ];
 
