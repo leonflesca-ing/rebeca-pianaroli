@@ -626,7 +626,7 @@
           </div>
           <div class="field wide">
             <label for="editVideo">Video URL o archivo local</label>
-            <input id="editVideo" type="text" placeholder="./assets/videos/sentadilla.mp4">
+            <input id="editVideo" type="text" placeholder="./assets/videos-web/sentadilla.mp4">
           </div>
           <div class="field wide">
             <label for="editNotes">Notas</label>
@@ -645,9 +645,9 @@
   <input class="file-actions" id="importFile" type="file" accept="application/json">
 
   <script>
-    const storageKey = "rebecaTrainerApp:v2";
+    const storageKey = "rebecaTrainerApp:v5";
     const starterRoutine = [
-      day("d1", "Rutina", "Ejercicios cargados", [
+      day("d1", "RUTINA SABRINA", "Ejercicios cargados", [
         exercise(
           "d1-1",
           "Elevacion de rodillas con mancuernas",
@@ -655,8 +655,108 @@
           "20",
           60,
           "Piernas, core",
-          "./assets/videos/elevacion-de-rodillas-con-mancuernas-x20.mov",
-          "Video cargado desde el archivo original."
+          "./assets/videos-web/elevacion-de-rodillas-con-mancuernas-x20.mp4",
+          "Video silencioso optimizado para celular."
+        ),
+        exercise(
+          "d1-2",
+          "Elevacion con piernas extendidas y mancuernas",
+          "1",
+          "20",
+          60,
+          "Piernas, core",
+          "./assets/videos-web/elevacion-con-piernas-extendidas-y-mancuernas-x20.mp4",
+          "Video silencioso optimizado para celular."
+        ),
+        exercise(
+          "d1-3",
+          "Elevacion unilateral de rodilla",
+          "1",
+          "10",
+          60,
+          "Piernas, core",
+          "./assets/videos-web/elevacion-unilateral-de-rodilla-x10.mp4",
+          "Video silencioso optimizado para celular."
+        ),
+        exercise(
+          "d1-4",
+          "Elevacion unilateral de pierna extendida",
+          "1",
+          "10",
+          60,
+          "Piernas, core",
+          "./assets/videos-web/elevacion-unilateral-de-pierna-extendida-x10.mp4",
+          "Video silencioso optimizado para celular."
+        ),
+        exercise(
+          "d1-5",
+          "Plancha con apertura y cierre de piernas",
+          "1",
+          "20",
+          60,
+          "Core",
+          "./assets/videos-web/plancha-con-apertura-y-cierre-de-piernas-x20.mp4",
+          "Video silencioso optimizado para celular."
+        ),
+        exercise(
+          "d1-6",
+          "Extension alterada de brazo y pierna con mancuerna",
+          "1",
+          "20",
+          60,
+          "Full body",
+          "./assets/videos-web/extension-alterada-de-brazo-y-pierna-con-mancuerna-x20.mp4",
+          "Video silencioso optimizado para celular."
+        ),
+        exercise(
+          "d1-7",
+          "Sentadilla con press de hombros",
+          "1",
+          "12",
+          60,
+          "Piernas, hombros",
+          "./assets/videos-web/sentadilla-con-press-de-hombros-x12.mp4",
+          "Video silencioso optimizado para celular."
+        ),
+        exercise(
+          "d1-8",
+          "Estocada lateral con mancuerna",
+          "1",
+          "20",
+          60,
+          "Piernas",
+          "./assets/videos-web/estocada-lateral-con-mancuerna-x20.mp4",
+          "Video silencioso optimizado para celular."
+        ),
+        exercise(
+          "d1-9",
+          "Flexion de pierna hacia atras con press de hombro",
+          "1",
+          "8 de cada lado",
+          60,
+          "Gluteos, hombros",
+          "./assets/videos-web/flexion-de-pierna-hacia-atras-con-press-de-hombro-x8-cada-lado.mp4",
+          "Video silencioso optimizado para celular."
+        ),
+        exercise(
+          "d1-10",
+          "Plancha",
+          "1",
+          "30 seg",
+          60,
+          "Core",
+          "./assets/videos-web/plancha-x30seg.mp4",
+          "Video silencioso optimizado para celular."
+        ),
+        exercise(
+          "d1-11",
+          "Bird dog",
+          "1",
+          "10 por lado",
+          60,
+          "Core",
+          "./assets/videos-web/bird-dog-x10-cada-lado.mp4",
+          "Video silencioso optimizado para celular."
         )
       ])
     ];
@@ -869,7 +969,7 @@
       if (item.video) {
         return `
           <div class="${className}">
-            <video src="${escapeAttr(item.video)}" ${controls ? "controls" : "muted playsinline preload=\"metadata\""} playsinline></video>
+            <video src="${escapeAttr(item.video)}" ${controls ? "controls" : ""} muted playsinline preload="metadata" data-fullscreen-video></video>
           </div>
         `;
       }
@@ -888,6 +988,9 @@
         btn.addEventListener("click", () => startTimer(Number(btn.dataset.quick)));
       });
       document.getElementById("timerStopBtn").addEventListener("click", stopTimer);
+      document.querySelectorAll("[data-fullscreen-video]").forEach(video => {
+        video.addEventListener("click", () => openFullscreenVideo(video));
+      });
       document.getElementById("saveLogBtn").addEventListener("click", () => {
         const weight = document.getElementById("logWeight").value || "0";
         const reps = document.getElementById("logReps").value || item.reps;
@@ -912,6 +1015,15 @@
         tickTimer();
         if (timer.left === 0) stopTimer(false);
       }, 1000);
+    }
+
+    function openFullscreenVideo(video) {
+      video.muted = true;
+      if (video.requestFullscreen) {
+        video.requestFullscreen().catch(() => {});
+      } else if (video.webkitEnterFullscreen) {
+        video.webkitEnterFullscreen();
+      }
     }
 
     function stopTimer(clear = true) {
