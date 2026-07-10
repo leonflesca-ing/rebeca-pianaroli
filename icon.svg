@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="96" fill="#111014"/>
+  <circle cx="256" cy="204" r="122" fill="#ec0079"/>
+  <path d="M123 340h266v43H123z" fill="#ffffff"/>
+  <path d="M151 289h210v42H151z" fill="#ec0079"/>
+  <text x="256" y="232" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="116" font-weight="900" fill="#ffffff">RP</text>
+  <text x="256" y="428" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="38" font-weight="800" fill="#ffffff" letter-spacing="5">TRAINER</text>
+</svg>

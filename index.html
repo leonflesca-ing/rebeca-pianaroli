@@ -1,0 +1,1153 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Rebeca Pianaroli</title>
+  <meta name="theme-color" content="#111014">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Rebeca PT">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <style>
+    :root {
+      --bg: #111014;
+      --surface: #18151b;
+      --surface-2: #221b24;
+      --line: rgba(255, 255, 255, .1);
+      --line-strong: rgba(236, 0, 121, .45);
+      --text: #f9f4f7;
+      --muted: #b7aab2;
+      --pink: #ec0079;
+      --pink-2: #ff4ea8;
+      --pink-soft: rgba(236, 0, 121, .13);
+      --white: #ffffff;
+      --black: #050406;
+      --warn: #f9b84e;
+      --radius: 8px;
+      --shadow: 0 16px 48px rgba(0, 0, 0, .38);
+      color-scheme: dark;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html { background: var(--bg); }
+    body {
+      margin: 0;
+      min-height: 100dvh;
+      background:
+        linear-gradient(135deg, rgba(236, 0, 121, .16), transparent 38%),
+        radial-gradient(circle at top right, rgba(255, 78, 168, .16), transparent 34%),
+        var(--bg);
+      color: var(--text);
+    }
+
+    button, input, select, textarea {
+      font: inherit;
+      color: inherit;
+    }
+
+    button {
+      border: 0;
+      cursor: pointer;
+    }
+
+    .app {
+      width: min(1180px, 100%);
+      margin: 0 auto;
+      padding: 18px;
+    }
+
+    .topbar {
+      display: grid;
+      grid-template-columns: 92px 1fr auto;
+      gap: 16px;
+      align-items: center;
+      padding: 14px 0 18px;
+    }
+
+    .brand-mark {
+      width: 92px;
+      aspect-ratio: 1;
+      border-radius: 50%;
+      overflow: hidden;
+      background: var(--white);
+      border: 1px solid rgba(255, 255, 255, .18);
+      box-shadow: 0 10px 34px rgba(236, 0, 121, .22);
+    }
+
+    .brand-mark img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: clamp(2rem, 5vw, 4.2rem);
+      line-height: .92;
+      letter-spacing: 0;
+      text-transform: uppercase;
+    }
+
+    .brand p {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 1rem;
+      text-transform: uppercase;
+      letter-spacing: .16em;
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      min-height: 42px;
+      padding: 0 14px;
+      border-radius: var(--radius);
+      background: var(--surface-2);
+      border: 1px solid var(--line);
+      color: var(--text);
+      font-weight: 760;
+      transition: transform .16s ease, border-color .16s ease, background .16s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      border-color: var(--line-strong);
+    }
+
+    .btn.primary {
+      background: linear-gradient(135deg, var(--pink), var(--pink-2));
+      border-color: transparent;
+      color: var(--white);
+    }
+
+    .btn.warning {
+      color: var(--warn);
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 390px;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .panel {
+      background: rgba(24, 21, 27, .92);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .panel-head {
+      min-height: 56px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .panel-head h2 {
+      margin: 0;
+      font-size: 1rem;
+      letter-spacing: 0;
+    }
+
+    .panel-body { padding: 16px; }
+
+    .tabs {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .tab {
+      min-height: 70px;
+      text-align: left;
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, .04);
+      border: 1px solid var(--line);
+      padding: 12px;
+    }
+
+    .tab.active {
+      border-color: var(--pink);
+      background: linear-gradient(180deg, rgba(236, 0, 121, .24), rgba(236, 0, 121, .08));
+    }
+
+    .tab strong {
+      display: block;
+      font-size: 1rem;
+    }
+
+    .tab span {
+      display: block;
+      color: var(--muted);
+      font-size: .86rem;
+      margin-top: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .stat {
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, .035);
+      border-radius: var(--radius);
+      padding: 11px 12px;
+    }
+
+    .stat span {
+      display: block;
+      color: var(--muted);
+      font-size: .78rem;
+      font-weight: 760;
+    }
+
+    .stat strong {
+      display: block;
+      margin-top: 4px;
+      font-size: 1.35rem;
+    }
+
+    .progress {
+      height: 8px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, .08);
+      overflow: hidden;
+      margin-bottom: 12px;
+    }
+
+    .progress span {
+      display: block;
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--pink), var(--pink-2));
+      transition: width .2s ease;
+    }
+
+    .exercise-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .exercise-card {
+      display: grid;
+      grid-template-columns: 118px minmax(0, 1fr) auto;
+      gap: 12px;
+      align-items: center;
+      padding: 12px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, .035);
+      border-radius: var(--radius);
+    }
+
+    .exercise-card.active {
+      border-color: var(--pink);
+      background: rgba(236, 0, 121, .12);
+    }
+
+    .thumb, .video-frame {
+      position: relative;
+      aspect-ratio: 9 / 12;
+      border-radius: var(--radius);
+      background:
+        linear-gradient(135deg, rgba(236, 0, 121, .22), rgba(255, 255, 255, .04)),
+        #211922;
+      border: 1px solid rgba(255, 255, 255, .11);
+      overflow: hidden;
+    }
+
+    .thumb video, .video-frame video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      background: var(--black);
+    }
+
+    .video-frame {
+      aspect-ratio: 9 / 13;
+      margin-bottom: 14px;
+    }
+
+    .placeholder {
+      position: absolute;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      padding: 12px;
+      text-align: center;
+    }
+
+    .placeholder img {
+      width: 70%;
+      max-width: 170px;
+      border-radius: 50%;
+      background: #fff;
+      opacity: .96;
+    }
+
+    .placeholder span {
+      position: absolute;
+      left: 10px;
+      right: 10px;
+      bottom: 10px;
+      color: var(--muted);
+      font-size: .74rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    .exercise-main {
+      min-width: 0;
+    }
+
+    .exercise-main h3 {
+      margin: 0;
+      font-size: 1.02rem;
+      line-height: 1.2;
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin: 8px 0;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 28px;
+      padding: 0 9px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, .07);
+      border: 1px solid var(--line);
+      color: var(--muted);
+      font-weight: 800;
+      font-size: .82rem;
+    }
+
+    .exercise-main p {
+      margin: 0;
+      color: var(--muted);
+      font-size: .9rem;
+      line-height: 1.35;
+    }
+
+    .card-actions {
+      display: grid;
+      gap: 8px;
+      width: 96px;
+    }
+
+    .check {
+      width: 42px;
+      height: 42px;
+      margin-left: auto;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, .08);
+      border: 1px solid var(--line);
+      color: var(--white);
+      font-size: 1.1rem;
+      font-weight: 900;
+    }
+
+    .check.done {
+      background: var(--pink);
+      border-color: var(--pink);
+    }
+
+    .timer {
+      text-align: center;
+    }
+
+    .timer-display {
+      font-size: clamp(3rem, 10vw, 4.7rem);
+      line-height: 1;
+      font-weight: 900;
+      font-variant-numeric: tabular-nums;
+      margin: 12px 0 16px;
+    }
+
+    .timer-buttons {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .detail-title {
+      font-size: 1.4rem;
+      margin: 0 0 8px;
+      line-height: 1.1;
+    }
+
+    .log-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .field {
+      display: grid;
+      gap: 6px;
+    }
+
+    label {
+      color: var(--muted);
+      font-size: .78rem;
+      font-weight: 800;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      border-radius: var(--radius);
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, .05);
+      min-height: 42px;
+      padding: 9px 10px;
+      outline: none;
+    }
+
+    textarea {
+      min-height: 84px;
+      resize: vertical;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--pink);
+      box-shadow: 0 0 0 3px rgba(236, 0, 121, .16);
+    }
+
+    .history-list {
+      display: grid;
+      gap: 8px;
+      margin-top: 12px;
+    }
+
+    .session {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px;
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, .045);
+      border: 1px solid var(--line);
+    }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      z-index: 30;
+      display: none;
+      place-items: center;
+      padding: 16px;
+      background: rgba(0, 0, 0, .72);
+    }
+
+    .modal.open { display: grid; }
+
+    .modal-card {
+      width: min(720px, 100%);
+      max-height: 90dvh;
+      overflow: auto;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .editor-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .editor-grid .wide {
+      grid-column: 1 / -1;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+
+    .file-actions {
+      display: none;
+    }
+
+    @media (max-width: 900px) {
+      .app { padding: 14px; }
+      .topbar {
+        grid-template-columns: 72px 1fr;
+      }
+      .brand-mark { width: 72px; }
+      .actions {
+        grid-column: 1 / -1;
+        justify-content: stretch;
+      }
+      .actions .btn { flex: 1; }
+      .layout {
+        grid-template-columns: 1fr;
+      }
+      .detail-panel {
+        position: static;
+      }
+    }
+
+    @media (max-width: 620px) {
+      .brand h1 { font-size: 1.9rem; }
+      .brand p { font-size: .78rem; }
+      .tabs {
+        display: flex;
+        overflow-x: auto;
+        padding-bottom: 2px;
+      }
+      .tab {
+        min-width: 185px;
+      }
+      .stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .exercise-card {
+        grid-template-columns: 92px minmax(0, 1fr);
+      }
+      .card-actions {
+        grid-column: 1 / -1;
+        grid-template-columns: 1fr 1fr auto;
+        width: 100%;
+      }
+      .check {
+        margin: 0;
+      }
+      .editor-grid,
+      .log-grid {
+        grid-template-columns: 1fr;
+      }
+      .video-frame {
+        aspect-ratio: 9 / 12;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header class="topbar">
+      <div class="brand-mark"><img src="./assets/logo.jpg" alt="Rebeca Pianaroli"></div>
+      <div class="brand">
+        <h1>Rebeca Pianaroli</h1>
+        <p>Personal Trainer</p>
+      </div>
+      <div class="actions">
+        <button class="btn" id="historyBtn">Historial</button>
+        <button class="btn" id="exportBtn">Exportar</button>
+        <button class="btn" id="importBtn">Importar</button>
+        <button class="btn primary" id="editorBtn">Editar rutina</button>
+      </div>
+    </header>
+
+    <section class="layout">
+      <div>
+        <div class="tabs" id="tabs"></div>
+        <div class="stats" id="stats"></div>
+        <div class="progress"><span id="progress"></span></div>
+        <div class="exercise-list" id="exerciseList"></div>
+      </div>
+
+      <aside class="panel detail-panel">
+        <div class="panel-head">
+          <h2 id="detailHead">Ejercicio</h2>
+          <button class="btn" id="finishBtn">Finalizar dia</button>
+        </div>
+        <div class="panel-body" id="detail"></div>
+      </aside>
+    </section>
+  </main>
+
+  <div class="modal" id="editorModal">
+    <div class="modal-card">
+      <div class="panel-head">
+        <h2>Editar ejercicio</h2>
+        <button class="btn" id="closeEditorBtn">Cerrar</button>
+      </div>
+      <div class="panel-body">
+        <div class="editor-grid">
+          <input id="editId" type="hidden">
+          <div class="field">
+            <label for="editDay">Dia</label>
+            <select id="editDay"></select>
+          </div>
+          <div class="field">
+            <label for="editOrder">Numero</label>
+            <input id="editOrder" type="number" min="1">
+          </div>
+          <div class="field wide">
+            <label for="editName">Titulo del ejercicio</label>
+            <input id="editName" type="text" placeholder="Ej: Sentadilla goblet">
+          </div>
+          <div class="field">
+            <label for="editSets">Series</label>
+            <input id="editSets" type="text" placeholder="3">
+          </div>
+          <div class="field">
+            <label for="editReps">Repeticiones</label>
+            <input id="editReps" type="text" placeholder="12-15">
+          </div>
+          <div class="field">
+            <label for="editRest">Descanso en segundos</label>
+            <input id="editRest" type="number" min="0" step="15">
+          </div>
+          <div class="field">
+            <label for="editCategory">Categoria</label>
+            <input id="editCategory" type="text" placeholder="Gluteos, piernas">
+          </div>
+          <div class="field wide">
+            <label for="editVideo">Video URL o archivo local</label>
+            <input id="editVideo" type="text" placeholder="./assets/videos/sentadilla.mp4">
+          </div>
+          <div class="field wide">
+            <label for="editNotes">Notas</label>
+            <textarea id="editNotes" placeholder="Indicaciones de tecnica o variantes"></textarea>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button class="btn warning" id="deleteBtn">Eliminar</button>
+          <button class="btn" id="newBtn">Agregar como nuevo</button>
+          <button class="btn primary" id="saveBtn">Guardar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <input class="file-actions" id="importFile" type="file" accept="application/json">
+
+  <script>
+    const storageKey = "rebecaTrainerApp:v1";
+    const starterRoutine = [
+      day("d1", "Dia 1", "Tren inferior", [
+        exercise("d1-1", "Sentadilla goblet", "3", "12", 75, "Piernas", "", "Mantener el pecho alto y bajar controlado."),
+        exercise("d1-2", "Puente de gluteos", "4", "15", 60, "Gluteos", "", "Pausa arriba y apretar fuerte gluteos."),
+        exercise("d1-3", "Estocadas alternas", "3", "10 por pierna", 75, "Piernas", "", "Rodilla estable y paso firme.")
+      ]),
+      day("d2", "Dia 2", "Tren superior", [
+        exercise("d2-1", "Remo con banda", "3", "12", 60, "Espalda", "", "Llevar codos hacia atras sin encoger hombros."),
+        exercise("d2-2", "Press de hombros", "3", "10-12", 75, "Hombros", "", "Empujar vertical y controlar la bajada."),
+        exercise("d2-3", "Curl de biceps", "3", "12", 60, "Brazos", "", "Codos fijos y sin balancear.")
+      ]),
+      day("d3", "Dia 3", "Full body", [
+        exercise("d3-1", "Peso muerto rumano", "3", "12", 75, "Posterior", "", "Bisagra de cadera con espalda neutra."),
+        exercise("d3-2", "Plancha", "3", "30-45 s", 45, "Core", "", "Cuerpo en linea y abdomen firme."),
+        exercise("d3-3", "Abdominal crunch", "3", "15", 45, "Abdominales", "", "Subir sin tirar del cuello.")
+      ])
+    ];
+
+    const state = loadState();
+    let timer = { interval: null, left: 0 };
+
+    const els = {
+      tabs: document.getElementById("tabs"),
+      stats: document.getElementById("stats"),
+      progress: document.getElementById("progress"),
+      list: document.getElementById("exerciseList"),
+      detail: document.getElementById("detail"),
+      detailHead: document.getElementById("detailHead"),
+      historyBtn: document.getElementById("historyBtn"),
+      exportBtn: document.getElementById("exportBtn"),
+      importBtn: document.getElementById("importBtn"),
+      editorBtn: document.getElementById("editorBtn"),
+      finishBtn: document.getElementById("finishBtn"),
+      editorModal: document.getElementById("editorModal"),
+      importFile: document.getElementById("importFile")
+    };
+
+    function day(id, title, subtitle, exercises) {
+      return { id, title, subtitle, exercises };
+    }
+
+    function exercise(id, name, sets, reps, rest, category, video, notes) {
+      return { id, name, sets, reps, rest, category, video, notes };
+    }
+
+    function loadState() {
+      try {
+        const stored = JSON.parse(localStorage.getItem(storageKey));
+        if (stored?.routine?.length) return stored;
+      } catch {}
+      return {
+        routine: structuredClone(starterRoutine),
+        activeDay: "d1",
+        selected: "d1-1",
+        done: {},
+        logs: {},
+        sessions: [],
+        view: "routine"
+      };
+    }
+
+    function saveState() {
+      localStorage.setItem(storageKey, JSON.stringify(state));
+    }
+
+    function activeDay() {
+      return state.routine.find(item => item.id === state.activeDay) || state.routine[0];
+    }
+
+    function allExercises() {
+      return state.routine.flatMap(group => group.exercises);
+    }
+
+    function selectedExercise() {
+      return allExercises().find(item => item.id === state.selected) || activeDay().exercises[0];
+    }
+
+    function render() {
+      const day = activeDay();
+      if (!day.exercises.some(item => item.id === state.selected)) {
+        state.selected = day.exercises[0]?.id || "";
+      }
+
+      renderTabs();
+      if (state.view === "history") {
+        renderHistory();
+      } else {
+        renderStats();
+        renderList();
+        renderDetail();
+      }
+      saveState();
+    }
+
+    function renderTabs() {
+      els.tabs.innerHTML = state.routine.map(group => `
+        <button class="tab ${state.view === "routine" && group.id === state.activeDay ? "active" : ""}" data-day="${group.id}">
+          <strong>${escapeHtml(group.title)}</strong>
+          <span>${escapeHtml(group.subtitle)}</span>
+        </button>
+      `).join("");
+    }
+
+    function renderStats() {
+      const day = activeDay();
+      const done = day.exercises.filter(item => state.done[item.id]).length;
+      const totalSeries = day.exercises.reduce((sum, item) => sum + (Number(item.sets) || 0), 0);
+      const videos = day.exercises.filter(item => item.video).length;
+      const logs = day.exercises.reduce((sum, item) => sum + (state.logs[item.id]?.length || 0), 0);
+      const pct = day.exercises.length ? Math.round((done / day.exercises.length) * 100) : 0;
+      els.progress.style.width = pct + "%";
+      els.stats.innerHTML = [
+        ["Progreso", `${done}/${day.exercises.length}`],
+        ["Series", totalSeries],
+        ["Videos", `${videos}/${day.exercises.length}`],
+        ["Registros", logs]
+      ].map(([label, value]) => `
+        <div class="stat"><span>${label}</span><strong>${value}</strong></div>
+      `).join("");
+    }
+
+    function renderList() {
+      const day = activeDay();
+      els.list.innerHTML = day.exercises.map((item, index) => `
+        <article class="exercise-card ${item.id === state.selected ? "active" : ""}" data-select="${item.id}">
+          ${renderVideo(item, "thumb", false)}
+          <div class="exercise-main">
+            <h3>${index + 1}. ${escapeHtml(item.name)}</h3>
+            <div class="meta">
+              <span class="pill">${escapeHtml(item.sets)} x ${escapeHtml(item.reps)}</span>
+              <span class="pill">${formatRest(item.rest)}</span>
+              <span class="pill">${escapeHtml(item.category || "General")}</span>
+            </div>
+            <p>${escapeHtml(item.notes || "Video pendiente de cargar.")}</p>
+          </div>
+          <div class="card-actions">
+            <button class="btn" data-rest="${item.rest}">Descanso</button>
+            <button class="btn" data-edit="${item.id}">Editar</button>
+            <button class="check ${state.done[item.id] ? "done" : ""}" data-done="${item.id}">${state.done[item.id] ? "✓" : ""}</button>
+          </div>
+        </article>
+      `).join("");
+    }
+
+    function renderDetail() {
+      const item = selectedExercise();
+      if (!item) {
+        els.detailHead.textContent = "Rutina";
+        els.detail.innerHTML = `<p>No hay ejercicios en este dia.</p>`;
+        return;
+      }
+      els.detailHead.textContent = activeDay().title;
+      const history = state.logs[item.id] || [];
+      els.detail.innerHTML = `
+        ${renderVideo(item, "video-frame", true)}
+        <h3 class="detail-title">${escapeHtml(item.name)}</h3>
+        <div class="meta">
+          <span class="pill">${escapeHtml(item.sets)} series</span>
+          <span class="pill">${escapeHtml(item.reps)} reps</span>
+          <span class="pill">${formatRest(item.rest)}</span>
+        </div>
+        <p>${escapeHtml(item.notes || "Cuando tengas el video, cargalo desde Editar rutina.")}</p>
+
+        <section class="panel timer" style="margin-top:16px;">
+          <div class="panel-head"><h2>Descanso</h2><button class="btn" id="timerStopBtn">Listo</button></div>
+          <div class="panel-body">
+            <div class="timer-display" id="timerDisplay">${formatClock(timer.left)}</div>
+            <div class="timer-buttons">
+              <button class="btn" data-quick="45">45 s</button>
+              <button class="btn" data-quick="60">60 s</button>
+              <button class="btn" data-quick="${item.rest || 75}">${formatRest(item.rest || 75)}</button>
+            </div>
+          </div>
+        </section>
+
+        <section style="margin-top:16px;">
+          <h3 style="margin:0 0 10px;">Registrar serie</h3>
+          <div class="log-grid">
+            <div class="field"><label>Peso</label><input id="logWeight" type="number" inputmode="decimal" placeholder="0"></div>
+            <div class="field"><label>Reps</label><input id="logReps" type="text" placeholder="${escapeAttr(item.reps)}"></div>
+            <div class="field"><label>Serie</label><input id="logSet" type="number" value="${history.length + 1}"></div>
+          </div>
+          <button class="btn primary" id="saveLogBtn" style="width:100%; margin-top:8px;">Registrar</button>
+          <div class="history-list">
+            ${history.length ? history.slice(-4).reverse().map(log => `
+              <div class="session"><span>${escapeHtml(log.date)}</span><strong>${escapeHtml(log.weight)} kg x ${escapeHtml(log.reps)}</strong></div>
+            `).join("") : `<div class="session"><span>Todavia no hay registros.</span></div>`}
+          </div>
+        </section>
+      `;
+      bindDetailEvents(item);
+    }
+
+    function renderHistory() {
+      els.stats.innerHTML = "";
+      els.progress.style.width = "0%";
+      els.list.innerHTML = `
+        <section class="panel">
+          <div class="panel-head">
+            <h2>Historial</h2>
+            <button class="btn" id="routineViewBtn">Volver</button>
+          </div>
+          <div class="panel-body history-list">
+            ${state.sessions.length ? state.sessions.slice().reverse().map(session => `
+              <div class="session">
+                <span>${escapeHtml(session.date)} · ${escapeHtml(session.dayTitle)}</span>
+                <strong>${session.completed}/${session.total}</strong>
+              </div>
+            `).join("") : `<div class="session"><span>No hay entrenamientos guardados.</span></div>`}
+          </div>
+        </section>
+      `;
+      els.detail.innerHTML = `
+        <h3 class="detail-title">Resumen</h3>
+        <p>Guarda cada dia terminado para que la clienta pueda revisar su constancia.</p>
+      `;
+      document.getElementById("routineViewBtn").addEventListener("click", () => {
+        state.view = "routine";
+        render();
+      });
+    }
+
+    function renderVideo(item, className, controls) {
+      if (item.video) {
+        return `
+          <div class="${className}">
+            <video src="${escapeAttr(item.video)}" ${controls ? "controls" : "muted playsinline preload=\"metadata\""} playsinline></video>
+          </div>
+        `;
+      }
+      return `
+        <div class="${className}">
+          <div class="placeholder">
+            <img src="./assets/logo.jpg" alt="">
+            <span>Video pendiente</span>
+          </div>
+        </div>
+      `;
+    }
+
+    function bindDetailEvents(item) {
+      document.querySelectorAll("[data-quick]").forEach(btn => {
+        btn.addEventListener("click", () => startTimer(Number(btn.dataset.quick)));
+      });
+      document.getElementById("timerStopBtn").addEventListener("click", stopTimer);
+      document.getElementById("saveLogBtn").addEventListener("click", () => {
+        const weight = document.getElementById("logWeight").value || "0";
+        const reps = document.getElementById("logReps").value || item.reps;
+        const set = document.getElementById("logSet").value || "1";
+        state.logs[item.id] = state.logs[item.id] || [];
+        state.logs[item.id].push({
+          weight,
+          reps,
+          set,
+          date: new Date().toLocaleDateString("es-AR")
+        });
+        render();
+      });
+    }
+
+    function startTimer(seconds) {
+      stopTimer(false);
+      timer.left = Number(seconds) || 0;
+      tickTimer();
+      timer.interval = setInterval(() => {
+        timer.left = Math.max(0, timer.left - 1);
+        tickTimer();
+        if (timer.left === 0) stopTimer(false);
+      }, 1000);
+    }
+
+    function stopTimer(clear = true) {
+      if (timer.interval) clearInterval(timer.interval);
+      timer.interval = null;
+      if (clear) timer.left = 0;
+      tickTimer();
+    }
+
+    function tickTimer() {
+      const display = document.getElementById("timerDisplay");
+      if (display) display.textContent = formatClock(timer.left);
+    }
+
+    els.tabs.addEventListener("click", event => {
+      const btn = event.target.closest("[data-day]");
+      if (!btn) return;
+      state.activeDay = btn.dataset.day;
+      state.selected = activeDay().exercises[0]?.id || "";
+      state.view = "routine";
+      render();
+    });
+
+    els.list.addEventListener("click", event => {
+      const done = event.target.closest("[data-done]");
+      const edit = event.target.closest("[data-edit]");
+      const rest = event.target.closest("[data-rest]");
+      const card = event.target.closest("[data-select]");
+      if (done) {
+        state.done[done.dataset.done] = !state.done[done.dataset.done];
+        render();
+        return;
+      }
+      if (edit) {
+        openEditor(edit.dataset.edit);
+        return;
+      }
+      if (rest) {
+        startTimer(Number(rest.dataset.rest));
+        return;
+      }
+      if (card) {
+        state.selected = card.dataset.select;
+        render();
+      }
+    });
+
+    els.editorBtn.addEventListener("click", () => openEditor(selectedExercise()?.id));
+    document.getElementById("closeEditorBtn").addEventListener("click", closeEditor);
+    document.getElementById("saveBtn").addEventListener("click", saveEditor);
+    document.getElementById("newBtn").addEventListener("click", addNewExercise);
+    document.getElementById("deleteBtn").addEventListener("click", deleteExercise);
+    document.getElementById("editDay").addEventListener("change", updateOrderMax);
+
+    els.finishBtn.addEventListener("click", () => {
+      const day = activeDay();
+      state.sessions.push({
+        date: new Date().toLocaleDateString("es-AR"),
+        dayTitle: day.title,
+        total: day.exercises.length,
+        completed: day.exercises.filter(item => state.done[item.id]).length
+      });
+      day.exercises.forEach(item => state.done[item.id] = false);
+      render();
+    });
+
+    els.historyBtn.addEventListener("click", () => {
+      state.view = state.view === "history" ? "routine" : "history";
+      render();
+    });
+
+    els.exportBtn.addEventListener("click", () => {
+      const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "rebeca-pianaroli-rutina.json";
+      link.click();
+      URL.revokeObjectURL(url);
+    });
+
+    els.importBtn.addEventListener("click", () => els.importFile.click());
+    els.importFile.addEventListener("change", event => {
+      const file = event.target.files?.[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try {
+          const imported = JSON.parse(reader.result);
+          if (!imported?.routine?.length) throw new Error("Archivo invalido");
+          Object.assign(state, imported);
+          state.view = "routine";
+          render();
+        } catch {
+          alert("No se pudo importar ese archivo.");
+        }
+      };
+      reader.readAsText(file);
+      event.target.value = "";
+    });
+
+    function openEditor(id) {
+      const item = allExercises().find(exercise => exercise.id === id) || activeDay().exercises[0];
+      const location = findExerciseLocation(item?.id);
+      document.getElementById("editDay").innerHTML = state.routine.map(group => `<option value="${group.id}">${escapeHtml(group.title)} - ${escapeHtml(group.subtitle)}</option>`).join("");
+      document.getElementById("editId").value = item?.id || "";
+      document.getElementById("editDay").value = location?.day.id || state.activeDay;
+      document.getElementById("editOrder").value = (location?.index ?? 0) + 1;
+      document.getElementById("editName").value = item?.name || "";
+      document.getElementById("editSets").value = item?.sets || "";
+      document.getElementById("editReps").value = item?.reps || "";
+      document.getElementById("editRest").value = item?.rest || 60;
+      document.getElementById("editCategory").value = item?.category || "";
+      document.getElementById("editVideo").value = item?.video || "";
+      document.getElementById("editNotes").value = item?.notes || "";
+      updateOrderMax();
+      els.editorModal.classList.add("open");
+    }
+
+    function closeEditor() {
+      els.editorModal.classList.remove("open");
+    }
+
+    function saveEditor() {
+      const id = document.getElementById("editId").value;
+      const source = findExerciseLocation(id);
+      if (!source) return;
+      const targetDay = state.routine.find(day => day.id === document.getElementById("editDay").value);
+      const updated = readEditor(id);
+      source.day.exercises.splice(source.index, 1);
+      const order = readOrder(targetDay);
+      targetDay.exercises.splice(order, 0, updated);
+      state.activeDay = targetDay.id;
+      state.selected = updated.id;
+      closeEditor();
+      render();
+    }
+
+    function addNewExercise() {
+      const targetDay = state.routine.find(day => day.id === document.getElementById("editDay").value);
+      const id = `${targetDay.id}-${Date.now()}`;
+      const item = readEditor(id);
+      targetDay.exercises.splice(readOrder(targetDay), 0, item);
+      state.activeDay = targetDay.id;
+      state.selected = item.id;
+      closeEditor();
+      render();
+    }
+
+    function deleteExercise() {
+      const id = document.getElementById("editId").value;
+      const source = findExerciseLocation(id);
+      if (!source) return;
+      const ok = confirm(`Eliminar "${source.day.exercises[source.index].name}"?`);
+      if (!ok) return;
+      source.day.exercises.splice(source.index, 1);
+      delete state.done[id];
+      delete state.logs[id];
+      state.selected = source.day.exercises[Math.max(0, source.index - 1)]?.id || source.day.exercises[0]?.id || "";
+      closeEditor();
+      render();
+    }
+
+    function readEditor(id) {
+      return {
+        id,
+        name: document.getElementById("editName").value.trim() || "Ejercicio sin titulo",
+        sets: document.getElementById("editSets").value.trim() || "3",
+        reps: document.getElementById("editReps").value.trim() || "12",
+        rest: Number(document.getElementById("editRest").value) || 60,
+        category: document.getElementById("editCategory").value.trim(),
+        video: document.getElementById("editVideo").value.trim(),
+        notes: document.getElementById("editNotes").value.trim()
+      };
+    }
+
+    function findExerciseLocation(id) {
+      for (const day of state.routine) {
+        const index = day.exercises.findIndex(item => item.id === id);
+        if (index !== -1) return { day, index };
+      }
+      return null;
+    }
+
+    function updateOrderMax() {
+      const day = state.routine.find(group => group.id === document.getElementById("editDay").value);
+      const currentId = document.getElementById("editId").value;
+      const inDay = day?.exercises.some(item => item.id === currentId);
+      const max = Math.max(1, (day?.exercises.length || 0) + (inDay ? 0 : 1));
+      const input = document.getElementById("editOrder");
+      input.max = max;
+      input.value = Math.min(Math.max(Number(input.value) || 1, 1), max);
+    }
+
+    function readOrder(day) {
+      const max = Math.max(1, day.exercises.length + 1);
+      return Math.min(Math.max(Number(document.getElementById("editOrder").value) || max, 1), max) - 1;
+    }
+
+    function formatRest(seconds) {
+      const value = Number(seconds) || 0;
+      if (value >= 60) {
+        const min = Math.floor(value / 60);
+        const sec = value % 60;
+        return sec ? `${min}:${String(sec).padStart(2, "0")} min` : `${min} min`;
+      }
+      return `${value} s`;
+    }
+
+    function formatClock(seconds) {
+      const value = Math.max(0, Number(seconds) || 0);
+      return `${String(Math.floor(value / 60)).padStart(2, "0")}:${String(value % 60).padStart(2, "0")}`;
+    }
+
+    function escapeHtml(text) {
+      return String(text || "").replace(/[&<>"']/g, char => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;"
+      }[char]));
+    }
+
+    function escapeAttr(text) {
+      return escapeHtml(text).replace(/`/g, "&#096;");
+    }
+
+    render();
+
+    if ("serviceWorker" in navigator && location.protocol !== "file:") {
+      navigator.serviceWorker.register("./sw.js").catch(() => {});
+    }
+  </script>
+</body>
+</html>
