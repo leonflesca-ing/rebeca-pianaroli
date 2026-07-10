@@ -361,14 +361,14 @@
     }
 
     .check {
-      width: 42px;
+      width: 64px;
       height: 42px;
       margin-left: auto;
-      border-radius: 50%;
+      border-radius: 999px;
       background: rgba(255, 255, 255, .08);
       border: 1px solid var(--line);
       color: var(--white);
-      font-size: 1.1rem;
+      font-size: .9rem;
       font-weight: 900;
     }
 
@@ -406,6 +406,37 @@
       grid-template-columns: repeat(3, 1fr);
       gap: 8px;
       margin-top: 12px;
+    }
+
+    .round-progress {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+      margin: 12px 0;
+    }
+
+    .round-dot {
+      min-height: 44px;
+      border-radius: var(--radius);
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, .045);
+      color: var(--muted);
+      display: grid;
+      place-items: center;
+      font-weight: 900;
+    }
+
+    .round-dot.done {
+      border-color: transparent;
+      background: linear-gradient(135deg, var(--pink), var(--pink-2));
+      color: var(--white);
+    }
+
+    .round-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+      margin-top: 10px;
     }
 
     .field {
@@ -544,7 +575,8 @@
         margin: 0;
       }
       .editor-grid,
-      .log-grid {
+      .log-grid,
+      .round-actions {
         grid-template-columns: 1fr;
       }
       .video-frame {
@@ -580,7 +612,7 @@
       <aside class="panel detail-panel">
         <div class="panel-head">
           <h2 id="detailHead">Ejercicio</h2>
-          <button class="btn" id="finishBtn">Finalizar dia</button>
+          <button class="btn" id="finishBtn">Finalizar rutina</button>
         </div>
         <div class="panel-body" id="detail"></div>
       </aside>
@@ -645,7 +677,8 @@
   <input class="file-actions" id="importFile" type="file" accept="application/json">
 
   <script>
-    const storageKey = "rebecaTrainerApp:v5";
+    const storageKey = "rebecaTrainerApp:v6";
+    const TOTAL_ROUNDS = 4;
     const starterRoutine = [
       day("d1", "RUTINA SABRINA", "Ejercicios cargados", [
         exercise(
@@ -791,14 +824,18 @@
     function loadState() {
       try {
         const stored = JSON.parse(localStorage.getItem(storageKey));
-        if (stored?.routine?.length) return stored;
+        if (stored?.routine?.length) {
+          stored.rounds = stored.rounds || {};
+          stored.sessions = stored.sessions || [];
+          stored.view = stored.view || "routine";
+          return stored;
+        }
       } catch {}
       return {
         routine: structuredClone(starterRoutine),
         activeDay: "d1",
         selected: "d1-1",
-        done: {},
-        logs: {},
+        rounds: {},
         sessions: [],
         view: "routine"
       };
@@ -818,6 +855,27 @@
 
     function selectedExercise() {
       return allExercises().find(item => item.id === state.selected) || activeDay().exercises[0];
+    }
+
+    function roundCount(id) {
+      return Math.min(TOTAL_ROUNDS, Math.max(0, Number(state.rounds?.[id]) || 0));
+    }
+
+    function isComplete(id) {
+      return roundCount(id) >= TOTAL_ROUNDS;
+    }
+
+    function setRoundCount(id, value) {
+      state.rounds = state.rounds || {};
+      state.rounds[id] = Math.min(TOTAL_ROUNDS, Math.max(0, Number(value) || 0));
+    }
+
+    function addRound(id) {
+      setRoundCount(id, roundCount(id) + 1);
+    }
+
+    function subtractRound(id) {
+      setRoundCount(id, roundCount(id) - 1);
     }
 
     function render() {
@@ -848,17 +906,18 @@
 
     function renderStats() {
       const day = activeDay();
-      const done = day.exercises.filter(item => state.done[item.id]).length;
-      const totalSeries = day.exercises.reduce((sum, item) => sum + (Number(item.sets) || 0), 0);
+      const completed = day.exercises.filter(item => isComplete(item.id)).length;
+      const doneRounds = day.exercises.reduce((sum, item) => sum + roundCount(item.id), 0);
+      const totalRounds = day.exercises.length * TOTAL_ROUNDS;
       const videos = day.exercises.filter(item => item.video).length;
-      const logs = day.exercises.reduce((sum, item) => sum + (state.logs[item.id]?.length || 0), 0);
-      const pct = day.exercises.length ? Math.round((done / day.exercises.length) * 100) : 0;
+      const pendingRounds = Math.max(0, totalRounds - doneRounds);
+      const pct = totalRounds ? Math.round((doneRounds / totalRounds) * 100) : 0;
       els.progress.style.width = pct + "%";
       els.stats.innerHTML = [
-        ["Progreso", `${done}/${day.exercises.length}`],
-        ["Series", totalSeries],
+        ["Completados", `${completed}/${day.exercises.length}`],
+        ["Rondas", `${doneRounds}/${totalRounds}`],
         ["Videos", `${videos}/${day.exercises.length}`],
-        ["Registros", logs]
+        ["Faltan", pendingRounds]
       ].map(([label, value]) => `
         <div class="stat"><span>${label}</span><strong>${value}</strong></div>
       `).join("");
@@ -874,6 +933,7 @@
             <div class="meta">
               <span class="pill">${escapeHtml(item.sets)} x ${escapeHtml(item.reps)}</span>
               <span class="pill">${formatRest(item.rest)}</span>
+              <span class="pill">Ronda ${roundCount(item.id)}/${TOTAL_ROUNDS}</span>
               <span class="pill">${escapeHtml(item.category || "General")}</span>
             </div>
             <p>${escapeHtml(item.notes || "Video pendiente de cargar.")}</p>
@@ -881,7 +941,7 @@
           <div class="card-actions">
             <button class="btn" data-rest="${item.rest}">Descanso</button>
             <button class="btn" data-edit="${item.id}">Editar</button>
-            <button class="check ${state.done[item.id] ? "done" : ""}" data-done="${item.id}">${state.done[item.id] ? "✓" : ""}</button>
+            <button class="check ${isComplete(item.id) ? "done" : ""}" data-round-add="${item.id}">${isComplete(item.id) ? "OK" : `${roundCount(item.id)}/${TOTAL_ROUNDS}`}</button>
           </div>
         </article>
       `).join("");
@@ -895,7 +955,7 @@
         return;
       }
       els.detailHead.textContent = activeDay().title;
-      const history = state.logs[item.id] || [];
+      const rounds = roundCount(item.id);
       els.detail.innerHTML = `
         ${renderVideo(item, "video-frame", true)}
         <h3 class="detail-title">${escapeHtml(item.name)}</h3>
@@ -903,6 +963,7 @@
           <span class="pill">${escapeHtml(item.sets)} series</span>
           <span class="pill">${escapeHtml(item.reps)} reps</span>
           <span class="pill">${formatRest(item.rest)}</span>
+          <span class="pill">${rounds}/${TOTAL_ROUNDS} rondas</span>
         </div>
         <p>${escapeHtml(item.notes || "Cuando tengas el video, cargalo desde Editar rutina.")}</p>
 
@@ -919,17 +980,20 @@
         </section>
 
         <section style="margin-top:16px;">
-          <h3 style="margin:0 0 10px;">Registrar serie</h3>
-          <div class="log-grid">
-            <div class="field"><label>Peso</label><input id="logWeight" type="number" inputmode="decimal" placeholder="0"></div>
-            <div class="field"><label>Reps</label><input id="logReps" type="text" placeholder="${escapeAttr(item.reps)}"></div>
-            <div class="field"><label>Serie</label><input id="logSet" type="number" value="${history.length + 1}"></div>
+          <h3 style="margin:0 0 10px;">Rondas</h3>
+          <div class="round-progress">
+            ${Array.from({ length: TOTAL_ROUNDS }, (_, index) => `
+              <div class="round-dot ${index < rounds ? "done" : ""}">${index + 1}</div>
+            `).join("")}
           </div>
-          <button class="btn primary" id="saveLogBtn" style="width:100%; margin-top:8px;">Registrar</button>
-          <div class="history-list">
-            ${history.length ? history.slice(-4).reverse().map(log => `
-              <div class="session"><span>${escapeHtml(log.date)}</span><strong>${escapeHtml(log.weight)} kg x ${escapeHtml(log.reps)}</strong></div>
-            `).join("") : `<div class="session"><span>Todavia no hay registros.</span></div>`}
+          <div class="round-actions">
+            <button class="btn" id="minusRoundBtn">Restar</button>
+            <button class="btn primary" id="addRoundBtn">${isComplete(item.id) ? "Completado" : "Marcar ronda"}</button>
+            <button class="btn warning" id="resetRoundBtn">Reiniciar</button>
+          </div>
+          <div class="session" style="margin-top:10px;">
+            <span>${isComplete(item.id) ? "Ejercicio completado" : "Pendiente"}</span>
+            <strong>${rounds}/${TOTAL_ROUNDS}</strong>
           </div>
         </section>
       `;
@@ -949,7 +1013,7 @@
             ${state.sessions.length ? state.sessions.slice().reverse().map(session => `
               <div class="session">
                 <span>${escapeHtml(session.date)} · ${escapeHtml(session.dayTitle)}</span>
-                <strong>${session.completed}/${session.total}</strong>
+                <strong>${session.completedRounds ?? session.completed}/${session.totalRounds ?? session.total}</strong>
               </div>
             `).join("") : `<div class="session"><span>No hay entrenamientos guardados.</span></div>`}
           </div>
@@ -991,17 +1055,16 @@
       document.querySelectorAll("[data-fullscreen-video]").forEach(video => {
         video.addEventListener("click", () => openFullscreenVideo(video));
       });
-      document.getElementById("saveLogBtn").addEventListener("click", () => {
-        const weight = document.getElementById("logWeight").value || "0";
-        const reps = document.getElementById("logReps").value || item.reps;
-        const set = document.getElementById("logSet").value || "1";
-        state.logs[item.id] = state.logs[item.id] || [];
-        state.logs[item.id].push({
-          weight,
-          reps,
-          set,
-          date: new Date().toLocaleDateString("es-AR")
-        });
+      document.getElementById("addRoundBtn").addEventListener("click", () => {
+        addRound(item.id);
+        render();
+      });
+      document.getElementById("minusRoundBtn").addEventListener("click", () => {
+        subtractRound(item.id);
+        render();
+      });
+      document.getElementById("resetRoundBtn").addEventListener("click", () => {
+        setRoundCount(item.id, 0);
         render();
       });
     }
@@ -1048,12 +1111,12 @@
     });
 
     els.list.addEventListener("click", event => {
-      const done = event.target.closest("[data-done]");
+      const roundAdd = event.target.closest("[data-round-add]");
       const edit = event.target.closest("[data-edit]");
       const rest = event.target.closest("[data-rest]");
       const card = event.target.closest("[data-select]");
-      if (done) {
-        state.done[done.dataset.done] = !state.done[done.dataset.done];
+      if (roundAdd) {
+        addRound(roundAdd.dataset.roundAdd);
         render();
         return;
       }
@@ -1080,13 +1143,17 @@
 
     els.finishBtn.addEventListener("click", () => {
       const day = activeDay();
+      const completedRounds = day.exercises.reduce((sum, item) => sum + roundCount(item.id), 0);
+      const totalRounds = day.exercises.length * TOTAL_ROUNDS;
       state.sessions.push({
         date: new Date().toLocaleDateString("es-AR"),
         dayTitle: day.title,
         total: day.exercises.length,
-        completed: day.exercises.filter(item => state.done[item.id]).length
+        completed: day.exercises.filter(item => isComplete(item.id)).length,
+        completedRounds,
+        totalRounds
       });
-      day.exercises.forEach(item => state.done[item.id] = false);
+      day.exercises.forEach(item => setRoundCount(item.id, 0));
       render();
     });
 
@@ -1115,6 +1182,8 @@
           const imported = JSON.parse(reader.result);
           if (!imported?.routine?.length) throw new Error("Archivo invalido");
           Object.assign(state, imported);
+          state.rounds = state.rounds || {};
+          state.sessions = state.sessions || [];
           state.view = "routine";
           render();
         } catch {
@@ -1180,8 +1249,7 @@
       const ok = confirm(`Eliminar "${source.day.exercises[source.index].name}"?`);
       if (!ok) return;
       source.day.exercises.splice(source.index, 1);
-      delete state.done[id];
-      delete state.logs[id];
+      delete state.rounds[id];
       state.selected = source.day.exercises[Math.max(0, source.index - 1)]?.id || source.day.exercises[0]?.id || "";
       closeEditor();
       render();
