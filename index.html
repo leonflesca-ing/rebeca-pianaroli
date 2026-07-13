@@ -829,7 +829,7 @@
             <div class="step-content">
               <div class="step-title">
                 <h3>Rutina del alumno</h3>
-                <span>Crear, abrir o guardar</span>
+                <span>Datos del alumno</span>
               </div>
               <div class="admin-row">
                 <div class="field">
@@ -841,14 +841,9 @@
                   <input id="clientName" type="text" placeholder="Sabrina">
                 </div>
                 <div class="field">
-                  <label for="routineRounds">Rondas</label>
-                  <input id="routineRounds" type="number" min="1" max="20" step="1" inputmode="numeric">
-                </div>
-                <div class="field">
                   <label for="routineSlug">Codigo link</label>
                   <input id="routineSlug" type="text" placeholder="sabrina">
                 </div>
-                <button class="btn primary" id="saveOnlineBtn">Guardar rutina</button>
               </div>
               <div class="admin-actions">
                 <button class="btn" id="newRoutineBtn">Crear nueva rutina</button>
@@ -862,6 +857,12 @@
               <div class="step-title">
                 <h3>Ejercicios</h3>
                 <span id="adminExerciseSummary">0 cargados</span>
+              </div>
+              <div class="admin-row">
+                <div class="field">
+                  <label for="routineRounds">Rondas del circuito</label>
+                  <input id="routineRounds" type="number" min="1" max="20" step="1" inputmode="numeric">
+                </div>
               </div>
               <div class="admin-actions">
                 <button class="btn primary" id="addExerciseBtn">Agregar ejercicio</button>
@@ -988,7 +989,7 @@
     const SUPABASE_ANON_KEY = window.REBECA_CONFIG?.SUPABASE_ANON_KEY || "";
     const MUSIC_SOURCE = "./assets/audio/jamaican-bam-bam.mp3";
     const DEFAULT_TOTAL_ROUNDS = 4;
-    const APP_VERSION = "16";
+    const APP_VERSION = "17";
     const params = new URLSearchParams(window.location.search);
     const isAdmin = params.get("admin") === "1";
     const routineParam = params.get("rutina") || "";
@@ -1131,7 +1132,6 @@
       loginBtn: document.getElementById("loginBtn"),
       logoutBtn: document.getElementById("logoutBtn"),
       togglePasswordBtn: document.getElementById("togglePasswordBtn"),
-      saveOnlineBtn: document.getElementById("saveOnlineBtn"),
       newRoutineBtn: document.getElementById("newRoutineBtn"),
       copyLinkBtn: document.getElementById("copyLinkBtn"),
       adminEmail: document.getElementById("adminEmail"),
@@ -1150,6 +1150,7 @@
     };
     let remoteRoutineId = "";
     let authSession = loadAuthSession();
+    let autoSaveTimer = null;
 
     function day(id, title, subtitle, exercises) {
       return { id, title, subtitle, exercises };
@@ -1194,6 +1195,13 @@
 
     function saveState() {
       localStorage.setItem(storageKey, JSON.stringify(state));
+    }
+
+    function scheduleAutoSave() {
+      if (!isAdmin || !remoteReady || !authSession?.access_token) return;
+      clearTimeout(autoSaveTimer);
+      setRemoteStatus("Guardando cambios...");
+      autoSaveTimer = setTimeout(() => saveOnlineRoutine({ silent: true }), 900);
     }
 
     function activeDay() {
@@ -1288,13 +1296,13 @@
       const doneRounds = day.exercises.reduce((sum, item) => sum + roundCount(item.id), 0);
       const totalExerciseRounds = day.exercises.length * routineRounds();
       const circuitRounds = day.exercises.length ? Math.min(...day.exercises.map(item => roundCount(item.id))) : 0;
-      const pendingExercises = Math.max(0, day.exercises.length - completed);
+      const pendingExerciseRounds = Math.max(0, totalExerciseRounds - doneRounds);
       const pct = totalExerciseRounds ? Math.round((doneRounds / totalExerciseRounds) * 100) : 0;
       els.progress.style.width = pct + "%";
       els.stats.innerHTML = [
         ["Completados", `${completed}/${day.exercises.length}`],
         ["Rondas", `${circuitRounds}/${routineRounds()}`],
-        ["Faltan", pendingExercises]
+        ["Faltan", pendingExerciseRounds]
       ].map(([label, value]) => `
         <div class="stat"><span>${label}</span><strong>${value}</strong></div>
       `).join("");
@@ -1604,6 +1612,7 @@
           state.totalRounds = normalizeRounds(state.totalRounds);
           state.view = "routine";
           render();
+          scheduleAutoSave();
         } catch {
           alert("No se pudo importar ese archivo.");
         }
@@ -1622,21 +1631,30 @@
       saveAuthSession(null);
       renderRoutineList([]);
     });
-    els.saveOnlineBtn?.addEventListener("click", saveOnlineRoutine);
     els.newRoutineBtn?.addEventListener("click", newOnlineRoutine);
     els.copyLinkBtn?.addEventListener("click", copyClientLink);
-    els.routineSlug?.addEventListener("input", () => updateClientLink(slugify(els.routineSlug.value)));
+    els.routineTitle?.addEventListener("input", () => {
+      if (state.routine[0]) state.routine[0].title = els.routineTitle.value.trim() || "Rutina";
+      render();
+      scheduleAutoSave();
+    });
+    els.routineSlug?.addEventListener("input", () => {
+      updateClientLink(slugify(els.routineSlug.value));
+      scheduleAutoSave();
+    });
     els.clientName?.addEventListener("input", () => {
       if (!els.routineSlug.value.trim()) {
         const slug = els.clientName.value.trim() ? slugify(els.clientName.value) : "";
         els.routineSlug.value = slug;
         updateClientLink(slug);
       }
+      scheduleAutoSave();
     });
     els.routineRounds?.addEventListener("input", () => {
       state.totalRounds = normalizeRounds(els.routineRounds.value);
       Object.keys(state.rounds || {}).forEach(id => setRoundCount(id, roundCount(id)));
       render();
+      scheduleAutoSave();
     });
     els.routineList?.addEventListener("click", async event => {
       const deleteBtn = event.target.closest("[data-delete-routine]");
@@ -1693,6 +1711,7 @@
       state.selected = updated.id;
       closeEditor();
       render();
+      scheduleAutoSave();
     }
 
     function addNewExercise() {
@@ -1704,6 +1723,7 @@
       state.selected = item.id;
       closeEditor();
       render();
+      scheduleAutoSave();
     }
 
     function deleteExercise() {
@@ -1717,6 +1737,7 @@
       state.selected = source.day.exercises[Math.max(0, source.index - 1)]?.id || source.day.exercises[0]?.id || "";
       closeEditor();
       render();
+      scheduleAutoSave();
     }
 
     function readEditor(id) {
@@ -1871,7 +1892,8 @@
       };
     }
 
-    async function saveOnlineRoutine() {
+    async function saveOnlineRoutine(options = {}) {
+      const silent = Boolean(options.silent);
       if (!remoteReady) {
         setRemoteStatus("Falta configurar Supabase URL y anon key.");
         return;
@@ -1904,9 +1926,9 @@
         });
         const saved = rows?.[0];
         remoteRoutineId = saved?.id || remoteRoutineId;
-        updateRoutineFields(saved || body);
+        if (!silent) updateRoutineFields(saved || body);
         await loadAdminRoutines();
-        setRemoteStatus("Rutina guardada online. Link listo para enviar.");
+        setRemoteStatus(silent ? "Cambios guardados automaticamente." : "Rutina guardada online. Link listo para enviar.");
       } catch (error) {
         setRemoteStatus(error.message);
       }
@@ -1951,7 +1973,7 @@
       state.view = "routine";
       updateRoutineFields({ title: "NUEVA RUTINA", client_name: "", slug: "" });
       render();
-      setRemoteStatus("Rutina vacia creada. Agrega ejercicios y guardala online.");
+      setRemoteStatus("Rutina vacia creada. Completa los datos y se guardara automaticamente.");
     }
 
     function copyClientLink() {
@@ -1971,7 +1993,7 @@
       if (!remoteReady) {
         setRemoteStatus("Modo local. Falta pegar SUPABASE_URL y SUPABASE_ANON_KEY en config.js.");
       } else if (authSession?.access_token) {
-        setRemoteStatus("Sesion iniciada. Crea o abre una rutina, carga ejercicios y guarda online.");
+        setRemoteStatus("Sesion iniciada. Crea o abre una rutina; los cambios se guardan automaticamente.");
       } else {
         setRemoteStatus("Entrar con el usuario de profesora para editar rutinas online.");
       }
