@@ -152,6 +152,10 @@
       align-items: start;
     }
 
+    body.admin:not(.admin-authenticated) .layout {
+      display: none;
+    }
+
     .panel {
       background: rgba(24, 21, 27, .92);
       border: 1px solid var(--line);
@@ -973,7 +977,7 @@
     const SUPABASE_ANON_KEY = window.REBECA_CONFIG?.SUPABASE_ANON_KEY || "";
     const MUSIC_SOURCE = "./assets/audio/jamaican-bam-bam.mp3";
     const TOTAL_ROUNDS = 4;
-    const APP_VERSION = "13";
+    const APP_VERSION = "14";
     const params = new URLSearchParams(window.location.search);
     const isAdmin = params.get("admin") === "1";
     const routineParam = params.get("rutina") || "";
@@ -981,6 +985,7 @@
     const remoteReady = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
     const authStorageKey = "rebecaTrainerAuth";
     document.body.classList.toggle("admin", isAdmin);
+    if (isAdmin) document.getElementById("musicBtn").textContent = "Administracion";
     const starterRoutine = [
       day("d1", "RUTINA SABRINA", "", [
         exercise(
@@ -1446,6 +1451,11 @@
     }
 
     function updateMusicButton() {
+      if (isAdmin) {
+        els.musicBtn.textContent = "Administracion";
+        els.musicBtn.classList.remove("music-on");
+        return;
+      }
       const playing = !els.musicPlayer.paused;
       els.musicBtn.textContent = playing ? "Pausar musica" : "Musica";
       els.musicBtn.classList.toggle("music-on", playing);
@@ -1536,7 +1546,13 @@
       render();
     });
 
-    els.musicBtn.addEventListener("click", toggleMusic);
+    els.musicBtn.addEventListener("click", () => {
+      if (isAdmin) {
+        document.querySelector(".admin-tools")?.scrollIntoView({ behavior: "smooth", block: "start" });
+        return;
+      }
+      toggleMusic();
+    });
     els.musicPlayer.addEventListener("play", updateMusicButton);
     els.musicPlayer.addEventListener("pause", updateMusicButton);
     els.musicPlayer.addEventListener("ended", updateMusicButton);
