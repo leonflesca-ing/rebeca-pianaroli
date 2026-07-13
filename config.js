@@ -1,4 +1,4 @@
 window.REBECA_CONFIG = {
-  SUPABASE_URL: "",
-  SUPABASE_ANON_KEY: ""
+  SUPABASE_URL: "https://qqmjekrxodvujewlgvzk.supabase.co",
+  SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFxbWpla3J4b2R2dWpld2xndnprIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM4OTgxMDUsImV4cCI6MjA5OTQ3NDEwNX0.VtrVJ5K8-ci4jh0KGyPZbiB0v8_JQOOG27DVAzOQxy8"
 };
