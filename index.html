@@ -180,6 +180,14 @@
       letter-spacing: 0;
     }
 
+    .panel-kicker {
+      color: var(--muted);
+      font-size: .78rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
     .panel-body { padding: 16px; }
 
     .tabs {
@@ -538,7 +546,7 @@
     .modal.open { display: grid; }
 
     .modal-card {
-      width: min(720px, 100%);
+      width: min(760px, 100%);
       max-height: 90dvh;
       overflow: auto;
       background: var(--surface);
@@ -560,9 +568,16 @@
     .modal-actions {
       display: flex;
       gap: 8px;
-      justify-content: flex-end;
+      justify-content: space-between;
       flex-wrap: wrap;
       margin-top: 16px;
+    }
+
+    .modal-actions .danger-zone,
+    .modal-actions .primary-zone {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
     }
 
     .file-actions {
@@ -578,6 +593,42 @@
       gap: 12px;
     }
 
+    .admin-summary {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .admin-summary.requires-auth {
+      display: none;
+    }
+
+    body.admin-authenticated .admin-summary.requires-auth {
+      display: grid;
+    }
+
+    .summary-card {
+      min-height: 78px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 12px;
+      background: rgba(255, 255, 255, .035);
+    }
+
+    .summary-card span {
+      display: block;
+      color: var(--muted);
+      font-size: .78rem;
+      font-weight: 850;
+      margin-bottom: 6px;
+    }
+
+    .summary-card strong {
+      display: block;
+      font-size: 1.05rem;
+      line-height: 1.15;
+    }
+
     .admin-flow {
       display: grid;
       gap: 12px;
@@ -591,6 +642,14 @@
       border: 1px solid var(--line);
       border-radius: var(--radius);
       background: rgba(255, 255, 255, .035);
+    }
+
+    .admin-step.wide {
+      grid-column: 1 / -1;
+    }
+
+    .admin-step.compact {
+      background: rgba(255, 255, 255, .02);
     }
 
     .admin-step.requires-auth {
@@ -677,6 +736,9 @@
     .routine-list {
       display: grid;
       gap: 8px;
+      max-height: 320px;
+      overflow: auto;
+      padding-right: 2px;
     }
 
     .routine-item {
@@ -702,6 +764,32 @@
       font-size: .86rem;
     }
 
+    .routine-item.active {
+      border-color: var(--pink);
+      background: rgba(236, 0, 121, .1);
+    }
+
+    .mobile-detail {
+      display: none;
+    }
+
+    body.admin::before {
+      content: "MODO PROFESORA";
+      position: fixed;
+      right: 14px;
+      bottom: 14px;
+      z-index: 20;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(236, 0, 121, .35);
+      background: rgba(17, 16, 20, .86);
+      color: var(--muted);
+      font-size: .72rem;
+      font-weight: 900;
+      letter-spacing: .08em;
+      pointer-events: none;
+    }
+
     iframe.video-embed {
       width: 100%;
       height: 100%;
@@ -725,7 +813,32 @@
         grid-template-columns: 1fr;
       }
       .detail-panel {
-        position: static;
+        display: none;
+      }
+      .mobile-detail {
+        display: block;
+        grid-column: 1 / -1;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: rgba(24, 21, 27, .86);
+        padding: 12px;
+      }
+      .exercise-card.expanded .expanded-video {
+        display: none;
+      }
+    }
+
+    @media (min-width: 901px) {
+      .admin-flow {
+        grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
+      }
+      .admin-step.login-step,
+      .admin-step.routine-list-step {
+        align-self: start;
+      }
+      .detail-panel {
+        position: sticky;
+        top: 16px;
       }
     }
 
@@ -766,6 +879,7 @@
       .editor-grid,
       .admin-row,
       .admin-step,
+      .admin-summary,
       .log-grid,
       .round-actions {
         grid-template-columns: 1fr;
@@ -791,13 +905,30 @@
 
     <section class="panel admin-tools admin-only">
       <div class="panel-head">
-        <h2>Panel de profesora</h2>
+        <div>
+          <div class="panel-kicker">Administracion privada</div>
+          <h2>Panel de profesora</h2>
+        </div>
       </div>
       <div class="panel-body">
         <div class="notice" id="remoteStatus">Entrar con el usuario de profesora para editar rutinas online.</div>
+        <div class="admin-summary requires-auth">
+          <div class="summary-card">
+            <span>Rutina activa</span>
+            <strong id="activeRoutineName">Sin rutina seleccionada</strong>
+          </div>
+          <div class="summary-card">
+            <span>Contenido</span>
+            <strong id="adminContentSummary">0 ejercicios</strong>
+          </div>
+          <div class="summary-card">
+            <span>Guardado</span>
+            <strong id="adminSaveState">Sin cambios</strong>
+          </div>
+        </div>
 
         <div class="admin-flow">
-          <section class="admin-step">
+          <section class="admin-step login-step">
             <div class="step-badge">1</div>
             <div class="step-content">
               <div class="step-title">
@@ -824,8 +955,22 @@
             </div>
           </section>
 
-          <section class="admin-step requires-auth">
+          <section class="admin-step requires-auth routine-list-step">
             <div class="step-badge">2</div>
+            <div class="step-content">
+              <div class="step-title">
+                <h3>Rutinas</h3>
+                <span>Alumnos cargados</span>
+              </div>
+              <div class="admin-actions">
+                <button class="btn primary" id="newRoutineBtn">Crear nueva rutina</button>
+              </div>
+              <div class="routine-list" id="routineList"></div>
+            </div>
+          </section>
+
+          <section class="admin-step requires-auth">
+            <div class="step-badge">3</div>
             <div class="step-content">
               <div class="step-title">
                 <h3>Rutina del alumno</h3>
@@ -842,17 +987,14 @@
                 </div>
                 <div class="field">
                   <label for="routineSlug">Codigo link</label>
-                  <input id="routineSlug" type="text" placeholder="sabrina">
+                  <input id="routineSlug" type="text" placeholder="alumno-a8f3k2">
                 </div>
-              </div>
-              <div class="admin-actions">
-                <button class="btn" id="newRoutineBtn">Crear nueva rutina</button>
               </div>
             </div>
           </section>
 
           <section class="admin-step requires-auth">
-            <div class="step-badge">3</div>
+            <div class="step-badge">4</div>
             <div class="step-content">
               <div class="step-title">
                 <h3>Ejercicios</h3>
@@ -871,8 +1013,8 @@
             </div>
           </section>
 
-          <section class="admin-step requires-auth">
-            <div class="step-badge">4</div>
+          <section class="admin-step requires-auth wide">
+            <div class="step-badge">5</div>
             <div class="step-content">
               <div class="step-title">
                 <h3>Link para enviar</h3>
@@ -885,11 +1027,10 @@
               <div class="admin-actions">
                 <button class="btn primary" id="copyLinkBtn">Copiar link</button>
               </div>
-              <div class="routine-list" id="routineList"></div>
             </div>
           </section>
 
-          <section class="admin-step requires-auth">
+          <section class="admin-step requires-auth compact wide">
             <div class="step-badge">+</div>
             <div class="step-content">
               <div class="step-title">
@@ -917,7 +1058,7 @@
       <aside class="panel detail-panel">
         <div class="panel-head">
           <h2 id="detailHead">Ejercicio</h2>
-          <button class="btn" id="finishBtn">Finalizar rutina</button>
+          <button class="btn" id="finishBtn">Reiniciar progreso</button>
         </div>
         <div class="panel-body" id="detail"></div>
       </aside>
@@ -973,9 +1114,14 @@
           </div>
         </div>
         <div class="modal-actions">
-          <button class="btn warning" id="deleteBtn">Eliminar</button>
-          <button class="btn" id="newBtn">Agregar como nuevo</button>
-          <button class="btn primary" id="saveBtn">Guardar</button>
+          <div class="danger-zone">
+            <button class="btn warning" id="deleteBtn">Eliminar</button>
+            <button class="btn" id="newBtn">Duplicar</button>
+          </div>
+          <div class="primary-zone">
+            <button class="btn" id="cancelEditorBtn">Cancelar</button>
+            <button class="btn primary" id="saveBtn">Guardar</button>
+          </div>
         </div>
       </div>
     </div>
@@ -989,7 +1135,7 @@
     const SUPABASE_ANON_KEY = window.REBECA_CONFIG?.SUPABASE_ANON_KEY || "";
     const MUSIC_SOURCE = "./assets/audio/jamaican-bam-bam.mp3";
     const DEFAULT_TOTAL_ROUNDS = 4;
-    const APP_VERSION = "17";
+    const APP_VERSION = "18";
     const params = new URLSearchParams(window.location.search);
     const isAdmin = params.get("admin") === "1";
     const routineParam = params.get("rutina") || "";
@@ -1144,6 +1290,9 @@
       remoteStatus: document.getElementById("remoteStatus"),
       routineList: document.getElementById("routineList"),
       adminExerciseSummary: document.getElementById("adminExerciseSummary"),
+      activeRoutineName: document.getElementById("activeRoutineName"),
+      adminContentSummary: document.getElementById("adminContentSummary"),
+      adminSaveState: document.getElementById("adminSaveState"),
       finishBtn: document.getElementById("finishBtn"),
       editorModal: document.getElementById("editorModal"),
       importFile: document.getElementById("importFile")
@@ -1200,6 +1349,7 @@
     function scheduleAutoSave() {
       if (!isAdmin || !remoteReady || !authSession?.access_token) return;
       clearTimeout(autoSaveTimer);
+      setSaveState("Guardando...");
       setRemoteStatus("Guardando cambios...");
       autoSaveTimer = setTimeout(() => saveOnlineRoutine({ silent: true }), 900);
     }
@@ -1239,6 +1389,10 @@
       els.clientLink.value = value ? url.toString() : "";
     }
 
+    function currentRoutineTitle() {
+      return activeDay()?.title || els.routineTitle?.value || "Rutina";
+    }
+
     function roundCount(id) {
       return Math.min(routineRounds(), Math.max(0, Number(state.rounds?.[id]) || 0));
     }
@@ -1265,6 +1419,15 @@
       const index = day.exercises.findIndex(item => item.id === id);
       if (index === -1 || !day.exercises.length) return id;
       return day.exercises[(index + 1) % day.exercises.length].id;
+    }
+
+    function scrollSelectedIntoView() {
+      requestAnimationFrame(() => {
+        document.querySelector(".exercise-card.active")?.scrollIntoView({
+          behavior: "smooth",
+          block: window.innerWidth <= 900 ? "start" : "nearest"
+        });
+      });
     }
 
     function render() {
@@ -1302,7 +1465,7 @@
       els.stats.innerHTML = [
         ["Completados", `${completed}/${day.exercises.length}`],
         ["Rondas", `${circuitRounds}/${routineRounds()}`],
-        ["Faltan", pendingExerciseRounds]
+        ["Pasos pendientes", pendingExerciseRounds]
       ].map(([label, value]) => `
         <div class="stat"><span>${label}</span><strong>${value}</strong></div>
       `).join("");
@@ -1319,6 +1482,7 @@
         `;
         return;
       }
+      const showInlineDetail = window.innerWidth <= 900;
       els.list.innerHTML = day.exercises.map((item, index) => `
         <article class="exercise-card ${item.id === state.selected ? "active" : ""} ${state.expanded === item.id ? "expanded" : ""}" data-select="${item.id}">
           ${renderVideo(item, "thumb", false)}
@@ -1338,7 +1502,10 @@
             <button class="check ${isComplete(item.id) ? "done" : ""}" data-round-add="${item.id}">${isComplete(item.id) ? "OK" : `${roundCount(item.id)}/${routineRounds()}`}</button>
           </div>
         </article>
+        ${showInlineDetail && item.id === state.selected ? `<div class="mobile-detail" data-mobile-detail="${escapeAttr(item.id)}">${renderExerciseDetail(item, `mobile-${item.id}`)}</div>` : ""}
       `).join("");
+      const mobileItem = selectedExercise();
+      if (showInlineDetail && mobileItem) bindDetailEvents(mobileItem, `mobile-${mobileItem.id}`);
     }
 
     function renderDetail() {
@@ -1355,8 +1522,14 @@
         return;
       }
       els.detailHead.textContent = activeDay().title;
+      els.detail.innerHTML = renderExerciseDetail(item, "side");
+      bindDetailEvents(item, "side");
+    }
+
+    function renderExerciseDetail(item, suffix) {
       const rounds = roundCount(item.id);
-      els.detail.innerHTML = `
+      return `
+        <div class="detail-shell" id="detailShell-${escapeAttr(suffix)}">
         ${renderVideo(item, "video-frame", true)}
         <h3 class="detail-title">${escapeHtml(item.name)}</h3>
         <div class="meta">
@@ -1367,9 +1540,9 @@
         </div>
 
         <section class="panel timer" style="margin-top:16px;">
-          <div class="panel-head"><h2>Descanso</h2><button class="btn" id="timerStopBtn">Listo</button></div>
+          <div class="panel-head"><h2>Descanso</h2><button class="btn" id="timerStopBtn-${escapeAttr(suffix)}">Listo</button></div>
           <div class="panel-body">
-            <div class="timer-display" id="timerDisplay">${formatClock(timer.left)}</div>
+            <div class="timer-display" data-timer-display>${formatClock(timer.left)}</div>
             <div class="timer-buttons">
               <button class="btn" data-quick="45">45 s</button>
               <button class="btn" data-quick="60">60 s</button>
@@ -1386,17 +1559,17 @@
             `).join("")}
           </div>
           <div class="round-actions">
-            <button class="btn" id="minusRoundBtn">Restar</button>
-            <button class="btn primary" id="addRoundBtn">${isComplete(item.id) ? "Completado" : "Marcar ronda"}</button>
-            <button class="btn warning" id="resetRoundBtn">Reiniciar</button>
+            <button class="btn" id="minusRoundBtn-${escapeAttr(suffix)}">Restar</button>
+            <button class="btn primary" id="addRoundBtn-${escapeAttr(suffix)}">${isComplete(item.id) ? "Completado" : "Marcar ronda"}</button>
+            <button class="btn warning" id="resetRoundBtn-${escapeAttr(suffix)}">Reiniciar</button>
           </div>
           <div class="session" style="margin-top:10px;">
             <span>${isComplete(item.id) ? "Ejercicio completado" : "Pendiente"}</span>
             <strong>${rounds}/${routineRounds()}</strong>
           </div>
         </section>
+        </div>
       `;
-      bindDetailEvents(item);
     }
 
     function renderVideo(item, className, controls) {
@@ -1425,25 +1598,28 @@
       `;
     }
 
-    function bindDetailEvents(item) {
-      document.querySelectorAll("[data-quick]").forEach(btn => {
+    function bindDetailEvents(item, suffix) {
+      const root = document.getElementById(`detailShell-${suffix}`);
+      if (!root) return;
+      root.querySelectorAll("[data-quick]").forEach(btn => {
         btn.addEventListener("click", () => startTimer(Number(btn.dataset.quick)));
       });
-      document.getElementById("timerStopBtn").addEventListener("click", stopTimer);
-      document.querySelectorAll("[data-fullscreen-video]").forEach(video => {
+      document.getElementById(`timerStopBtn-${suffix}`)?.addEventListener("click", () => stopTimer());
+      root.querySelectorAll("[data-fullscreen-video]").forEach(video => {
         video.addEventListener("click", () => openFullscreenVideo(video));
       });
-      document.getElementById("addRoundBtn").addEventListener("click", () => {
+      document.getElementById(`addRoundBtn-${suffix}`)?.addEventListener("click", () => {
         addRound(item.id);
         state.selected = nextExerciseId(item.id);
         state.expanded = "";
         render();
+        scrollSelectedIntoView();
       });
-      document.getElementById("minusRoundBtn").addEventListener("click", () => {
+      document.getElementById(`minusRoundBtn-${suffix}`)?.addEventListener("click", () => {
         subtractRound(item.id);
         render();
       });
-      document.getElementById("resetRoundBtn").addEventListener("click", () => {
+      document.getElementById(`resetRoundBtn-${suffix}`)?.addEventListener("click", () => {
         setRoundCount(item.id, 0);
         render();
       });
@@ -1477,8 +1653,9 @@
     }
 
     function tickTimer() {
-      const display = document.getElementById("timerDisplay");
-      if (display) display.textContent = formatClock(timer.left);
+      document.querySelectorAll("[data-timer-display]").forEach(display => {
+        display.textContent = formatClock(timer.left);
+      });
     }
 
     function updateMusicButton() {
@@ -1531,6 +1708,7 @@
         state.selected = nextExerciseId(roundAdd.dataset.roundAdd);
         state.expanded = "";
         render();
+        scrollSelectedIntoView();
         return;
       }
       if (edit) {
@@ -1564,6 +1742,7 @@
       if (isAdmin) openEditor("");
     });
     document.getElementById("closeEditorBtn").addEventListener("click", closeEditor);
+    document.getElementById("cancelEditorBtn").addEventListener("click", closeEditor);
     document.getElementById("saveBtn").addEventListener("click", saveEditor);
     document.getElementById("newBtn").addEventListener("click", addNewExercise);
     document.getElementById("deleteBtn").addEventListener("click", deleteExercise);
@@ -1810,7 +1989,7 @@
         applyRoutineRecord(routine);
         setRemoteStatus("Rutina online cargada.");
       } catch (error) {
-        setRemoteStatus(error.message);
+        setRemoteStatus(friendlyError(error));
       }
     }
 
@@ -1851,7 +2030,7 @@
         await loadAdminRoutines();
         setRemoteStatus("Profesora conectada.");
       } catch (error) {
-        setRemoteStatus(error.message);
+        setRemoteStatus(friendlyError(error));
       }
     }
 
@@ -1864,14 +2043,14 @@
         });
         renderRoutineList(rows || []);
       } catch (error) {
-        setRemoteStatus(error.message);
+        setRemoteStatus(friendlyError(error));
       }
     }
 
     function renderRoutineList(rows) {
       if (!els.routineList) return;
       els.routineList.innerHTML = rows.length ? rows.map(row => `
-        <div class="routine-item">
+        <div class="routine-item ${row.id === remoteRoutineId ? "active" : ""}">
           <div>
             <strong>${escapeHtml(row.title)}</strong>
             <span>${escapeHtml(row.client_name || row.slug)}</span>
@@ -1928,15 +2107,17 @@
         remoteRoutineId = saved?.id || remoteRoutineId;
         if (!silent) updateRoutineFields(saved || body);
         await loadAdminRoutines();
+        setSaveState("Guardado");
         setRemoteStatus(silent ? "Cambios guardados automaticamente." : "Rutina guardada online. Link listo para enviar.");
       } catch (error) {
-        setRemoteStatus(error.message);
+        setSaveState("Error al guardar");
+        setRemoteStatus(friendlyError(error));
       }
     }
 
     async function deleteOnlineRoutine(id, title) {
       if (!remoteReady || !authSession?.access_token || !id) return;
-      const ok = confirm(`Eliminar la rutina "${title || "sin titulo"}"?`);
+      const ok = confirm(`Vas a eliminar la rutina "${title || "sin titulo"}". Esta accion no se puede deshacer. Confirmas?`);
       if (!ok) return;
       try {
         setRemoteStatus("Eliminando rutina...");
@@ -1958,11 +2139,12 @@
         await loadAdminRoutines();
         setRemoteStatus("Rutina eliminada.");
       } catch (error) {
-        setRemoteStatus(error.message);
+        setRemoteStatus(friendlyError(error));
       }
     }
 
     function newOnlineRoutine() {
+      const slug = createPrivateSlug("alumno");
       remoteRoutineId = "";
       state.routine = emptyRoutine("NUEVA RUTINA");
       state.activeDay = "d1";
@@ -1971,7 +2153,7 @@
       state.rounds = {};
       state.totalRounds = DEFAULT_TOTAL_ROUNDS;
       state.view = "routine";
-      updateRoutineFields({ title: "NUEVA RUTINA", client_name: "", slug: "" });
+      updateRoutineFields({ title: "NUEVA RUTINA", client_name: "", slug });
       render();
       setRemoteStatus("Rutina vacia creada. Completa los datos y se guardara automaticamente.");
     }
@@ -1987,14 +2169,30 @@
       if (els.remoteStatus) els.remoteStatus.textContent = message;
     }
 
+    function setSaveState(message) {
+      if (els.adminSaveState) els.adminSaveState.textContent = message;
+    }
+
+    function friendlyError(error) {
+      const raw = String(error?.message || error || "");
+      if (/invalid login|invalid_credentials|email/i.test(raw)) return "No se pudo entrar. Revisa el email y la clave.";
+      if (/duplicate|unique|slug/i.test(raw)) return "Ese codigo de link ya existe. Cambialo por otro y proba de nuevo.";
+      if (/failed to fetch|network|load failed/i.test(raw)) return "No se pudo conectar. Revisa internet e intenta otra vez.";
+      if (/jwt|token|session|expired/i.test(raw)) return "La sesion vencio. Volve a entrar con la profesora.";
+      return "No se pudo completar la accion. Intenta de nuevo.";
+    }
+
     function updateRemoteStatus() {
       if (!isAdmin) return;
       document.body.classList.toggle("admin-authenticated", Boolean(authSession?.access_token));
       if (!remoteReady) {
+        setSaveState("Sin conexion");
         setRemoteStatus("Modo local. Falta pegar SUPABASE_URL y SUPABASE_ANON_KEY en config.js.");
       } else if (authSession?.access_token) {
+        setSaveState("Guardado");
         setRemoteStatus("Sesion iniciada. Crea o abre una rutina; los cambios se guardan automaticamente.");
       } else {
+        setSaveState("Privado");
         setRemoteStatus("Entrar con el usuario de profesora para editar rutinas online.");
       }
     }
@@ -2004,6 +2202,12 @@
       const total = allExercises().length;
       if (els.adminExerciseSummary) {
         els.adminExerciseSummary.textContent = `${total} ${total === 1 ? "ejercicio" : "ejercicios"} cargados`;
+      }
+      if (els.activeRoutineName) {
+        els.activeRoutineName.textContent = currentRoutineTitle();
+      }
+      if (els.adminContentSummary) {
+        els.adminContentSummary.textContent = `${total} ${total === 1 ? "ejercicio" : "ejercicios"} - ${routineRounds()} ${routineRounds() === 1 ? "ronda" : "rondas"}`;
       }
       if (els.editorBtn) {
         els.editorBtn.disabled = total === 0;
@@ -2020,6 +2224,20 @@
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/^-+|-+$/g, "")
         .slice(0, 48) || `rutina-${Date.now()}`;
+    }
+
+    function randomToken() {
+      const bytes = new Uint8Array(4);
+      if (window.crypto?.getRandomValues) {
+        window.crypto.getRandomValues(bytes);
+        return Array.from(bytes, value => value.toString(36).padStart(2, "0")).join("").slice(0, 8);
+      }
+      return Math.random().toString(36).slice(2, 10);
+    }
+
+    function createPrivateSlug(base) {
+      const clean = slugify(base || "alumno").slice(0, 24).replace(/-+$/g, "") || "alumno";
+      return `${clean}-${randomToken()}`;
     }
 
     function drivePreviewUrl(url) {
