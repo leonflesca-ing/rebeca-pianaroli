@@ -1,7 +1,8 @@
-const CACHE_NAME = "rebeca-pianaroli-v9";
+const CACHE_NAME = "rebeca-pianaroli-v10";
 const APP_SHELL = [
   "./",
   "./index.html",
+  "./config.js",
   "./manifest.webmanifest",
   "./icon.svg",
   "./assets/logo.jpg",

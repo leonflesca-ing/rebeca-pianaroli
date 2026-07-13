@@ -820,9 +820,10 @@
 
   <input class="file-actions" id="importFile" type="file" accept="application/json">
 
+  <script src="./config.js"></script>
   <script>
-    const SUPABASE_URL = "";
-    const SUPABASE_ANON_KEY = "";
+    const SUPABASE_URL = window.REBECA_CONFIG?.SUPABASE_URL || "";
+    const SUPABASE_ANON_KEY = window.REBECA_CONFIG?.SUPABASE_ANON_KEY || "";
     const MUSIC_SOURCE = "./assets/audio/jamaican-bam-bam.mp3";
     const TOTAL_ROUNDS = 4;
     const params = new URLSearchParams(window.location.search);
@@ -1687,7 +1688,7 @@
     function updateRemoteStatus() {
       if (!isAdmin) return;
       if (!remoteReady) {
-        setRemoteStatus("Modo local. Configura Supabase para sincronizar rutinas y generar links online.");
+        setRemoteStatus("Modo local. Falta pegar SUPABASE_URL y SUPABASE_ANON_KEY en config.js.");
       } else if (authSession?.access_token) {
         setRemoteStatus("Profesora conectada. Los cambios se pueden guardar online.");
       } else {
