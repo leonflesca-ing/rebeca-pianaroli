@@ -165,6 +165,14 @@
       animation: dashboardIn .36s ease both;
     }
 
+    body.admin.admin-authenticated .topbar {
+      display: none;
+    }
+
+    body.admin.admin-authenticated .admin-tools {
+      margin-top: 0;
+    }
+
     .admin-login-screen {
       min-height: 100dvh;
       place-items: center;
@@ -1276,7 +1284,7 @@
     const SUPABASE_ANON_KEY = window.REBECA_CONFIG?.SUPABASE_ANON_KEY || "";
     const MUSIC_SOURCE = "./assets/audio/jamaican-bam-bam.mp3";
     const DEFAULT_TOTAL_ROUNDS = 4;
-    const APP_VERSION = "19";
+    const APP_VERSION = "20";
     const params = new URLSearchParams(window.location.search);
     const isAdmin = params.get("admin") === "1";
     const routineParam = params.get("rutina") || "";
@@ -1568,6 +1576,17 @@
         document.querySelector(".exercise-card.active")?.scrollIntoView({
           behavior: "smooth",
           block: window.innerWidth <= 900 ? "start" : "nearest"
+        });
+      });
+    }
+
+    function focusAdminPanel() {
+      if (!isAdmin) return;
+      requestAnimationFrame(() => {
+        window.scrollTo({ top: 0, behavior: "auto" });
+        document.querySelector(".admin-tools")?.scrollIntoView({
+          behavior: "auto",
+          block: "start"
         });
       });
     }
@@ -2185,6 +2204,7 @@
         saveAuthSession(session);
         document.body.classList.remove("admin-login-exiting");
         await loadAdminRoutines();
+        focusAdminPanel();
         setRemoteStatus("Profesora conectada.");
       } catch (error) {
         document.body.classList.remove("admin-login-exiting");
@@ -2464,7 +2484,10 @@
     }
     updateRemoteStatus();
     if (routineParam && !isAdmin) loadRemoteRoutine(routineParam);
-    if (isAdmin && authSession?.access_token) loadAdminRoutines();
+    if (isAdmin && authSession?.access_token) {
+      loadAdminRoutines();
+      focusAdminPanel();
+    }
 
     if ("serviceWorker" in navigator && location.protocol !== "file:") {
       navigator.serviceWorker.register("./sw.js").catch(() => {});
