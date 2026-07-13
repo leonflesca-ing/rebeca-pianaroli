@@ -131,12 +131,6 @@
       color: var(--warn);
     }
 
-    .btn.music-on {
-      background: linear-gradient(135deg, var(--pink), var(--pink-2));
-      border-color: transparent;
-      color: var(--white);
-    }
-
     .admin-only {
       display: none !important;
     }
@@ -542,6 +536,43 @@
       color: var(--muted);
       font-weight: 800;
       font-size: .82rem;
+    }
+
+    .music-card {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 0 0 14px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, .035);
+    }
+
+    .music-card.ready {
+      display: flex;
+    }
+
+    .music-card.open {
+      display: grid;
+      grid-template-columns: 1fr auto;
+    }
+
+    .music-card h2 {
+      margin: 0;
+      font-size: 1rem;
+      line-height: 1;
+    }
+
+    .spotify-frame {
+      grid-column: 1 / -1;
+      width: 100%;
+      height: 152px;
+      border: 0;
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: var(--black);
     }
 
     .exercise-main p {
@@ -1004,6 +1035,9 @@
       .stats {
         grid-template-columns: repeat(2, minmax(0, 1fr));
       }
+      .music-card.open {
+        grid-template-columns: 1fr;
+      }
       .exercise-card {
         grid-template-columns: 92px minmax(0, 1fr);
       }
@@ -1073,9 +1107,6 @@
         <h1>Rebeca Pianaroli</h1>
         <p>Personal Trainer</p>
       </div>
-      <div class="actions">
-        <button class="btn" id="musicBtn" type="button">Musica</button>
-      </div>
     </header>
 
     <section class="panel admin-tools admin-only">
@@ -1138,6 +1169,10 @@
                   <label for="routineSlug">Codigo link</label>
                   <input id="routineSlug" type="text" placeholder="alumno-a8f3k2">
                 </div>
+                <div class="field">
+                  <label for="musicUrl">Spotify</label>
+                  <input id="musicUrl" type="url" inputmode="url" placeholder="https://open.spotify.com/playlist/...">
+                </div>
               </div>
             </div>
           </section>
@@ -1196,6 +1231,8 @@
       </div>
     </section>
 
+    <section class="music-card" id="musicCard"></section>
+
     <section class="layout">
       <div>
         <div class="tabs" id="tabs"></div>
@@ -1213,8 +1250,6 @@
       </aside>
     </section>
   </main>
-
-  <audio id="musicPlayer" src="./assets/audio/jamaican-bam-bam.mp3" preload="auto" loop></audio>
 
   <div class="modal" id="editorModal">
     <div class="modal-card">
@@ -1282,9 +1317,8 @@
   <script>
     const SUPABASE_URL = window.REBECA_CONFIG?.SUPABASE_URL || "";
     const SUPABASE_ANON_KEY = window.REBECA_CONFIG?.SUPABASE_ANON_KEY || "";
-    const MUSIC_SOURCE = "./assets/audio/jamaican-bam-bam.mp3";
     const DEFAULT_TOTAL_ROUNDS = 4;
-    const APP_VERSION = "20";
+    const APP_VERSION = "21";
     const params = new URLSearchParams(window.location.search);
     const isAdmin = params.get("admin") === "1";
     const routineParam = params.get("rutina") || "";
@@ -1292,7 +1326,6 @@
     const remoteReady = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
     const authStorageKey = "rebecaTrainerAuth";
     document.body.classList.toggle("admin", isAdmin);
-    if (isAdmin) document.getElementById("musicBtn").textContent = "Administracion";
     const starterRoutine = [
       day("d1", "RUTINA SABRINA", "", [
         exercise(
@@ -1418,8 +1451,7 @@
       list: document.getElementById("exerciseList"),
       detail: document.getElementById("detail"),
       detailHead: document.getElementById("detailHead"),
-      musicBtn: document.getElementById("musicBtn"),
-      musicPlayer: document.getElementById("musicPlayer"),
+      musicCard: document.getElementById("musicCard"),
       exportBtn: document.getElementById("exportBtn"),
       importBtn: document.getElementById("importBtn"),
       editorBtn: document.getElementById("editorBtn"),
@@ -1435,6 +1467,7 @@
       clientName: document.getElementById("clientName"),
       routineRounds: document.getElementById("routineRounds"),
       routineSlug: document.getElementById("routineSlug"),
+      musicUrl: document.getElementById("musicUrl"),
       clientLink: document.getElementById("clientLink"),
       remoteStatus: document.getElementById("remoteStatus"),
       adminLoginStatus: document.getElementById("adminLoginStatus"),
@@ -1478,6 +1511,8 @@
           stored.rounds = stored.rounds || {};
           stored.view = stored.view || "routine";
           stored.totalRounds = normalizeRounds(stored.totalRounds);
+          stored.musicUrl = spotifyEmbedUrl(stored.musicUrl) ? stored.musicUrl : "";
+          stored.musicOpen = Boolean(stored.musicOpen);
           return stored;
         }
       } catch {}
@@ -1488,6 +1523,8 @@
         expanded: "",
         rounds: {},
         totalRounds: DEFAULT_TOTAL_ROUNDS,
+        musicUrl: "",
+        musicOpen: false,
         view: "routine"
       };
     }
@@ -1526,6 +1563,7 @@
       if (els.clientName) els.clientName.value = client;
       if (els.routineRounds) els.routineRounds.value = routineRounds();
       if (els.routineSlug) els.routineSlug.value = slug;
+      if (els.musicUrl) els.musicUrl.value = state.musicUrl || "";
       updateClientLink(slug);
     }
 
@@ -1599,6 +1637,7 @@
 
       renderTabs();
       renderStats();
+      renderMusic();
       renderList();
       renderDetail();
       updateAdminUi();
@@ -1630,6 +1669,22 @@
       ].map(([label, value]) => `
         <div class="stat"><span>${label}</span><strong>${value}</strong></div>
       `).join("");
+    }
+
+    function renderMusic() {
+      if (!els.musicCard) return;
+      const embedUrl = spotifyEmbedUrl(state.musicUrl);
+      if (isAdmin || !embedUrl) {
+        els.musicCard.className = "music-card";
+        els.musicCard.innerHTML = "";
+        return;
+      }
+      els.musicCard.className = `music-card ready ${state.musicOpen ? "open" : ""}`;
+      els.musicCard.innerHTML = `
+        <h2>Musica</h2>
+        <button class="btn primary" type="button" data-music-play>${state.musicOpen ? "Cerrar" : "Play"}</button>
+        ${state.musicOpen ? `<iframe class="spotify-frame" src="${escapeAttr(embedUrl)}" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>` : ""}
+      `;
     }
 
     function renderList() {
@@ -1819,32 +1874,6 @@
       });
     }
 
-    function updateMusicButton() {
-      if (isAdmin) {
-        els.musicBtn.textContent = "Administracion";
-        els.musicBtn.classList.remove("music-on");
-        return;
-      }
-      const playing = !els.musicPlayer.paused;
-      els.musicBtn.textContent = playing ? "Pausar musica" : "Musica";
-      els.musicBtn.classList.toggle("music-on", playing);
-    }
-
-    async function toggleMusic() {
-      if (els.musicPlayer.paused) {
-        try {
-          if (!els.musicPlayer.currentSrc) els.musicPlayer.src = MUSIC_SOURCE;
-          if (els.musicPlayer.readyState === 0) els.musicPlayer.load();
-          await els.musicPlayer.play();
-        } catch {
-          alert("Toca de nuevo el boton Musica para iniciar el audio.");
-        }
-      } else {
-        els.musicPlayer.pause();
-      }
-      updateMusicButton();
-    }
-
     els.tabs.addEventListener("click", event => {
       const btn = event.target.closest("[data-day]");
       if (!btn) return;
@@ -1917,17 +1946,12 @@
       render();
     });
 
-    els.musicBtn.addEventListener("click", () => {
-      if (isAdmin) {
-        const target = authSession?.access_token ? ".admin-tools" : ".admin-login-screen";
-        document.querySelector(target)?.scrollIntoView({ behavior: "smooth", block: "start" });
-        return;
-      }
-      toggleMusic();
+    els.musicCard?.addEventListener("click", event => {
+      if (!event.target.closest("[data-music-play]")) return;
+      state.musicOpen = !state.musicOpen;
+      renderMusic();
+      saveState();
     });
-    els.musicPlayer.addEventListener("play", updateMusicButton);
-    els.musicPlayer.addEventListener("pause", updateMusicButton);
-    els.musicPlayer.addEventListener("ended", updateMusicButton);
 
     els.exportBtn.addEventListener("click", () => {
       const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
@@ -1951,6 +1975,8 @@
           Object.assign(state, imported);
           state.rounds = state.rounds || {};
           state.totalRounds = normalizeRounds(state.totalRounds);
+          state.musicUrl = spotifyEmbedUrl(state.musicUrl) ? state.musicUrl : "";
+          state.musicOpen = false;
           state.view = "routine";
           render();
           scheduleAutoSave();
@@ -2001,6 +2027,13 @@
       state.totalRounds = normalizeRounds(els.routineRounds.value);
       Object.keys(state.rounds || {}).forEach(id => setRoundCount(id, roundCount(id)));
       render();
+      scheduleAutoSave();
+    });
+    els.musicUrl?.addEventListener("input", () => {
+      state.musicUrl = els.musicUrl.value.trim();
+      state.musicOpen = false;
+      renderMusic();
+      saveState();
       scheduleAutoSave();
     });
     els.routineList?.addEventListener("click", async event => {
@@ -2169,6 +2202,8 @@
       const data = record.data || {};
       state.routine = data.routine?.length ? data.routine : structuredClone(starterRoutine);
       state.totalRounds = normalizeRounds(data.totalRounds);
+      state.musicUrl = spotifyEmbedUrl(data.musicUrl) ? data.musicUrl : "";
+      state.musicOpen = false;
       state.activeDay = state.routine[0]?.id || "d1";
       state.selected = state.routine[0]?.exercises?.[0]?.id || "";
       state.expanded = "";
@@ -2245,7 +2280,7 @@
       return {
         routine: state.routine,
         totalRounds: routineRounds(),
-        musicUrl: MUSIC_SOURCE
+        musicUrl: state.musicUrl || ""
       };
     }
 
@@ -2311,6 +2346,8 @@
           state.expanded = "";
           state.rounds = {};
           state.totalRounds = DEFAULT_TOTAL_ROUNDS;
+          state.musicUrl = "";
+          state.musicOpen = false;
           updateRoutineFields({ title: "NUEVA RUTINA", client_name: "", slug: "" });
           render();
         }
@@ -2330,6 +2367,8 @@
       state.expanded = "";
       state.rounds = {};
       state.totalRounds = DEFAULT_TOTAL_ROUNDS;
+      state.musicUrl = "";
+      state.musicOpen = false;
       state.view = "routine";
       updateRoutineFields({ title: "NUEVA RUTINA", client_name: "", slug });
       render();
@@ -2423,6 +2462,30 @@
       const text = String(url || "");
       const match = text.match(/drive\.google\.com\/file\/d\/([^/]+)/) || text.match(/[?&]id=([^&]+)/);
       return match ? `https://drive.google.com/file/d/${match[1]}/preview` : "";
+    }
+
+    function spotifyParts(value) {
+      const text = String(value || "").trim();
+      const uriMatch = text.match(/^spotify:(track|playlist|album|episode|show|artist):([A-Za-z0-9]+)$/i);
+      if (uriMatch) return { type: uriMatch[1].toLowerCase(), id: uriMatch[2] };
+      try {
+        const url = new URL(text);
+        if (!/spotify\.com$/i.test(url.hostname) && !/\.spotify\.com$/i.test(url.hostname)) return null;
+        const parts = url.pathname.split("/").filter(Boolean);
+        const offset = parts[0] === "embed" ? 1 : 0;
+        const type = parts[offset];
+        const id = parts[offset + 1];
+        const allowed = ["track", "playlist", "album", "episode", "show", "artist"];
+        if (!allowed.includes(type) || !id) return null;
+        return { type, id };
+      } catch {
+        return null;
+      }
+    }
+
+    function spotifyEmbedUrl(value) {
+      const parts = spotifyParts(value);
+      return parts ? `https://open.spotify.com/embed/${parts.type}/${encodeURIComponent(parts.id)}?utm_source=generator&theme=0` : "";
     }
 
     function findExerciseLocation(id) {

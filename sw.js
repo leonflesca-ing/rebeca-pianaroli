@@ -1,12 +1,11 @@
-const CACHE_NAME = "rebeca-pianaroli-v20";
+const CACHE_NAME = "rebeca-pianaroli-v21";
 const APP_SHELL = [
   "./",
   "./index.html",
   "./config.js",
   "./manifest.webmanifest",
   "./icon.svg",
-  "./assets/logo.jpg",
-  "./assets/audio/jamaican-bam-bam.mp3"
+  "./assets/logo.jpg"
 ];
 
 self.addEventListener("install", event => {
