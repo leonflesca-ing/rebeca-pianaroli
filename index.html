@@ -145,6 +145,159 @@
       display: revert !important;
     }
 
+    .admin-login-screen.admin-only {
+      display: none !important;
+    }
+
+    body.admin:not(.admin-authenticated) .admin-login-screen.admin-only {
+      display: grid !important;
+    }
+
+    body.admin:not(.admin-authenticated) .app {
+      display: none;
+    }
+
+    body.admin:not(.admin-authenticated) .admin-tools.admin-only {
+      display: none !important;
+    }
+
+    body.admin.admin-authenticated .app {
+      animation: dashboardIn .36s ease both;
+    }
+
+    .admin-login-screen {
+      min-height: 100dvh;
+      place-items: center;
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 18% 22%, rgba(236, 0, 121, .34), transparent 28%),
+        radial-gradient(circle at 82% 18%, rgba(255, 78, 168, .24), transparent 30%),
+        linear-gradient(135deg, #050406 0%, #111014 46%, #2a1020 100%);
+    }
+
+    .admin-login-screen::before,
+    .admin-login-screen::after {
+      content: "";
+      position: absolute;
+      inset: -18%;
+      pointer-events: none;
+    }
+
+    .admin-login-screen::before {
+      background:
+        linear-gradient(115deg, transparent 0 26%, rgba(236, 0, 121, .14) 34%, transparent 48% 100%),
+        linear-gradient(245deg, transparent 0 42%, rgba(255, 78, 168, .12) 54%, transparent 66% 100%);
+      animation: loginGlow 9s ease-in-out infinite alternate;
+    }
+
+    .admin-login-screen::after {
+      background-image:
+        linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px);
+      background-size: 54px 54px;
+      -webkit-mask-image: radial-gradient(circle at center, black, transparent 72%);
+      mask-image: radial-gradient(circle at center, black, transparent 72%);
+      opacity: .42;
+    }
+
+    .admin-login-card {
+      position: relative;
+      z-index: 1;
+      width: min(430px, 100%);
+      border: 1px solid rgba(255, 255, 255, .14);
+      border-radius: 14px;
+      padding: 24px;
+      background: rgba(17, 16, 20, .76);
+      box-shadow: 0 24px 80px rgba(0, 0, 0, .52);
+      -webkit-backdrop-filter: blur(18px);
+      backdrop-filter: blur(18px);
+      display: grid;
+      gap: 18px;
+      animation: loginCardIn .42s ease both;
+    }
+
+    body.admin-login-exiting .admin-login-card {
+      animation: loginCardOut .28s ease both;
+    }
+
+    .admin-login-brand {
+      display: grid;
+      justify-items: center;
+      text-align: center;
+      gap: 10px;
+    }
+
+    .admin-login-logo {
+      width: 110px;
+      aspect-ratio: 1;
+      border-radius: 50%;
+      overflow: hidden;
+      background: var(--white);
+      border: 1px solid rgba(255, 255, 255, .2);
+      box-shadow: 0 18px 48px rgba(236, 0, 121, .32);
+    }
+
+    .admin-login-logo img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+    }
+
+    .admin-login-brand h1 {
+      margin: 0;
+      font-size: clamp(1.9rem, 7vw, 2.75rem);
+      line-height: .94;
+      text-transform: uppercase;
+      letter-spacing: 0;
+    }
+
+    .admin-login-brand p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.45;
+      max-width: 310px;
+    }
+
+    .admin-login-form {
+      display: grid;
+      gap: 12px;
+    }
+
+    .admin-login-form .btn.primary {
+      min-height: 48px;
+      font-size: 1rem;
+    }
+
+    .login-status {
+      min-height: 22px;
+      color: var(--muted);
+      font-size: .9rem;
+      line-height: 1.35;
+      text-align: center;
+    }
+
+    @keyframes loginGlow {
+      0% { transform: translate3d(-2%, -1%, 0) rotate(0deg); opacity: .72; }
+      100% { transform: translate3d(3%, 2%, 0) rotate(4deg); opacity: 1; }
+    }
+
+    @keyframes loginCardIn {
+      from { opacity: 0; transform: translateY(18px) scale(.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    @keyframes loginCardOut {
+      from { opacity: 1; transform: translateY(0) scale(1); }
+      to { opacity: 0; transform: translateY(-12px) scale(.985); }
+    }
+
+    @keyframes dashboardIn {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
     .layout {
       display: grid;
       grid-template-columns: minmax(0, 1fr) 390px;
@@ -696,18 +849,6 @@
       font-weight: 800;
     }
 
-    .auth-ready {
-      display: none;
-    }
-
-    body.admin-authenticated .auth-pending {
-      display: none;
-    }
-
-    body.admin-authenticated .auth-ready {
-      display: block;
-    }
-
     .admin-row {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -773,7 +914,7 @@
       display: none;
     }
 
-    body.admin::before {
+    body.admin.admin-authenticated::before {
       content: "MODO PROFESORA";
       position: fixed;
       right: 14px;
@@ -832,7 +973,6 @@
       .admin-flow {
         grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
       }
-      .admin-step.login-step,
       .admin-step.routine-list-step {
         align-self: start;
       }
@@ -891,6 +1031,33 @@
   </style>
 </head>
 <body>
+  <section class="admin-login-screen admin-only" aria-label="Acceso profesora">
+    <div class="admin-login-card">
+      <div class="admin-login-brand">
+        <div class="admin-login-logo"><img src="./assets/logo.jpg" alt="Rebeca Pianaroli"></div>
+        <div>
+          <h1>Acceso profesora</h1>
+          <p>Gestiona rutinas, alumnos y links privados.</p>
+        </div>
+      </div>
+      <div class="admin-login-form">
+        <div class="field">
+          <label for="adminEmail">Email profesora</label>
+          <input id="adminEmail" type="email" autocomplete="off" autocapitalize="none" spellcheck="false">
+        </div>
+        <div class="field">
+          <label for="adminPassword">Clave</label>
+          <div class="password-control">
+            <input id="adminPassword" type="password" autocomplete="new-password" autocapitalize="none" spellcheck="false">
+            <button class="btn" id="togglePasswordBtn" type="button">Ver</button>
+          </div>
+        </div>
+        <button class="btn primary" id="loginBtn">Entrar al panel</button>
+        <div class="login-status" id="adminLoginStatus">Acceso privado para administracion.</div>
+      </div>
+    </div>
+  </section>
+
   <main class="app">
     <header class="topbar">
       <div class="brand-mark"><img src="./assets/logo.jpg" alt="Rebeca Pianaroli"></div>
@@ -909,6 +1076,7 @@
           <div class="panel-kicker">Administracion privada</div>
           <h2>Panel de profesora</h2>
         </div>
+        <button class="btn warning" id="logoutBtn">Salir</button>
       </div>
       <div class="panel-body">
         <div class="notice" id="remoteStatus">Entrar con el usuario de profesora para editar rutinas online.</div>
@@ -928,35 +1096,8 @@
         </div>
 
         <div class="admin-flow">
-          <section class="admin-step login-step">
-            <div class="step-badge">1</div>
-            <div class="step-content">
-              <div class="step-title">
-                <h3>Entrar</h3>
-                <span class="auth-ready">Sesion iniciada</span>
-              </div>
-              <div class="admin-row auth-pending">
-                <div class="field">
-                  <label for="adminEmail">Email profesora</label>
-                  <input id="adminEmail" type="email" autocomplete="off" autocapitalize="none" spellcheck="false">
-                </div>
-                <div class="field">
-                  <label for="adminPassword">Clave</label>
-                  <div class="password-control">
-                    <input id="adminPassword" type="password" autocomplete="new-password" autocapitalize="none" spellcheck="false">
-                    <button class="btn" id="togglePasswordBtn" type="button">Ver</button>
-                  </div>
-                </div>
-                <button class="btn primary" id="loginBtn">Entrar</button>
-              </div>
-              <div class="admin-actions auth-ready">
-                <button class="btn warning" id="logoutBtn">Salir</button>
-              </div>
-            </div>
-          </section>
-
           <section class="admin-step requires-auth routine-list-step">
-            <div class="step-badge">2</div>
+            <div class="step-badge">1</div>
             <div class="step-content">
               <div class="step-title">
                 <h3>Rutinas</h3>
@@ -970,7 +1111,7 @@
           </section>
 
           <section class="admin-step requires-auth">
-            <div class="step-badge">3</div>
+            <div class="step-badge">2</div>
             <div class="step-content">
               <div class="step-title">
                 <h3>Rutina del alumno</h3>
@@ -994,7 +1135,7 @@
           </section>
 
           <section class="admin-step requires-auth">
-            <div class="step-badge">4</div>
+            <div class="step-badge">3</div>
             <div class="step-content">
               <div class="step-title">
                 <h3>Ejercicios</h3>
@@ -1014,7 +1155,7 @@
           </section>
 
           <section class="admin-step requires-auth wide">
-            <div class="step-badge">5</div>
+            <div class="step-badge">4</div>
             <div class="step-content">
               <div class="step-title">
                 <h3>Link para enviar</h3>
@@ -1135,7 +1276,7 @@
     const SUPABASE_ANON_KEY = window.REBECA_CONFIG?.SUPABASE_ANON_KEY || "";
     const MUSIC_SOURCE = "./assets/audio/jamaican-bam-bam.mp3";
     const DEFAULT_TOTAL_ROUNDS = 4;
-    const APP_VERSION = "18";
+    const APP_VERSION = "19";
     const params = new URLSearchParams(window.location.search);
     const isAdmin = params.get("admin") === "1";
     const routineParam = params.get("rutina") || "";
@@ -1288,6 +1429,7 @@
       routineSlug: document.getElementById("routineSlug"),
       clientLink: document.getElementById("clientLink"),
       remoteStatus: document.getElementById("remoteStatus"),
+      adminLoginStatus: document.getElementById("adminLoginStatus"),
       routineList: document.getElementById("routineList"),
       adminExerciseSummary: document.getElementById("adminExerciseSummary"),
       activeRoutineName: document.getElementById("activeRoutineName"),
@@ -1758,7 +1900,8 @@
 
     els.musicBtn.addEventListener("click", () => {
       if (isAdmin) {
-        document.querySelector(".admin-tools")?.scrollIntoView({ behavior: "smooth", block: "start" });
+        const target = authSession?.access_token ? ".admin-tools" : ".admin-login-screen";
+        document.querySelector(target)?.scrollIntoView({ behavior: "smooth", block: "start" });
         return;
       }
       toggleMusic();
@@ -1801,6 +1944,11 @@
     });
 
     els.loginBtn?.addEventListener("click", adminLogin);
+    [els.adminEmail, els.adminPassword].forEach(input => {
+      input?.addEventListener("keydown", event => {
+        if (event.key === "Enter") adminLogin();
+      });
+    });
     els.togglePasswordBtn?.addEventListener("click", () => {
       const visible = els.adminPassword.type === "text";
       els.adminPassword.type = visible ? "password" : "text";
@@ -1809,6 +1957,7 @@
     els.logoutBtn?.addEventListener("click", () => {
       saveAuthSession(null);
       renderRoutineList([]);
+      setRemoteStatus("Acceso privado para administracion.");
     });
     els.newRoutineBtn?.addEventListener("click", newOnlineRoutine);
     els.copyLinkBtn?.addEventListener("click", copyClientLink);
@@ -1948,6 +2097,10 @@
         localStorage.removeItem(authStorageKey);
       }
       updateRemoteStatus();
+      if (session && isAdmin) {
+        render();
+        updateRoutineFields();
+      }
     }
 
     function supabaseHeaders(authenticated = false) {
@@ -2025,11 +2178,16 @@
             password: els.adminPassword.value
           })
         });
-        saveAuthSession(session);
+        setRemoteStatus("Acceso correcto.");
+        document.body.classList.add("admin-login-exiting");
         els.adminPassword.value = "";
+        await new Promise(resolve => setTimeout(resolve, 260));
+        saveAuthSession(session);
+        document.body.classList.remove("admin-login-exiting");
         await loadAdminRoutines();
         setRemoteStatus("Profesora conectada.");
       } catch (error) {
+        document.body.classList.remove("admin-login-exiting");
         setRemoteStatus(friendlyError(error));
       }
     }
@@ -2167,6 +2325,7 @@
 
     function setRemoteStatus(message) {
       if (els.remoteStatus) els.remoteStatus.textContent = message;
+      if (els.adminLoginStatus) els.adminLoginStatus.textContent = message;
     }
 
     function setSaveState(message) {
@@ -2193,7 +2352,7 @@
         setRemoteStatus("Sesion iniciada. Crea o abre una rutina; los cambios se guardan automaticamente.");
       } else {
         setSaveState("Privado");
-        setRemoteStatus("Entrar con el usuario de profesora para editar rutinas online.");
+        setRemoteStatus("Acceso privado para administracion.");
       }
     }
 
@@ -2298,10 +2457,13 @@
       return escapeHtml(text).replace(/`/g, "&#096;");
     }
 
-    render();
+    const canRenderApp = !isAdmin || Boolean(authSession?.access_token);
+    if (canRenderApp) {
+      render();
+      updateRoutineFields();
+    }
     updateRemoteStatus();
-    updateRoutineFields();
-    if (routineParam) loadRemoteRoutine(routineParam);
+    if (routineParam && !isAdmin) loadRemoteRoutine(routineParam);
     if (isAdmin && authSession?.access_token) loadAdminRoutines();
 
     if ("serviceWorker" in navigator && location.protocol !== "file:") {
