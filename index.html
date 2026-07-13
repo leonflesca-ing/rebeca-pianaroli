@@ -137,6 +137,14 @@
       color: var(--white);
     }
 
+    .admin-only {
+      display: none !important;
+    }
+
+    body.admin .admin-only {
+      display: revert !important;
+    }
+
     .layout {
       display: grid;
       grid-template-columns: minmax(0, 1fr) 390px;
@@ -270,6 +278,10 @@
       background: rgba(236, 0, 121, .12);
     }
 
+    .exercise-card.expanded {
+      align-items: start;
+    }
+
     .thumb, .video-frame {
       position: relative;
       aspect-ratio: 9 / 12;
@@ -292,6 +304,12 @@
     .video-frame {
       aspect-ratio: 9 / 13;
       margin-bottom: 14px;
+    }
+
+    .expanded-video {
+      grid-column: 1 / -1;
+      aspect-ratio: 9 / 14;
+      max-height: min(76dvh, 760px);
     }
 
     .placeholder {
@@ -536,6 +554,17 @@
       display: none;
     }
 
+    .admin-tools {
+      margin-top: 18px;
+    }
+
+    .admin-tools .panel-body {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
     @media (max-width: 900px) {
       .app { padding: 14px; }
       .topbar {
@@ -572,10 +601,19 @@
       .exercise-card {
         grid-template-columns: 92px minmax(0, 1fr);
       }
+      .exercise-card.expanded {
+        grid-template-columns: 1fr;
+      }
+      .exercise-card.expanded .thumb {
+        display: none;
+      }
       .card-actions {
         grid-column: 1 / -1;
-        grid-template-columns: 1fr 1fr auto;
+        grid-template-columns: 1fr auto;
         width: 100%;
+      }
+      body.admin .card-actions {
+        grid-template-columns: 1fr 1fr auto;
       }
       .check {
         margin: 0;
@@ -601,10 +639,6 @@
       </div>
       <div class="actions">
         <button class="btn" id="musicBtn" type="button">Musica</button>
-        <button class="btn" id="historyBtn">Historial</button>
-        <button class="btn" id="exportBtn">Exportar</button>
-        <button class="btn" id="importBtn">Importar</button>
-        <button class="btn primary" id="editorBtn">Editar rutina</button>
       </div>
     </header>
 
@@ -623,6 +657,18 @@
         </div>
         <div class="panel-body" id="detail"></div>
       </aside>
+    </section>
+
+    <section class="panel admin-tools admin-only">
+      <div class="panel-head">
+        <h2>Administracion</h2>
+      </div>
+      <div class="panel-body">
+        <button class="btn" id="historyBtn">Historial</button>
+        <button class="btn primary" id="editorBtn">Editar rutina</button>
+        <button class="btn" id="exportBtn">Exportar</button>
+        <button class="btn" id="importBtn">Importar</button>
+      </div>
     </section>
   </main>
 
@@ -686,11 +732,14 @@
   <input class="file-actions" id="importFile" type="file" accept="application/json">
 
   <script>
-    const storageKey = "rebecaTrainerApp:v6";
+    const storageKey = "rebecaTrainerApp:v8";
     const MUSIC_SOURCE = "./assets/audio/jamaican-bam-bam.mp3";
     const TOTAL_ROUNDS = 4;
+    const params = new URLSearchParams(window.location.search);
+    const isAdmin = params.get("admin") === "1";
+    document.body.classList.toggle("admin", isAdmin);
     const starterRoutine = [
-      day("d1", "RUTINA SABRINA", "Ejercicios cargados", [
+      day("d1", "RUTINA SABRINA", "", [
         exercise(
           "d1-1",
           "Elevacion de rodillas con mancuernas",
@@ -699,7 +748,7 @@
           60,
           "Piernas, core",
           "./assets/videos-web/elevacion-de-rodillas-con-mancuernas-x20.mp4",
-          "Video silencioso optimizado para celular."
+          ""
         ),
         exercise(
           "d1-2",
@@ -709,7 +758,7 @@
           60,
           "Piernas, core",
           "./assets/videos-web/elevacion-con-piernas-extendidas-y-mancuernas-x20.mp4",
-          "Video silencioso optimizado para celular."
+          ""
         ),
         exercise(
           "d1-3",
@@ -719,7 +768,7 @@
           60,
           "Piernas, core",
           "./assets/videos-web/elevacion-unilateral-de-rodilla-x10.mp4",
-          "Video silencioso optimizado para celular."
+          ""
         ),
         exercise(
           "d1-4",
@@ -729,7 +778,7 @@
           60,
           "Piernas, core",
           "./assets/videos-web/elevacion-unilateral-de-pierna-extendida-x10.mp4",
-          "Video silencioso optimizado para celular."
+          ""
         ),
         exercise(
           "d1-5",
@@ -739,7 +788,7 @@
           60,
           "Core",
           "./assets/videos-web/plancha-con-apertura-y-cierre-de-piernas-x20.mp4",
-          "Video silencioso optimizado para celular."
+          ""
         ),
         exercise(
           "d1-6",
@@ -749,7 +798,7 @@
           60,
           "Full body",
           "./assets/videos-web/extension-alterada-de-brazo-y-pierna-con-mancuerna-x20.mp4",
-          "Video silencioso optimizado para celular."
+          ""
         ),
         exercise(
           "d1-7",
@@ -759,7 +808,7 @@
           60,
           "Piernas, hombros",
           "./assets/videos-web/sentadilla-con-press-de-hombros-x12.mp4",
-          "Video silencioso optimizado para celular."
+          ""
         ),
         exercise(
           "d1-8",
@@ -769,7 +818,7 @@
           60,
           "Piernas",
           "./assets/videos-web/estocada-lateral-con-mancuerna-x20.mp4",
-          "Video silencioso optimizado para celular."
+          ""
         ),
         exercise(
           "d1-9",
@@ -779,7 +828,7 @@
           60,
           "Gluteos, hombros",
           "./assets/videos-web/flexion-de-pierna-hacia-atras-con-press-de-hombro-x8-cada-lado.mp4",
-          "Video silencioso optimizado para celular."
+          ""
         ),
         exercise(
           "d1-10",
@@ -789,7 +838,7 @@
           60,
           "Core",
           "./assets/videos-web/plancha-x30seg.mp4",
-          "Video silencioso optimizado para celular."
+          ""
         ),
         exercise(
           "d1-11",
@@ -799,7 +848,7 @@
           60,
           "Core",
           "./assets/videos-web/bird-dog-x10-cada-lado.mp4",
-          "Video silencioso optimizado para celular."
+          ""
         )
       ])
     ];
@@ -847,6 +896,7 @@
         routine: structuredClone(starterRoutine),
         activeDay: "d1",
         selected: "d1-1",
+        expanded: "",
         rounds: {},
         sessions: [],
         view: "routine"
@@ -890,6 +940,13 @@
       setRoundCount(id, roundCount(id) - 1);
     }
 
+    function nextExerciseId(id) {
+      const day = activeDay();
+      const index = day.exercises.findIndex(item => item.id === id);
+      if (index === -1 || !day.exercises.length) return id;
+      return day.exercises[(index + 1) % day.exercises.length].id;
+    }
+
     function render() {
       const day = activeDay();
       if (!day.exercises.some(item => item.id === state.selected)) {
@@ -911,7 +968,6 @@
       els.tabs.innerHTML = state.routine.map(group => `
         <button class="tab ${state.view === "routine" && group.id === state.activeDay ? "active" : ""}" data-day="${group.id}">
           <strong>${escapeHtml(group.title)}</strong>
-          <span>${escapeHtml(group.subtitle)}</span>
         </button>
       `).join("");
     }
@@ -938,7 +994,7 @@
     function renderList() {
       const day = activeDay();
       els.list.innerHTML = day.exercises.map((item, index) => `
-        <article class="exercise-card ${item.id === state.selected ? "active" : ""}" data-select="${item.id}">
+        <article class="exercise-card ${item.id === state.selected ? "active" : ""} ${state.expanded === item.id ? "expanded" : ""}" data-select="${item.id}">
           ${renderVideo(item, "thumb", false)}
           <div class="exercise-main">
             <h3>${index + 1}. ${escapeHtml(item.name)}</h3>
@@ -948,11 +1004,11 @@
               <span class="pill">Ronda ${roundCount(item.id)}/${TOTAL_ROUNDS}</span>
               <span class="pill">${escapeHtml(item.category || "General")}</span>
             </div>
-            <p>${escapeHtml(item.notes || "Video pendiente de cargar.")}</p>
           </div>
+          ${state.expanded === item.id ? renderVideo(item, "expanded-video video-frame", true) : ""}
           <div class="card-actions">
             <button class="btn" data-rest="${item.rest}">Descanso</button>
-            <button class="btn" data-edit="${item.id}">Editar</button>
+            ${isAdmin ? `<button class="btn admin-only" data-edit="${item.id}">Editar</button>` : ""}
             <button class="check ${isComplete(item.id) ? "done" : ""}" data-round-add="${item.id}">${isComplete(item.id) ? "OK" : `${roundCount(item.id)}/${TOTAL_ROUNDS}`}</button>
           </div>
         </article>
@@ -977,7 +1033,6 @@
           <span class="pill">${formatRest(item.rest)}</span>
           <span class="pill">${rounds}/${TOTAL_ROUNDS} rondas</span>
         </div>
-        <p>${escapeHtml(item.notes || "Cuando tengas el video, cargalo desde Editar rutina.")}</p>
 
         <section class="panel timer" style="margin-top:16px;">
           <div class="panel-head"><h2>Descanso</h2><button class="btn" id="timerStopBtn">Listo</button></div>
@@ -1069,6 +1124,8 @@
       });
       document.getElementById("addRoundBtn").addEventListener("click", () => {
         addRound(item.id);
+        state.selected = nextExerciseId(item.id);
+        state.expanded = "";
         render();
       });
       document.getElementById("minusRoundBtn").addEventListener("click", () => {
@@ -1150,10 +1207,13 @@
       const card = event.target.closest("[data-select]");
       if (roundAdd) {
         addRound(roundAdd.dataset.roundAdd);
+        state.selected = nextExerciseId(roundAdd.dataset.roundAdd);
+        state.expanded = "";
         render();
         return;
       }
       if (edit) {
+        if (!isAdmin) return;
         openEditor(edit.dataset.edit);
         return;
       }
@@ -1163,11 +1223,22 @@
       }
       if (card) {
         state.selected = card.dataset.select;
+        state.expanded = card.dataset.select;
         render();
       }
     });
 
-    els.editorBtn.addEventListener("click", () => openEditor(selectedExercise()?.id));
+    els.list.addEventListener("dblclick", event => {
+      const card = event.target.closest("[data-select]");
+      if (!card) return;
+      state.selected = card.dataset.select;
+      state.expanded = state.expanded === card.dataset.select ? "" : card.dataset.select;
+      render();
+    });
+
+    els.editorBtn.addEventListener("click", () => {
+      if (isAdmin) openEditor(selectedExercise()?.id);
+    });
     document.getElementById("closeEditorBtn").addEventListener("click", closeEditor);
     document.getElementById("saveBtn").addEventListener("click", saveEditor);
     document.getElementById("newBtn").addEventListener("click", addNewExercise);
