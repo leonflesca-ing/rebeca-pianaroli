@@ -651,7 +651,7 @@
 
     .admin-row {
       display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
       gap: 8px;
       align-items: end;
     }
@@ -841,13 +841,17 @@
                   <input id="clientName" type="text" placeholder="Sabrina">
                 </div>
                 <div class="field">
+                  <label for="routineRounds">Rondas</label>
+                  <input id="routineRounds" type="number" min="1" max="20" step="1" inputmode="numeric">
+                </div>
+                <div class="field">
                   <label for="routineSlug">Codigo link</label>
                   <input id="routineSlug" type="text" placeholder="sabrina">
                 </div>
                 <button class="btn primary" id="saveOnlineBtn">Guardar rutina</button>
               </div>
               <div class="admin-actions">
-                <button class="btn" id="newRoutineBtn">Crear rutina vacia</button>
+                <button class="btn" id="newRoutineBtn">Crear nueva rutina</button>
               </div>
             </div>
           </section>
@@ -983,8 +987,8 @@
     const SUPABASE_URL = window.REBECA_CONFIG?.SUPABASE_URL || "";
     const SUPABASE_ANON_KEY = window.REBECA_CONFIG?.SUPABASE_ANON_KEY || "";
     const MUSIC_SOURCE = "./assets/audio/jamaican-bam-bam.mp3";
-    const TOTAL_ROUNDS = 4;
-    const APP_VERSION = "15";
+    const DEFAULT_TOTAL_ROUNDS = 4;
+    const APP_VERSION = "16";
     const params = new URLSearchParams(window.location.search);
     const isAdmin = params.get("admin") === "1";
     const routineParam = params.get("rutina") || "";
@@ -1134,6 +1138,7 @@
       adminPassword: document.getElementById("adminPassword"),
       routineTitle: document.getElementById("routineTitle"),
       clientName: document.getElementById("clientName"),
+      routineRounds: document.getElementById("routineRounds"),
       routineSlug: document.getElementById("routineSlug"),
       clientLink: document.getElementById("clientLink"),
       remoteStatus: document.getElementById("remoteStatus"),
@@ -1158,12 +1163,21 @@
       return [day("d1", title, "", [])];
     }
 
+    function normalizeRounds(value) {
+      return Math.min(20, Math.max(1, Number(value) || DEFAULT_TOTAL_ROUNDS));
+    }
+
+    function routineRounds() {
+      return normalizeRounds(state.totalRounds);
+    }
+
     function loadState() {
       try {
         const stored = JSON.parse(localStorage.getItem(storageKey));
         if (stored?.routine?.length) {
           stored.rounds = stored.rounds || {};
           stored.view = stored.view || "routine";
+          stored.totalRounds = normalizeRounds(stored.totalRounds);
           return stored;
         }
       } catch {}
@@ -1173,6 +1187,7 @@
         selected: "d1-1",
         expanded: "",
         rounds: {},
+        totalRounds: DEFAULT_TOTAL_ROUNDS,
         view: "routine"
       };
     }
@@ -1201,6 +1216,7 @@
       const slug = hasSlug ? meta.slug : routineParam || slugify(client || title);
       if (els.routineTitle) els.routineTitle.value = title;
       if (els.clientName) els.clientName.value = client;
+      if (els.routineRounds) els.routineRounds.value = routineRounds();
       if (els.routineSlug) els.routineSlug.value = slug;
       updateClientLink(slug);
     }
@@ -1216,16 +1232,16 @@
     }
 
     function roundCount(id) {
-      return Math.min(TOTAL_ROUNDS, Math.max(0, Number(state.rounds?.[id]) || 0));
+      return Math.min(routineRounds(), Math.max(0, Number(state.rounds?.[id]) || 0));
     }
 
     function isComplete(id) {
-      return roundCount(id) >= TOTAL_ROUNDS;
+      return roundCount(id) >= routineRounds();
     }
 
     function setRoundCount(id, value) {
       state.rounds = state.rounds || {};
-      state.rounds[id] = Math.min(TOTAL_ROUNDS, Math.max(0, Number(value) || 0));
+      state.rounds[id] = Math.min(routineRounds(), Math.max(0, Number(value) || 0));
     }
 
     function addRound(id) {
@@ -1261,6 +1277,7 @@
       els.tabs.innerHTML = state.routine.map(group => `
         <button class="tab ${state.view === "routine" && group.id === state.activeDay ? "active" : ""}" data-day="${group.id}">
           <strong>${escapeHtml(group.title)}</strong>
+          <span>Completados ${group.exercises.filter(item => isComplete(item.id)).length}/${group.exercises.length} ejercicios</span>
         </button>
       `).join("");
     }
@@ -1269,16 +1286,15 @@
       const day = activeDay();
       const completed = day.exercises.filter(item => isComplete(item.id)).length;
       const doneRounds = day.exercises.reduce((sum, item) => sum + roundCount(item.id), 0);
-      const totalRounds = day.exercises.length * TOTAL_ROUNDS;
-      const videos = day.exercises.filter(item => item.video).length;
-      const pendingRounds = Math.max(0, totalRounds - doneRounds);
-      const pct = totalRounds ? Math.round((doneRounds / totalRounds) * 100) : 0;
+      const totalExerciseRounds = day.exercises.length * routineRounds();
+      const circuitRounds = day.exercises.length ? Math.min(...day.exercises.map(item => roundCount(item.id))) : 0;
+      const pendingExercises = Math.max(0, day.exercises.length - completed);
+      const pct = totalExerciseRounds ? Math.round((doneRounds / totalExerciseRounds) * 100) : 0;
       els.progress.style.width = pct + "%";
       els.stats.innerHTML = [
         ["Completados", `${completed}/${day.exercises.length}`],
-        ["Rondas", `${doneRounds}/${totalRounds}`],
-        ["Videos", `${videos}/${day.exercises.length}`],
-        ["Faltan", pendingRounds]
+        ["Rondas", `${circuitRounds}/${routineRounds()}`],
+        ["Faltan", pendingExercises]
       ].map(([label, value]) => `
         <div class="stat"><span>${label}</span><strong>${value}</strong></div>
       `).join("");
@@ -1303,7 +1319,7 @@
             <div class="meta">
               <span class="pill">${escapeHtml(item.sets)} x ${escapeHtml(item.reps)}</span>
               <span class="pill">${formatRest(item.rest)}</span>
-              <span class="pill">Ronda ${roundCount(item.id)}/${TOTAL_ROUNDS}</span>
+              <span class="pill">Ronda ${roundCount(item.id)}/${routineRounds()}</span>
               <span class="pill">${escapeHtml(item.category || "General")}</span>
             </div>
           </div>
@@ -1311,7 +1327,7 @@
           <div class="card-actions">
             <button class="btn" data-rest="${item.rest}">Descanso</button>
             ${isAdmin ? `<button class="btn admin-only" data-edit="${item.id}">Editar</button>` : ""}
-            <button class="check ${isComplete(item.id) ? "done" : ""}" data-round-add="${item.id}">${isComplete(item.id) ? "OK" : `${roundCount(item.id)}/${TOTAL_ROUNDS}`}</button>
+            <button class="check ${isComplete(item.id) ? "done" : ""}" data-round-add="${item.id}">${isComplete(item.id) ? "OK" : `${roundCount(item.id)}/${routineRounds()}`}</button>
           </div>
         </article>
       `).join("");
@@ -1339,7 +1355,7 @@
           <span class="pill">${escapeHtml(item.sets)} series</span>
           <span class="pill">${escapeHtml(item.reps)} reps</span>
           <span class="pill">${formatRest(item.rest)}</span>
-          <span class="pill">${rounds}/${TOTAL_ROUNDS} rondas</span>
+          <span class="pill">${rounds}/${routineRounds()} rondas</span>
         </div>
 
         <section class="panel timer" style="margin-top:16px;">
@@ -1357,7 +1373,7 @@
         <section style="margin-top:16px;">
           <h3 style="margin:0 0 10px;">Rondas</h3>
           <div class="round-progress">
-            ${Array.from({ length: TOTAL_ROUNDS }, (_, index) => `
+            ${Array.from({ length: routineRounds() }, (_, index) => `
               <div class="round-dot ${index < rounds ? "done" : ""}">${index + 1}</div>
             `).join("")}
           </div>
@@ -1368,7 +1384,7 @@
           </div>
           <div class="session" style="margin-top:10px;">
             <span>${isComplete(item.id) ? "Ejercicio completado" : "Pendiente"}</span>
-            <strong>${rounds}/${TOTAL_ROUNDS}</strong>
+            <strong>${rounds}/${routineRounds()}</strong>
           </div>
         </section>
       `;
@@ -1585,6 +1601,7 @@
           if (!imported?.routine?.length) throw new Error("Archivo invalido");
           Object.assign(state, imported);
           state.rounds = state.rounds || {};
+          state.totalRounds = normalizeRounds(state.totalRounds);
           state.view = "routine";
           render();
         } catch {
@@ -1615,6 +1632,11 @@
         els.routineSlug.value = slug;
         updateClientLink(slug);
       }
+    });
+    els.routineRounds?.addEventListener("input", () => {
+      state.totalRounds = normalizeRounds(els.routineRounds.value);
+      Object.keys(state.rounds || {}).forEach(id => setRoundCount(id, roundCount(id)));
+      render();
     });
     els.routineList?.addEventListener("click", async event => {
       const deleteBtn = event.target.closest("[data-delete-routine]");
@@ -1774,6 +1796,7 @@
     function applyRoutineRecord(record) {
       const data = record.data || {};
       state.routine = data.routine?.length ? data.routine : structuredClone(starterRoutine);
+      state.totalRounds = normalizeRounds(data.totalRounds);
       state.activeDay = state.routine[0]?.id || "d1";
       state.selected = state.routine[0]?.exercises?.[0]?.id || "";
       state.expanded = "";
@@ -1843,7 +1866,7 @@
     function routinePayload() {
       return {
         routine: state.routine,
-        totalRounds: TOTAL_ROUNDS,
+        totalRounds: routineRounds(),
         musicUrl: MUSIC_SOURCE
       };
     }
@@ -1906,6 +1929,7 @@
           state.selected = "";
           state.expanded = "";
           state.rounds = {};
+          state.totalRounds = DEFAULT_TOTAL_ROUNDS;
           updateRoutineFields({ title: "NUEVA RUTINA", client_name: "", slug: "" });
           render();
         }
@@ -1923,6 +1947,7 @@
       state.selected = "";
       state.expanded = "";
       state.rounds = {};
+      state.totalRounds = DEFAULT_TOTAL_ROUNDS;
       state.view = "routine";
       updateRoutineFields({ title: "NUEVA RUTINA", client_name: "", slug: "" });
       render();
