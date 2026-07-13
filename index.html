@@ -489,6 +489,17 @@
       resize: vertical;
     }
 
+    .password-control {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .password-control input {
+      min-width: 0;
+    }
+
     input:focus, select:focus, textarea:focus {
       border-color: var(--pink);
       box-shadow: 0 0 0 3px rgba(236, 0, 121, .16);
@@ -767,23 +778,6 @@
       </div>
     </header>
 
-    <section class="layout">
-      <div>
-        <div class="tabs" id="tabs"></div>
-        <div class="stats" id="stats"></div>
-        <div class="progress"><span id="progress"></span></div>
-        <div class="exercise-list" id="exerciseList"></div>
-      </div>
-
-      <aside class="panel detail-panel">
-        <div class="panel-head">
-          <h2 id="detailHead">Ejercicio</h2>
-          <button class="btn" id="finishBtn">Finalizar rutina</button>
-        </div>
-        <div class="panel-body" id="detail"></div>
-      </aside>
-    </section>
-
     <section class="panel admin-tools admin-only">
       <div class="panel-head">
         <h2>Panel de profesora</h2>
@@ -802,11 +796,14 @@
               <div class="admin-row auth-pending">
                 <div class="field">
                   <label for="adminEmail">Email profesora</label>
-                  <input id="adminEmail" type="email" autocomplete="email" placeholder="rebecapianaroli@gmail.com">
+                  <input id="adminEmail" type="email" autocomplete="off" autocapitalize="none" spellcheck="false">
                 </div>
                 <div class="field">
                   <label for="adminPassword">Clave</label>
-                  <input id="adminPassword" type="password" autocomplete="current-password">
+                  <div class="password-control">
+                    <input id="adminPassword" type="password" autocomplete="new-password" autocapitalize="none" spellcheck="false">
+                    <button class="btn" id="togglePasswordBtn" type="button">Ver</button>
+                  </div>
                 </div>
                 <button class="btn primary" id="loginBtn">Entrar</button>
               </div>
@@ -892,6 +889,23 @@
         </div>
       </div>
     </section>
+
+    <section class="layout">
+      <div>
+        <div class="tabs" id="tabs"></div>
+        <div class="stats" id="stats"></div>
+        <div class="progress"><span id="progress"></span></div>
+        <div class="exercise-list" id="exerciseList"></div>
+      </div>
+
+      <aside class="panel detail-panel">
+        <div class="panel-head">
+          <h2 id="detailHead">Ejercicio</h2>
+          <button class="btn" id="finishBtn">Finalizar rutina</button>
+        </div>
+        <div class="panel-body" id="detail"></div>
+      </aside>
+    </section>
   </main>
 
   <audio id="musicPlayer" src="./assets/audio/jamaican-bam-bam.mp3" preload="auto" loop></audio>
@@ -959,7 +973,7 @@
     const SUPABASE_ANON_KEY = window.REBECA_CONFIG?.SUPABASE_ANON_KEY || "";
     const MUSIC_SOURCE = "./assets/audio/jamaican-bam-bam.mp3";
     const TOTAL_ROUNDS = 4;
-    const APP_VERSION = "12";
+    const APP_VERSION = "13";
     const params = new URLSearchParams(window.location.search);
     const isAdmin = params.get("admin") === "1";
     const routineParam = params.get("rutina") || "";
@@ -1100,6 +1114,7 @@
       addExerciseBtn: document.getElementById("addExerciseBtn"),
       loginBtn: document.getElementById("loginBtn"),
       logoutBtn: document.getElementById("logoutBtn"),
+      togglePasswordBtn: document.getElementById("togglePasswordBtn"),
       saveOnlineBtn: document.getElementById("saveOnlineBtn"),
       newRoutineBtn: document.getElementById("newRoutineBtn"),
       copyLinkBtn: document.getElementById("copyLinkBtn"),
@@ -1558,6 +1573,11 @@
     });
 
     els.loginBtn?.addEventListener("click", adminLogin);
+    els.togglePasswordBtn?.addEventListener("click", () => {
+      const visible = els.adminPassword.type === "text";
+      els.adminPassword.type = visible ? "password" : "text";
+      els.togglePasswordBtn.textContent = visible ? "Ver" : "Ocultar";
+    });
     els.logoutBtn?.addEventListener("click", () => {
       saveAuthSession(null);
       renderRoutineList([]);
