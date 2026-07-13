@@ -690,6 +690,13 @@
       padding: 10px;
     }
 
+    .routine-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
     .routine-item span {
       color: var(--muted);
       font-size: .86rem;
@@ -821,7 +828,7 @@
             <div class="step-badge">2</div>
             <div class="step-content">
               <div class="step-title">
-                <h3>Rutina del cliente</h3>
+                <h3>Rutina del alumno</h3>
                 <span>Crear, abrir o guardar</span>
               </div>
               <div class="admin-row">
@@ -830,14 +837,14 @@
                   <input id="routineTitle" type="text" placeholder="Rutina Sabrina">
                 </div>
                 <div class="field">
-                  <label for="clientName">Nombre clienta</label>
+                  <label for="clientName">Nombre alumno</label>
                   <input id="clientName" type="text" placeholder="Sabrina">
                 </div>
                 <div class="field">
                   <label for="routineSlug">Codigo link</label>
                   <input id="routineSlug" type="text" placeholder="sabrina">
                 </div>
-                <button class="btn primary" id="saveOnlineBtn">Guardar online</button>
+                <button class="btn primary" id="saveOnlineBtn">Guardar rutina</button>
               </div>
               <div class="admin-actions">
                 <button class="btn" id="newRoutineBtn">Crear rutina vacia</button>
@@ -867,7 +874,7 @@
                 <span>Solo ve esta rutina</span>
               </div>
               <div class="field">
-                <label for="clientLink">Link para clienta</label>
+                <label for="clientLink">Link para alumno</label>
                 <input id="clientLink" type="text" readonly>
               </div>
               <div class="admin-actions">
@@ -977,7 +984,7 @@
     const SUPABASE_ANON_KEY = window.REBECA_CONFIG?.SUPABASE_ANON_KEY || "";
     const MUSIC_SOURCE = "./assets/audio/jamaican-bam-bam.mp3";
     const TOTAL_ROUNDS = 4;
-    const APP_VERSION = "14";
+    const APP_VERSION = "15";
     const params = new URLSearchParams(window.location.search);
     const isAdmin = params.get("admin") === "1";
     const routineParam = params.get("rutina") || "";
@@ -1610,9 +1617,15 @@
       }
     });
     els.routineList?.addEventListener("click", async event => {
-      const btn = event.target.closest("[data-load-routine]");
-      if (!btn) return;
-      await loadRemoteRoutine(btn.dataset.loadRoutine);
+      const deleteBtn = event.target.closest("[data-delete-routine]");
+      const loadBtn = event.target.closest("[data-load-routine]");
+      if (deleteBtn) {
+        await deleteOnlineRoutine(deleteBtn.dataset.deleteRoutine, deleteBtn.dataset.deleteTitle);
+        return;
+      }
+      if (loadBtn) {
+        await loadRemoteRoutine(loadBtn.dataset.loadRoutine);
+      }
     });
 
     function openEditor(id) {
@@ -1819,7 +1832,10 @@
             <strong>${escapeHtml(row.title)}</strong>
             <span>${escapeHtml(row.client_name || row.slug)}</span>
           </div>
-          <button class="btn" data-load-routine="${escapeAttr(row.slug)}">Abrir</button>
+          <div class="routine-actions">
+            <button class="btn" data-load-routine="${escapeAttr(row.slug)}">Abrir</button>
+            <button class="btn warning" data-delete-routine="${escapeAttr(row.id)}" data-delete-title="${escapeAttr(row.title)}">Eliminar</button>
+          </div>
         </div>
       `).join("") : `<div class="notice">Todavia no hay rutinas online.</div>`;
     }
@@ -1868,6 +1884,33 @@
         updateRoutineFields(saved || body);
         await loadAdminRoutines();
         setRemoteStatus("Rutina guardada online. Link listo para enviar.");
+      } catch (error) {
+        setRemoteStatus(error.message);
+      }
+    }
+
+    async function deleteOnlineRoutine(id, title) {
+      if (!remoteReady || !authSession?.access_token || !id) return;
+      const ok = confirm(`Eliminar la rutina "${title || "sin titulo"}"?`);
+      if (!ok) return;
+      try {
+        setRemoteStatus("Eliminando rutina...");
+        await supabaseRequest(`/rest/v1/routines?id=eq.${encodeURIComponent(id)}`, {
+          method: "DELETE",
+          headers: supabaseHeaders(true)
+        });
+        if (remoteRoutineId === id) {
+          remoteRoutineId = "";
+          state.routine = emptyRoutine("NUEVA RUTINA");
+          state.activeDay = "d1";
+          state.selected = "";
+          state.expanded = "";
+          state.rounds = {};
+          updateRoutineFields({ title: "NUEVA RUTINA", client_name: "", slug: "" });
+          render();
+        }
+        await loadAdminRoutines();
+        setRemoteStatus("Rutina eliminada.");
       } catch (error) {
         setRemoteStatus(error.message);
       }
