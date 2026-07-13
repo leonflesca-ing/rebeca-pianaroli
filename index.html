@@ -563,6 +563,77 @@
       gap: 12px;
     }
 
+    .admin-flow {
+      display: grid;
+      gap: 12px;
+    }
+
+    .admin-step {
+      display: grid;
+      grid-template-columns: 38px minmax(0, 1fr);
+      gap: 12px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, .035);
+    }
+
+    .admin-step.requires-auth {
+      display: none;
+    }
+
+    body.admin-authenticated .admin-step.requires-auth {
+      display: grid;
+    }
+
+    .step-badge {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--pink), var(--pink-2));
+      color: var(--white);
+      font-weight: 900;
+    }
+
+    .step-content {
+      min-width: 0;
+      display: grid;
+      gap: 10px;
+    }
+
+    .step-title {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .step-title h3 {
+      margin: 0;
+      font-size: 1rem;
+    }
+
+    .step-title span {
+      color: var(--muted);
+      font-size: .86rem;
+      font-weight: 800;
+    }
+
+    .auth-ready {
+      display: none;
+    }
+
+    body.admin-authenticated .auth-pending {
+      display: none;
+    }
+
+    body.admin-authenticated .auth-ready {
+      display: block;
+    }
+
     .admin-row {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -672,6 +743,7 @@
       }
       .editor-grid,
       .admin-row,
+      .admin-step,
       .log-grid,
       .round-actions {
         grid-template-columns: 1fr;
@@ -714,49 +786,110 @@
 
     <section class="panel admin-tools admin-only">
       <div class="panel-head">
-        <h2>Administracion</h2>
+        <h2>Panel de profesora</h2>
       </div>
       <div class="panel-body">
-        <div class="notice" id="remoteStatus">Modo local. Para sincronizar rutinas, configurar Supabase en el codigo.</div>
-        <div class="admin-row">
-          <div class="field">
-            <label for="adminEmail">Email profesora</label>
-            <input id="adminEmail" type="email" autocomplete="email">
-          </div>
-          <div class="field">
-            <label for="adminPassword">Clave</label>
-            <input id="adminPassword" type="password" autocomplete="current-password">
-          </div>
-          <button class="btn" id="loginBtn">Entrar</button>
-          <button class="btn warning" id="logoutBtn">Salir</button>
+        <div class="notice" id="remoteStatus">Entrar con el usuario de profesora para editar rutinas online.</div>
+
+        <div class="admin-flow">
+          <section class="admin-step">
+            <div class="step-badge">1</div>
+            <div class="step-content">
+              <div class="step-title">
+                <h3>Entrar</h3>
+                <span class="auth-ready">Sesion iniciada</span>
+              </div>
+              <div class="admin-row auth-pending">
+                <div class="field">
+                  <label for="adminEmail">Email profesora</label>
+                  <input id="adminEmail" type="email" autocomplete="email" placeholder="rebecapianaroli@gmail.com">
+                </div>
+                <div class="field">
+                  <label for="adminPassword">Clave</label>
+                  <input id="adminPassword" type="password" autocomplete="current-password">
+                </div>
+                <button class="btn primary" id="loginBtn">Entrar</button>
+              </div>
+              <div class="admin-actions auth-ready">
+                <button class="btn warning" id="logoutBtn">Salir</button>
+              </div>
+            </div>
+          </section>
+
+          <section class="admin-step requires-auth">
+            <div class="step-badge">2</div>
+            <div class="step-content">
+              <div class="step-title">
+                <h3>Rutina del cliente</h3>
+                <span>Crear, abrir o guardar</span>
+              </div>
+              <div class="admin-row">
+                <div class="field">
+                  <label for="routineTitle">Titulo de rutina</label>
+                  <input id="routineTitle" type="text" placeholder="Rutina Sabrina">
+                </div>
+                <div class="field">
+                  <label for="clientName">Nombre clienta</label>
+                  <input id="clientName" type="text" placeholder="Sabrina">
+                </div>
+                <div class="field">
+                  <label for="routineSlug">Codigo link</label>
+                  <input id="routineSlug" type="text" placeholder="sabrina">
+                </div>
+                <button class="btn primary" id="saveOnlineBtn">Guardar online</button>
+              </div>
+              <div class="admin-actions">
+                <button class="btn" id="newRoutineBtn">Crear rutina vacia</button>
+              </div>
+            </div>
+          </section>
+
+          <section class="admin-step requires-auth">
+            <div class="step-badge">3</div>
+            <div class="step-content">
+              <div class="step-title">
+                <h3>Ejercicios</h3>
+                <span id="adminExerciseSummary">0 cargados</span>
+              </div>
+              <div class="admin-actions">
+                <button class="btn primary" id="addExerciseBtn">Agregar ejercicio</button>
+                <button class="btn" id="editorBtn">Editar seleccionado</button>
+              </div>
+            </div>
+          </section>
+
+          <section class="admin-step requires-auth">
+            <div class="step-badge">4</div>
+            <div class="step-content">
+              <div class="step-title">
+                <h3>Link para enviar</h3>
+                <span>Solo ve esta rutina</span>
+              </div>
+              <div class="field">
+                <label for="clientLink">Link para clienta</label>
+                <input id="clientLink" type="text" readonly>
+              </div>
+              <div class="admin-actions">
+                <button class="btn primary" id="copyLinkBtn">Copiar link</button>
+              </div>
+              <div class="routine-list" id="routineList"></div>
+            </div>
+          </section>
+
+          <section class="admin-step requires-auth">
+            <div class="step-badge">+</div>
+            <div class="step-content">
+              <div class="step-title">
+                <h3>Herramientas</h3>
+                <span>Respaldo manual</span>
+              </div>
+              <div class="admin-actions">
+                <button class="btn" id="exportBtn">Exportar</button>
+                <button class="btn" id="importBtn">Importar</button>
+              </div>
+            </div>
+          </section>
         </div>
-        <div class="admin-row">
-          <div class="field">
-            <label for="routineTitle">Titulo de rutina</label>
-            <input id="routineTitle" type="text" placeholder="Rutina Sabrina">
-          </div>
-          <div class="field">
-            <label for="clientName">Nombre clienta</label>
-            <input id="clientName" type="text" placeholder="Sabrina">
-          </div>
-          <div class="field">
-            <label for="routineSlug">Codigo link</label>
-            <input id="routineSlug" type="text" placeholder="sabrina">
-          </div>
-          <button class="btn primary" id="saveOnlineBtn">Guardar online</button>
-        </div>
-        <div class="field">
-          <label for="clientLink">Link para clienta</label>
-          <input id="clientLink" type="text" readonly>
-        </div>
-        <div class="admin-actions">
-          <button class="btn" id="newRoutineBtn">Nueva rutina</button>
-          <button class="btn primary" id="editorBtn">Editar ejercicio</button>
-          <button class="btn" id="copyLinkBtn">Copiar link</button>
-          <button class="btn" id="exportBtn">Exportar</button>
-          <button class="btn" id="importBtn">Importar</button>
-        </div>
-        <div class="routine-list" id="routineList"></div>
       </div>
     </section>
   </main>
@@ -766,7 +899,7 @@
   <div class="modal" id="editorModal">
     <div class="modal-card">
       <div class="panel-head">
-        <h2>Editar ejercicio</h2>
+        <h2 id="editorTitle">Editar ejercicio</h2>
         <button class="btn" id="closeEditorBtn">Cerrar</button>
       </div>
       <div class="panel-body">
@@ -826,10 +959,11 @@
     const SUPABASE_ANON_KEY = window.REBECA_CONFIG?.SUPABASE_ANON_KEY || "";
     const MUSIC_SOURCE = "./assets/audio/jamaican-bam-bam.mp3";
     const TOTAL_ROUNDS = 4;
+    const APP_VERSION = "12";
     const params = new URLSearchParams(window.location.search);
     const isAdmin = params.get("admin") === "1";
     const routineParam = params.get("rutina") || "";
-    const storageKey = `rebecaTrainerApp:v9:${routineParam || "local"}`;
+    const storageKey = `rebecaTrainerApp:v${APP_VERSION}:${routineParam || "local"}`;
     const remoteReady = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
     const authStorageKey = "rebecaTrainerAuth";
     document.body.classList.toggle("admin", isAdmin);
@@ -963,6 +1097,7 @@
       exportBtn: document.getElementById("exportBtn"),
       importBtn: document.getElementById("importBtn"),
       editorBtn: document.getElementById("editorBtn"),
+      addExerciseBtn: document.getElementById("addExerciseBtn"),
       loginBtn: document.getElementById("loginBtn"),
       logoutBtn: document.getElementById("logoutBtn"),
       saveOnlineBtn: document.getElementById("saveOnlineBtn"),
@@ -976,6 +1111,7 @@
       clientLink: document.getElementById("clientLink"),
       remoteStatus: document.getElementById("remoteStatus"),
       routineList: document.getElementById("routineList"),
+      adminExerciseSummary: document.getElementById("adminExerciseSummary"),
       finishBtn: document.getElementById("finishBtn"),
       editorModal: document.getElementById("editorModal"),
       importFile: document.getElementById("importFile")
@@ -989,6 +1125,10 @@
 
     function exercise(id, name, sets, reps, rest, category, video, notes) {
       return { id, name, sets, reps, rest, category, video, notes };
+    }
+
+    function emptyRoutine(title = "NUEVA RUTINA") {
+      return [day("d1", title, "", [])];
     }
 
     function loadState() {
@@ -1030,7 +1170,8 @@
       const day = activeDay();
       const title = meta.title || day?.title || "Rutina";
       const client = meta.client_name || "";
-      const slug = meta.slug || routineParam || slugify(client || title);
+      const hasSlug = Object.prototype.hasOwnProperty.call(meta, "slug");
+      const slug = hasSlug ? meta.slug : routineParam || slugify(client || title);
       if (els.routineTitle) els.routineTitle.value = title;
       if (els.clientName) els.clientName.value = client;
       if (els.routineSlug) els.routineSlug.value = slug;
@@ -1043,7 +1184,7 @@
       const url = new URL(window.location.href);
       url.search = "";
       if (value) url.searchParams.set("rutina", value);
-      url.searchParams.set("v", "9");
+      url.searchParams.set("v", APP_VERSION);
       els.clientLink.value = value ? url.toString() : "";
     }
 
@@ -1085,6 +1226,7 @@
       renderStats();
       renderList();
       renderDetail();
+      updateAdminUi();
       saveState();
     }
 
@@ -1117,6 +1259,15 @@
 
     function renderList() {
       const day = activeDay();
+      if (!day.exercises.length) {
+        els.list.innerHTML = `
+          <div class="notice">
+            Esta rutina todavia no tiene ejercicios.
+            ${isAdmin ? `<button class="btn primary" data-add-first style="margin-top:10px;">Agregar primer ejercicio</button>` : ""}
+          </div>
+        `;
+        return;
+      }
       els.list.innerHTML = day.exercises.map((item, index) => `
         <article class="exercise-card ${item.id === state.selected ? "active" : ""} ${state.expanded === item.id ? "expanded" : ""}" data-select="${item.id}">
           ${renderVideo(item, "thumb", false)}
@@ -1143,7 +1294,13 @@
       const item = selectedExercise();
       if (!item) {
         els.detailHead.textContent = "Rutina";
-        els.detail.innerHTML = `<p>No hay ejercicios en este dia.</p>`;
+        els.detail.innerHTML = `
+          <div class="notice">
+            No hay ejercicios cargados en esta rutina.
+            ${isAdmin ? `<button class="btn primary" id="emptyAddBtn" style="margin-top:10px;">Agregar ejercicio</button>` : ""}
+          </div>
+        `;
+        document.getElementById("emptyAddBtn")?.addEventListener("click", () => openEditor(""));
         return;
       }
       els.detailHead.textContent = activeDay().title;
@@ -1305,9 +1462,14 @@
 
     els.list.addEventListener("click", event => {
       const roundAdd = event.target.closest("[data-round-add]");
+      const addFirst = event.target.closest("[data-add-first]");
       const edit = event.target.closest("[data-edit]");
       const rest = event.target.closest("[data-rest]");
       const card = event.target.closest("[data-select]");
+      if (addFirst) {
+        if (isAdmin) openEditor("");
+        return;
+      }
       if (roundAdd) {
         addRound(roundAdd.dataset.roundAdd);
         state.selected = nextExerciseId(roundAdd.dataset.roundAdd);
@@ -1341,6 +1503,9 @@
 
     els.editorBtn.addEventListener("click", () => {
       if (isAdmin) openEditor(selectedExercise()?.id);
+    });
+    els.addExerciseBtn?.addEventListener("click", () => {
+      if (isAdmin) openEditor("");
     });
     document.getElementById("closeEditorBtn").addEventListener("click", closeEditor);
     document.getElementById("saveBtn").addEventListener("click", saveEditor);
@@ -1402,7 +1567,11 @@
     els.copyLinkBtn?.addEventListener("click", copyClientLink);
     els.routineSlug?.addEventListener("input", () => updateClientLink(slugify(els.routineSlug.value)));
     els.clientName?.addEventListener("input", () => {
-      if (!els.routineSlug.value.trim()) updateClientLink(slugify(els.clientName.value));
+      if (!els.routineSlug.value.trim()) {
+        const slug = els.clientName.value.trim() ? slugify(els.clientName.value) : "";
+        els.routineSlug.value = slug;
+        updateClientLink(slug);
+      }
     });
     els.routineList?.addEventListener("click", async event => {
       const btn = event.target.closest("[data-load-routine]");
@@ -1412,18 +1581,23 @@
 
     function openEditor(id) {
       const item = allExercises().find(exercise => exercise.id === id) || activeDay().exercises[0];
-      const location = findExerciseLocation(item?.id);
-      document.getElementById("editDay").innerHTML = state.routine.map(group => `<option value="${group.id}">${escapeHtml(group.title)} - ${escapeHtml(group.subtitle)}</option>`).join("");
-      document.getElementById("editId").value = item?.id || "";
+      const adding = !id || !item;
+      const location = adding ? null : findExerciseLocation(item?.id);
+      document.getElementById("editorTitle").textContent = adding ? "Agregar ejercicio" : "Editar ejercicio";
+      document.getElementById("editDay").innerHTML = state.routine.map(group => `<option value="${group.id}">${escapeHtml(group.title)}</option>`).join("");
+      document.getElementById("editId").value = adding ? "" : item?.id || "";
       document.getElementById("editDay").value = location?.day.id || state.activeDay;
       document.getElementById("editOrder").value = (location?.index ?? 0) + 1;
-      document.getElementById("editName").value = item?.name || "";
-      document.getElementById("editSets").value = item?.sets || "";
-      document.getElementById("editReps").value = item?.reps || "";
-      document.getElementById("editRest").value = item?.rest || 60;
-      document.getElementById("editCategory").value = item?.category || "";
-      document.getElementById("editVideo").value = item?.video || "";
-      document.getElementById("editNotes").value = item?.notes || "";
+      document.getElementById("editName").value = adding ? "" : item?.name || "";
+      document.getElementById("editSets").value = adding ? "1" : item?.sets || "";
+      document.getElementById("editReps").value = adding ? "" : item?.reps || "";
+      document.getElementById("editRest").value = adding ? 60 : item?.rest || 60;
+      document.getElementById("editCategory").value = adding ? "" : item?.category || "";
+      document.getElementById("editVideo").value = adding ? "" : item?.video || "";
+      document.getElementById("editNotes").value = adding ? "" : item?.notes || "";
+      document.getElementById("deleteBtn").style.display = adding ? "none" : "";
+      document.getElementById("newBtn").style.display = adding ? "none" : "";
+      document.getElementById("saveBtn").textContent = adding ? "Agregar ejercicio" : "Guardar";
       updateOrderMax();
       els.editorModal.classList.add("open");
     }
@@ -1435,7 +1609,10 @@
     function saveEditor() {
       const id = document.getElementById("editId").value;
       const source = findExerciseLocation(id);
-      if (!source) return;
+      if (!source) {
+        addNewExercise();
+        return;
+      }
       const targetDay = state.routine.find(day => day.id === document.getElementById("editDay").value);
       const updated = readEditor(id);
       source.day.exercises.splice(source.index, 1);
@@ -1662,16 +1839,15 @@
 
     function newOnlineRoutine() {
       remoteRoutineId = "";
-      state.routine = structuredClone(starterRoutine);
-      state.routine[0].title = "NUEVA RUTINA";
+      state.routine = emptyRoutine("NUEVA RUTINA");
       state.activeDay = "d1";
-      state.selected = "d1-1";
+      state.selected = "";
       state.expanded = "";
       state.rounds = {};
       state.view = "routine";
       updateRoutineFields({ title: "NUEVA RUTINA", client_name: "", slug: "" });
       render();
-      setRemoteStatus("Nueva rutina local. Editala y guardala online.");
+      setRemoteStatus("Rutina vacia creada. Agrega ejercicios y guardala online.");
     }
 
     function copyClientLink() {
@@ -1687,13 +1863,27 @@
 
     function updateRemoteStatus() {
       if (!isAdmin) return;
+      document.body.classList.toggle("admin-authenticated", Boolean(authSession?.access_token));
       if (!remoteReady) {
         setRemoteStatus("Modo local. Falta pegar SUPABASE_URL y SUPABASE_ANON_KEY en config.js.");
       } else if (authSession?.access_token) {
-        setRemoteStatus("Profesora conectada. Los cambios se pueden guardar online.");
+        setRemoteStatus("Sesion iniciada. Crea o abre una rutina, carga ejercicios y guarda online.");
       } else {
-        setRemoteStatus("Supabase configurado. Entra con el usuario de profesora.");
+        setRemoteStatus("Entrar con el usuario de profesora para editar rutinas online.");
       }
+    }
+
+    function updateAdminUi() {
+      if (!isAdmin) return;
+      const total = allExercises().length;
+      if (els.adminExerciseSummary) {
+        els.adminExerciseSummary.textContent = `${total} ${total === 1 ? "ejercicio" : "ejercicios"} cargados`;
+      }
+      if (els.editorBtn) {
+        els.editorBtn.disabled = total === 0;
+        els.editorBtn.textContent = total ? "Editar seleccionado" : "Sin ejercicio seleccionado";
+      }
+      document.body.classList.toggle("admin-authenticated", Boolean(authSession?.access_token));
     }
 
     function slugify(text) {
