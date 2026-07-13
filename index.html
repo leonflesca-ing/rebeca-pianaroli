@@ -559,10 +559,62 @@
     }
 
     .admin-tools .panel-body {
+      display: grid;
+      gap: 12px;
+    }
+
+    .admin-row {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+      align-items: end;
+    }
+
+    .admin-actions {
       display: flex;
       gap: 8px;
       flex-wrap: wrap;
       justify-content: flex-end;
+    }
+
+    .notice {
+      border: 1px solid var(--line);
+      border-left: 3px solid var(--pink);
+      border-radius: var(--radius);
+      padding: 10px 12px;
+      color: var(--muted);
+      background: rgba(255, 255, 255, .04);
+      font-size: .9rem;
+      line-height: 1.4;
+    }
+
+    .routine-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .routine-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, .04);
+      border-radius: var(--radius);
+      padding: 10px;
+    }
+
+    .routine-item span {
+      color: var(--muted);
+      font-size: .86rem;
+    }
+
+    iframe.video-embed {
+      width: 100%;
+      height: 100%;
+      border: 0;
+      display: block;
+      background: var(--black);
     }
 
     @media (max-width: 900px) {
@@ -619,6 +671,7 @@
         margin: 0;
       }
       .editor-grid,
+      .admin-row,
       .log-grid,
       .round-actions {
         grid-template-columns: 1fr;
@@ -664,10 +717,46 @@
         <h2>Administracion</h2>
       </div>
       <div class="panel-body">
-        <button class="btn" id="historyBtn">Historial</button>
-        <button class="btn primary" id="editorBtn">Editar rutina</button>
-        <button class="btn" id="exportBtn">Exportar</button>
-        <button class="btn" id="importBtn">Importar</button>
+        <div class="notice" id="remoteStatus">Modo local. Para sincronizar rutinas, configurar Supabase en el codigo.</div>
+        <div class="admin-row">
+          <div class="field">
+            <label for="adminEmail">Email profesora</label>
+            <input id="adminEmail" type="email" autocomplete="email">
+          </div>
+          <div class="field">
+            <label for="adminPassword">Clave</label>
+            <input id="adminPassword" type="password" autocomplete="current-password">
+          </div>
+          <button class="btn" id="loginBtn">Entrar</button>
+          <button class="btn warning" id="logoutBtn">Salir</button>
+        </div>
+        <div class="admin-row">
+          <div class="field">
+            <label for="routineTitle">Titulo de rutina</label>
+            <input id="routineTitle" type="text" placeholder="Rutina Sabrina">
+          </div>
+          <div class="field">
+            <label for="clientName">Nombre clienta</label>
+            <input id="clientName" type="text" placeholder="Sabrina">
+          </div>
+          <div class="field">
+            <label for="routineSlug">Codigo link</label>
+            <input id="routineSlug" type="text" placeholder="sabrina">
+          </div>
+          <button class="btn primary" id="saveOnlineBtn">Guardar online</button>
+        </div>
+        <div class="field">
+          <label for="clientLink">Link para clienta</label>
+          <input id="clientLink" type="text" readonly>
+        </div>
+        <div class="admin-actions">
+          <button class="btn" id="newRoutineBtn">Nueva rutina</button>
+          <button class="btn primary" id="editorBtn">Editar ejercicio</button>
+          <button class="btn" id="copyLinkBtn">Copiar link</button>
+          <button class="btn" id="exportBtn">Exportar</button>
+          <button class="btn" id="importBtn">Importar</button>
+        </div>
+        <div class="routine-list" id="routineList"></div>
       </div>
     </section>
   </main>
@@ -732,11 +821,16 @@
   <input class="file-actions" id="importFile" type="file" accept="application/json">
 
   <script>
-    const storageKey = "rebecaTrainerApp:v8";
+    const SUPABASE_URL = "";
+    const SUPABASE_ANON_KEY = "";
     const MUSIC_SOURCE = "./assets/audio/jamaican-bam-bam.mp3";
     const TOTAL_ROUNDS = 4;
     const params = new URLSearchParams(window.location.search);
     const isAdmin = params.get("admin") === "1";
+    const routineParam = params.get("rutina") || "";
+    const storageKey = `rebecaTrainerApp:v9:${routineParam || "local"}`;
+    const remoteReady = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
+    const authStorageKey = "rebecaTrainerAuth";
     document.body.classList.toggle("admin", isAdmin);
     const starterRoutine = [
       day("d1", "RUTINA SABRINA", "", [
@@ -863,16 +957,30 @@
       list: document.getElementById("exerciseList"),
       detail: document.getElementById("detail"),
       detailHead: document.getElementById("detailHead"),
-      historyBtn: document.getElementById("historyBtn"),
       musicBtn: document.getElementById("musicBtn"),
       musicPlayer: document.getElementById("musicPlayer"),
       exportBtn: document.getElementById("exportBtn"),
       importBtn: document.getElementById("importBtn"),
       editorBtn: document.getElementById("editorBtn"),
+      loginBtn: document.getElementById("loginBtn"),
+      logoutBtn: document.getElementById("logoutBtn"),
+      saveOnlineBtn: document.getElementById("saveOnlineBtn"),
+      newRoutineBtn: document.getElementById("newRoutineBtn"),
+      copyLinkBtn: document.getElementById("copyLinkBtn"),
+      adminEmail: document.getElementById("adminEmail"),
+      adminPassword: document.getElementById("adminPassword"),
+      routineTitle: document.getElementById("routineTitle"),
+      clientName: document.getElementById("clientName"),
+      routineSlug: document.getElementById("routineSlug"),
+      clientLink: document.getElementById("clientLink"),
+      remoteStatus: document.getElementById("remoteStatus"),
+      routineList: document.getElementById("routineList"),
       finishBtn: document.getElementById("finishBtn"),
       editorModal: document.getElementById("editorModal"),
       importFile: document.getElementById("importFile")
     };
+    let remoteRoutineId = "";
+    let authSession = loadAuthSession();
 
     function day(id, title, subtitle, exercises) {
       return { id, title, subtitle, exercises };
@@ -887,7 +995,6 @@
         const stored = JSON.parse(localStorage.getItem(storageKey));
         if (stored?.routine?.length) {
           stored.rounds = stored.rounds || {};
-          stored.sessions = stored.sessions || [];
           stored.view = stored.view || "routine";
           return stored;
         }
@@ -898,7 +1005,6 @@
         selected: "d1-1",
         expanded: "",
         rounds: {},
-        sessions: [],
         view: "routine"
       };
     }
@@ -917,6 +1023,27 @@
 
     function selectedExercise() {
       return allExercises().find(item => item.id === state.selected) || activeDay().exercises[0];
+    }
+
+    function updateRoutineFields(meta = {}) {
+      const day = activeDay();
+      const title = meta.title || day?.title || "Rutina";
+      const client = meta.client_name || "";
+      const slug = meta.slug || routineParam || slugify(client || title);
+      if (els.routineTitle) els.routineTitle.value = title;
+      if (els.clientName) els.clientName.value = client;
+      if (els.routineSlug) els.routineSlug.value = slug;
+      updateClientLink(slug);
+    }
+
+    function updateClientLink(slug = "") {
+      if (!els.clientLink) return;
+      const value = slug || els.routineSlug?.value || routineParam || "";
+      const url = new URL(window.location.href);
+      url.search = "";
+      if (value) url.searchParams.set("rutina", value);
+      url.searchParams.set("v", "9");
+      els.clientLink.value = value ? url.toString() : "";
     }
 
     function roundCount(id) {
@@ -954,13 +1081,9 @@
       }
 
       renderTabs();
-      if (state.view === "history") {
-        renderHistory();
-      } else {
-        renderStats();
-        renderList();
-        renderDetail();
-      }
+      renderStats();
+      renderList();
+      renderDetail();
       saveState();
     }
 
@@ -1067,37 +1190,16 @@
       bindDetailEvents(item);
     }
 
-    function renderHistory() {
-      els.stats.innerHTML = "";
-      els.progress.style.width = "0%";
-      els.list.innerHTML = `
-        <section class="panel">
-          <div class="panel-head">
-            <h2>Historial</h2>
-            <button class="btn" id="routineViewBtn">Volver</button>
-          </div>
-          <div class="panel-body history-list">
-            ${state.sessions.length ? state.sessions.slice().reverse().map(session => `
-              <div class="session">
-                <span>${escapeHtml(session.date)} · ${escapeHtml(session.dayTitle)}</span>
-                <strong>${session.completedRounds ?? session.completed}/${session.totalRounds ?? session.total}</strong>
-              </div>
-            `).join("") : `<div class="session"><span>No hay entrenamientos guardados.</span></div>`}
-          </div>
-        </section>
-      `;
-      els.detail.innerHTML = `
-        <h3 class="detail-title">Resumen</h3>
-        <p>Guarda cada dia terminado para que la clienta pueda revisar su constancia.</p>
-      `;
-      document.getElementById("routineViewBtn").addEventListener("click", () => {
-        state.view = "routine";
-        render();
-      });
-    }
-
     function renderVideo(item, className, controls) {
       if (item.video) {
+        const driveUrl = drivePreviewUrl(item.video);
+        if (driveUrl) {
+          return `
+            <div class="${className}">
+              <iframe class="video-embed" src="${escapeAttr(driveUrl)}" allow="fullscreen; encrypted-media" allowfullscreen></iframe>
+            </div>
+          `;
+        }
         return `
           <div class="${className}">
             <video src="${escapeAttr(item.video)}" ${controls ? "controls" : ""} muted playsinline preload="metadata" data-fullscreen-video></video>
@@ -1247,22 +1349,9 @@
 
     els.finishBtn.addEventListener("click", () => {
       const day = activeDay();
-      const completedRounds = day.exercises.reduce((sum, item) => sum + roundCount(item.id), 0);
-      const totalRounds = day.exercises.length * TOTAL_ROUNDS;
-      state.sessions.push({
-        date: new Date().toLocaleDateString("es-AR"),
-        dayTitle: day.title,
-        total: day.exercises.length,
-        completed: day.exercises.filter(item => isComplete(item.id)).length,
-        completedRounds,
-        totalRounds
-      });
       day.exercises.forEach(item => setRoundCount(item.id, 0));
-      render();
-    });
-
-    els.historyBtn.addEventListener("click", () => {
-      state.view = state.view === "history" ? "routine" : "history";
+      state.selected = day.exercises[0]?.id || "";
+      state.expanded = "";
       render();
     });
 
@@ -1292,7 +1381,6 @@
           if (!imported?.routine?.length) throw new Error("Archivo invalido");
           Object.assign(state, imported);
           state.rounds = state.rounds || {};
-          state.sessions = state.sessions || [];
           state.view = "routine";
           render();
         } catch {
@@ -1301,6 +1389,24 @@
       };
       reader.readAsText(file);
       event.target.value = "";
+    });
+
+    els.loginBtn?.addEventListener("click", adminLogin);
+    els.logoutBtn?.addEventListener("click", () => {
+      saveAuthSession(null);
+      renderRoutineList([]);
+    });
+    els.saveOnlineBtn?.addEventListener("click", saveOnlineRoutine);
+    els.newRoutineBtn?.addEventListener("click", newOnlineRoutine);
+    els.copyLinkBtn?.addEventListener("click", copyClientLink);
+    els.routineSlug?.addEventListener("input", () => updateClientLink(slugify(els.routineSlug.value)));
+    els.clientName?.addEventListener("input", () => {
+      if (!els.routineSlug.value.trim()) updateClientLink(slugify(els.clientName.value));
+    });
+    els.routineList?.addEventListener("click", async event => {
+      const btn = event.target.closest("[data-load-routine]");
+      if (!btn) return;
+      await loadRemoteRoutine(btn.dataset.loadRoutine);
     });
 
     function openEditor(id) {
@@ -1377,6 +1483,234 @@
       };
     }
 
+    function loadAuthSession() {
+      try {
+        return JSON.parse(localStorage.getItem(authStorageKey)) || null;
+      } catch {
+        return null;
+      }
+    }
+
+    function saveAuthSession(session) {
+      authSession = session;
+      if (session) {
+        localStorage.setItem(authStorageKey, JSON.stringify(session));
+      } else {
+        localStorage.removeItem(authStorageKey);
+      }
+      updateRemoteStatus();
+    }
+
+    function supabaseHeaders(authenticated = false) {
+      const token = authenticated ? authSession?.access_token : SUPABASE_ANON_KEY;
+      return {
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${token || SUPABASE_ANON_KEY}`,
+        "Content-Type": "application/json",
+        Prefer: "return=representation"
+      };
+    }
+
+    async function supabaseRequest(path, options = {}) {
+      if (!remoteReady) throw new Error("Supabase no configurado");
+      const response = await fetch(`${SUPABASE_URL}${path}`, options);
+      const text = await response.text();
+      const data = text ? JSON.parse(text) : null;
+      if (!response.ok) {
+        throw new Error(data?.message || data?.hint || "Error de Supabase");
+      }
+      return data;
+    }
+
+    async function loadRemoteRoutine(slug) {
+      if (!remoteReady || !slug) return;
+      try {
+        setRemoteStatus("Cargando rutina online...");
+        const rows = await supabaseRequest("/rest/v1/rpc/get_routine_by_slug", {
+          method: "POST",
+          headers: supabaseHeaders(false),
+          body: JSON.stringify({ p_slug: slug })
+        });
+        const routine = rows?.[0];
+        if (!routine) {
+          setRemoteStatus("No se encontro esa rutina.");
+          return;
+        }
+        remoteRoutineId = routine.id;
+        applyRoutineRecord(routine);
+        setRemoteStatus("Rutina online cargada.");
+      } catch (error) {
+        setRemoteStatus(error.message);
+      }
+    }
+
+    function applyRoutineRecord(record) {
+      const data = record.data || {};
+      state.routine = data.routine?.length ? data.routine : structuredClone(starterRoutine);
+      state.activeDay = state.routine[0]?.id || "d1";
+      state.selected = state.routine[0]?.exercises?.[0]?.id || "";
+      state.expanded = "";
+      state.rounds = {};
+      state.view = "routine";
+      if (record.title && state.routine[0]) state.routine[0].title = record.title;
+      updateRoutineFields(record);
+      render();
+    }
+
+    async function adminLogin() {
+      if (!remoteReady) {
+        setRemoteStatus("Falta configurar Supabase URL y anon key.");
+        return;
+      }
+      try {
+        setRemoteStatus("Entrando...");
+        const session = await supabaseRequest("/auth/v1/token?grant_type=password", {
+          method: "POST",
+          headers: {
+            apikey: SUPABASE_ANON_KEY,
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            email: els.adminEmail.value.trim(),
+            password: els.adminPassword.value
+          })
+        });
+        saveAuthSession(session);
+        els.adminPassword.value = "";
+        await loadAdminRoutines();
+        setRemoteStatus("Profesora conectada.");
+      } catch (error) {
+        setRemoteStatus(error.message);
+      }
+    }
+
+    async function loadAdminRoutines() {
+      if (!remoteReady || !authSession?.access_token || !isAdmin) return;
+      try {
+        const owner = authSession?.user?.id;
+        const rows = await supabaseRequest(`/rest/v1/routines?owner_id=eq.${encodeURIComponent(owner)}&select=*&order=updated_at.desc`, {
+          headers: supabaseHeaders(true)
+        });
+        renderRoutineList(rows || []);
+      } catch (error) {
+        setRemoteStatus(error.message);
+      }
+    }
+
+    function renderRoutineList(rows) {
+      if (!els.routineList) return;
+      els.routineList.innerHTML = rows.length ? rows.map(row => `
+        <div class="routine-item">
+          <div>
+            <strong>${escapeHtml(row.title)}</strong>
+            <span>${escapeHtml(row.client_name || row.slug)}</span>
+          </div>
+          <button class="btn" data-load-routine="${escapeAttr(row.slug)}">Abrir</button>
+        </div>
+      `).join("") : `<div class="notice">Todavia no hay rutinas online.</div>`;
+    }
+
+    function routinePayload() {
+      return {
+        routine: state.routine,
+        totalRounds: TOTAL_ROUNDS,
+        musicUrl: MUSIC_SOURCE
+      };
+    }
+
+    async function saveOnlineRoutine() {
+      if (!remoteReady) {
+        setRemoteStatus("Falta configurar Supabase URL y anon key.");
+        return;
+      }
+      if (!authSession?.access_token) {
+        setRemoteStatus("Primero entra con el usuario de profesora.");
+        return;
+      }
+      try {
+        const title = els.routineTitle.value.trim() || activeDay().title || "Rutina";
+        const clientName = els.clientName.value.trim();
+        const slug = slugify(els.routineSlug.value || clientName || title);
+        if (state.routine[0]) state.routine[0].title = title;
+        const body = {
+          slug,
+          title,
+          client_name: clientName,
+          data: routinePayload(),
+          is_active: true,
+          updated_at: new Date().toISOString()
+        };
+        const path = remoteRoutineId
+          ? `/rest/v1/routines?id=eq.${encodeURIComponent(remoteRoutineId)}`
+          : "/rest/v1/routines";
+        const method = remoteRoutineId ? "PATCH" : "POST";
+        const rows = await supabaseRequest(path, {
+          method,
+          headers: supabaseHeaders(true),
+          body: JSON.stringify(body)
+        });
+        const saved = rows?.[0];
+        remoteRoutineId = saved?.id || remoteRoutineId;
+        updateRoutineFields(saved || body);
+        await loadAdminRoutines();
+        setRemoteStatus("Rutina guardada online. Link listo para enviar.");
+      } catch (error) {
+        setRemoteStatus(error.message);
+      }
+    }
+
+    function newOnlineRoutine() {
+      remoteRoutineId = "";
+      state.routine = structuredClone(starterRoutine);
+      state.routine[0].title = "NUEVA RUTINA";
+      state.activeDay = "d1";
+      state.selected = "d1-1";
+      state.expanded = "";
+      state.rounds = {};
+      state.view = "routine";
+      updateRoutineFields({ title: "NUEVA RUTINA", client_name: "", slug: "" });
+      render();
+      setRemoteStatus("Nueva rutina local. Editala y guardala online.");
+    }
+
+    function copyClientLink() {
+      const value = els.clientLink.value;
+      if (!value) return;
+      navigator.clipboard?.writeText(value);
+      setRemoteStatus("Link copiado.");
+    }
+
+    function setRemoteStatus(message) {
+      if (els.remoteStatus) els.remoteStatus.textContent = message;
+    }
+
+    function updateRemoteStatus() {
+      if (!isAdmin) return;
+      if (!remoteReady) {
+        setRemoteStatus("Modo local. Configura Supabase para sincronizar rutinas y generar links online.");
+      } else if (authSession?.access_token) {
+        setRemoteStatus("Profesora conectada. Los cambios se pueden guardar online.");
+      } else {
+        setRemoteStatus("Supabase configurado. Entra con el usuario de profesora.");
+      }
+    }
+
+    function slugify(text) {
+      return String(text || "")
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "")
+        .slice(0, 48) || `rutina-${Date.now()}`;
+    }
+
+    function drivePreviewUrl(url) {
+      const text = String(url || "");
+      const match = text.match(/drive\.google\.com\/file\/d\/([^/]+)/) || text.match(/[?&]id=([^&]+)/);
+      return match ? `https://drive.google.com/file/d/${match[1]}/preview` : "";
+    }
+
     function findExerciseLocation(id) {
       for (const day of state.routine) {
         const index = day.exercises.findIndex(item => item.id === id);
@@ -1430,6 +1764,10 @@
     }
 
     render();
+    updateRemoteStatus();
+    updateRoutineFields();
+    if (routineParam) loadRemoteRoutine(routineParam);
+    if (isAdmin && authSession?.access_token) loadAdminRoutines();
 
     if ("serviceWorker" in navigator && location.protocol !== "file:") {
       navigator.serviceWorker.register("./sw.js").catch(() => {});

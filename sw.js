@@ -1,4 +1,4 @@
-const CACHE_NAME = "rebeca-pianaroli-v8";
+const CACHE_NAME = "rebeca-pianaroli-v9";
 const APP_SHELL = [
   "./",
   "./index.html",
