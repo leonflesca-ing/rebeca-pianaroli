@@ -460,7 +460,8 @@
       overflow: hidden;
     }
 
-    .thumb video, .video-frame video {
+    .thumb video, .video-frame video,
+    .thumb img.media-asset, .video-frame img.media-asset {
       width: 100%;
       height: 100%;
       object-fit: contain;
@@ -1335,7 +1336,7 @@
     const SUPABASE_URL = window.REBECA_CONFIG?.SUPABASE_URL || "";
     const SUPABASE_ANON_KEY = window.REBECA_CONFIG?.SUPABASE_ANON_KEY || "";
     const DEFAULT_TOTAL_ROUNDS = 4;
-    const APP_VERSION = "22";
+    const APP_VERSION = "23";
     const params = new URLSearchParams(window.location.search);
     const isAdmin = params.get("admin") === "1";
     const routineParam = params.get("rutina") || "";
@@ -1824,6 +1825,13 @@
           return `
             <div class="${className}">
               <iframe class="video-embed" src="${escapeAttr(driveUrl)}" allow="fullscreen; encrypted-media" allowfullscreen></iframe>
+            </div>
+          `;
+        }
+        if (isImageMedia(item.video)) {
+          return `
+            <div class="${className}">
+              <img class="media-asset" src="${escapeAttr(item.video)}" alt="${escapeAttr(item.name)}" loading="lazy">
             </div>
           `;
         }
@@ -2517,6 +2525,15 @@
       const text = String(url || "");
       const match = text.match(/drive\.google\.com\/file\/d\/([^/]+)/) || text.match(/[?&]id=([^&]+)/);
       return match ? `https://drive.google.com/file/d/${match[1]}/preview` : "";
+    }
+
+    function isImageMedia(url) {
+      try {
+        const parsed = new URL(String(url || ""), window.location.href);
+        return /\.(gif|png|jpe?g|webp|avif)$/i.test(parsed.pathname);
+      } catch {
+        return /\.(gif|png|jpe?g|webp|avif)(?:$|[?#])/i.test(String(url || ""));
+      }
     }
 
     function spotifyParts(value) {
