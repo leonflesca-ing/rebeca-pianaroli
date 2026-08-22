@@ -681,6 +681,36 @@
       margin-top: 10px;
     }
 
+    .round-reps-editor {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(112px, 1fr));
+      gap: 8px;
+    }
+
+    .round-reps-card {
+      display: grid;
+      gap: 6px;
+      padding: 9px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: rgba(255, 255, 255, .035);
+    }
+
+    .round-reps-card span {
+      color: var(--muted);
+      font-size: .76rem;
+      font-weight: 850;
+    }
+
+    .round-dot small {
+      display: block;
+      margin-top: 2px;
+      font-size: .68rem;
+      font-weight: 800;
+      color: currentColor;
+      opacity: .78;
+    }
+
     .field {
       display: grid;
       gap: 6px;
@@ -1298,6 +1328,10 @@
             <label for="editReps">Repeticiones</label>
             <input id="editReps" type="text" placeholder="12-15">
           </div>
+          <div class="field wide">
+            <label>Repeticiones por ronda</label>
+            <div class="round-reps-editor" id="editRoundReps"></div>
+          </div>
           <div class="field">
             <label for="editRest">Descanso en segundos</label>
             <input id="editRest" type="number" min="0" step="15">
@@ -1336,11 +1370,13 @@
     const SUPABASE_URL = window.REBECA_CONFIG?.SUPABASE_URL || "";
     const SUPABASE_ANON_KEY = window.REBECA_CONFIG?.SUPABASE_ANON_KEY || "";
     const DEFAULT_TOTAL_ROUNDS = 4;
-    const APP_VERSION = "23";
+    const APP_VERSION = "24";
     const params = new URLSearchParams(window.location.search);
     const isAdmin = params.get("admin") === "1";
     const routineParam = params.get("rutina") || "";
-    const storageKey = `rebecaTrainerApp:v${APP_VERSION}:${routineParam || "local"}`;
+    const storageScope = routineParam || "local";
+    const storageKey = `rebecaTrainerApp:${storageScope}`;
+    const legacyStorageVersions = ["23", "22", "21", "20", "19", "18"];
     const remoteReady = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
     const authStorageKey = "rebecaTrainerAuth";
     document.body.classList.toggle("admin", isAdmin);
@@ -1459,6 +1495,7 @@
       ])
     ];
 
+    let recoveredLocalBackup = false;
     const state = loadState();
     let timer = { interval: null, left: 0 };
 
@@ -1524,20 +1561,24 @@
     }
 
     function loadState() {
-      try {
-        const stored = JSON.parse(localStorage.getItem(storageKey));
-        if (stored?.routine?.length) {
-          stored.rounds = stored.rounds || {};
-          stored.view = stored.view || "routine";
-          stored.totalRounds = normalizeRounds(stored.totalRounds);
-          stored.musicUrl = spotifyEmbedUrl(stored.musicUrl) ? stored.musicUrl : "";
-          stored.youtubeUrl = youtubeEmbedUrl(stored.youtubeUrl) ? stored.youtubeUrl : "";
-          stored.musicOpen = Boolean(stored.musicOpen);
-          stored.musicProvider = stored.musicProvider === "youtube" ? "youtube" : "spotify";
-          return stored;
-        }
-      } catch {}
-      return {
+      const keys = [
+        storageKey,
+        ...legacyStorageVersions.map(version => `rebecaTrainerApp:v${version}:${storageScope}`)
+      ];
+      for (const key of keys) {
+        try {
+          const stored = JSON.parse(localStorage.getItem(key));
+          if (stored?.routine?.length) {
+            const normalized = normalizeStoredState(stored);
+            if (key !== storageKey) {
+              recoveredLocalBackup = true;
+              localStorage.setItem(storageKey, JSON.stringify(normalized));
+            }
+            return normalized;
+          }
+        } catch {}
+      }
+      return normalizeStoredState({
         routine: structuredClone(starterRoutine),
         activeDay: "d1",
         selected: "d1-1",
@@ -1548,16 +1589,73 @@
         youtubeUrl: "",
         musicOpen: false,
         musicProvider: "spotify",
-        view: "routine"
+        view: "routine",
+        draft: {}
+      });
+    }
+
+    function normalizeStoredState(value) {
+      const stored = value || {};
+      const routine = stored.routine?.length ? stored.routine : structuredClone(starterRoutine);
+      routine.forEach(group => {
+        group.exercises = (group.exercises || []).map(item => ({
+          ...item,
+          roundReps: Array.isArray(item.roundReps) ? item.roundReps.map(rep => String(rep || "").trim()) : []
+        }));
+      });
+      const firstDay = routine[0] || day("d1", "Rutina", "", []);
+      const firstExercise = firstDay.exercises?.[0]?.id || "";
+      const activeDayExists = routine.some(group => group.id === stored.activeDay);
+      const selectedExists = routine.some(group => group.exercises?.some(item => item.id === stored.selected));
+      return {
+        ...stored,
+        routine,
+        activeDay: activeDayExists ? stored.activeDay : firstDay.id,
+        selected: selectedExists ? stored.selected : firstExercise,
+        expanded: stored.expanded || "",
+        rounds: stored.rounds || {},
+        totalRounds: normalizeRounds(stored.totalRounds),
+        musicUrl: spotifyEmbedUrl(stored.musicUrl) ? stored.musicUrl : "",
+        youtubeUrl: youtubeEmbedUrl(stored.youtubeUrl) ? stored.youtubeUrl : "",
+        musicOpen: Boolean(stored.musicOpen),
+        musicProvider: stored.musicProvider === "youtube" ? "youtube" : "spotify",
+        view: stored.view || "routine",
+        draft: stored.draft || {}
       };
     }
 
+    function updateLocalDraft() {
+      if (!isAdmin || !els.routineTitle) return;
+      state.draft = {
+        title: els.routineTitle.value.trim(),
+        clientName: els.clientName?.value.trim() || "",
+        slug: els.routineSlug?.value.trim() || "",
+        savedAt: new Date().toISOString()
+      };
+      if (state.routine[0] && state.draft.title) state.routine[0].title = state.draft.title;
+    }
+
+    function applyDraftFields() {
+      if (!isAdmin || !state.draft) return;
+      if (els.routineTitle && state.draft.title) els.routineTitle.value = state.draft.title;
+      if (els.clientName && state.draft.clientName) els.clientName.value = state.draft.clientName;
+      if (els.routineSlug && state.draft.slug) {
+        els.routineSlug.value = state.draft.slug;
+        updateClientLink(state.draft.slug);
+      }
+    }
+
     function saveState() {
+      updateLocalDraft();
       localStorage.setItem(storageKey, JSON.stringify(state));
     }
 
     function scheduleAutoSave() {
-      if (!isAdmin || !remoteReady || !authSession?.access_token) return;
+      saveState();
+      if (!isAdmin || !remoteReady || !authSession?.access_token) {
+        setSaveState("Respaldo local");
+        return;
+      }
       clearTimeout(autoSaveTimer);
       setSaveState("Guardando...");
       setRemoteStatus("Guardando cambios...");
@@ -1578,10 +1676,11 @@
 
     function updateRoutineFields(meta = {}) {
       const day = activeDay();
-      const title = meta.title || day?.title || "Rutina";
-      const client = meta.client_name || "";
+      const hasClient = Object.prototype.hasOwnProperty.call(meta, "client_name");
+      const title = meta.title || state.draft?.title || day?.title || "Rutina";
+      const client = hasClient ? meta.client_name || "" : state.draft?.clientName || "";
       const hasSlug = Object.prototype.hasOwnProperty.call(meta, "slug");
-      const slug = hasSlug ? meta.slug : routineParam || slugify(client || title);
+      const slug = hasSlug ? meta.slug : state.draft?.slug || routineParam || slugify(client || title);
       if (els.routineTitle) els.routineTitle.value = title;
       if (els.clientName) els.clientName.value = client;
       if (els.routineRounds) els.routineRounds.value = routineRounds();
@@ -1624,6 +1723,23 @@
 
     function subtractRound(id) {
       setRoundCount(id, roundCount(id) - 1);
+    }
+
+    function roundReps(item, roundIndex) {
+      const custom = Array.isArray(item?.roundReps) ? item.roundReps[roundIndex] : "";
+      return String(custom || item?.reps || "").trim();
+    }
+
+    function roundRepsSummary(item) {
+      const custom = Array.isArray(item?.roundReps) ? item.roundReps.filter(Boolean) : [];
+      if (!custom.length) return `${escapeHtml(item.reps)} reps`;
+      const unique = [...new Set(Array.from({ length: routineRounds() }, (_, index) => roundReps(item, index)))];
+      return unique.length === 1 ? `${escapeHtml(unique[0])} reps` : "Reps por ronda";
+    }
+
+    function nextRoundRepsText(item) {
+      const index = Math.min(routineRounds() - 1, roundCount(item.id));
+      return `Ronda ${index + 1}: ${escapeHtml(roundReps(item, index))} reps`;
     }
 
     function nextExerciseId(id) {
@@ -1735,7 +1851,7 @@
           <div class="exercise-main">
             <h3>${index + 1}. ${escapeHtml(item.name)}</h3>
             <div class="meta">
-              <span class="pill">${escapeHtml(item.sets)} x ${escapeHtml(item.reps)}</span>
+              <span class="pill">${escapeHtml(item.sets)} x ${roundRepsSummary(item)}</span>
               <span class="pill">${formatRest(item.rest)}</span>
               <span class="pill">Ronda ${roundCount(item.id)}/${routineRounds()}</span>
               <span class="pill">${escapeHtml(item.category || "General")}</span>
@@ -1780,7 +1896,7 @@
         <h3 class="detail-title">${escapeHtml(item.name)}</h3>
         <div class="meta">
           <span class="pill">${escapeHtml(item.sets)} series</span>
-          <span class="pill">${escapeHtml(item.reps)} reps</span>
+          <span class="pill">${nextRoundRepsText(item)}</span>
           <span class="pill">${formatRest(item.rest)}</span>
           <span class="pill">${rounds}/${routineRounds()} rondas</span>
         </div>
@@ -1801,7 +1917,10 @@
           <h3 style="margin:0 0 10px;">Rondas</h3>
           <div class="round-progress">
             ${Array.from({ length: routineRounds() }, (_, index) => `
-              <div class="round-dot ${index < rounds ? "done" : ""}">${index + 1}</div>
+              <div class="round-dot ${index < rounds ? "done" : ""}">
+                <span>${index + 1}</span>
+                <small>${escapeHtml(roundReps(item, index))}</small>
+              </div>
             `).join("")}
           </div>
           <div class="round-actions">
@@ -2116,6 +2235,7 @@
       document.getElementById("editName").value = adding ? "" : item?.name || "";
       document.getElementById("editSets").value = adding ? "1" : item?.sets || "";
       document.getElementById("editReps").value = adding ? "" : item?.reps || "";
+      renderRoundRepsEditor(adding ? null : item);
       document.getElementById("editRest").value = adding ? 60 : item?.rest || 60;
       document.getElementById("editCategory").value = adding ? "" : item?.category || "";
       document.getElementById("editVideo").value = adding ? "" : item?.video || "";
@@ -2125,6 +2245,17 @@
       document.getElementById("saveBtn").textContent = adding ? "Agregar ejercicio" : "Guardar";
       updateOrderMax();
       els.editorModal.classList.add("open");
+    }
+
+    function renderRoundRepsEditor(item) {
+      const container = document.getElementById("editRoundReps");
+      if (!container) return;
+      container.innerHTML = Array.from({ length: routineRounds() }, (_, index) => `
+        <label class="round-reps-card">
+          <span>Ronda ${index + 1}</span>
+          <input data-round-reps="${index}" type="text" value="${escapeAttr(item?.roundReps?.[index] || "")}" placeholder="General: ${escapeAttr(item?.reps || "12")}">
+        </label>
+      `).join("");
     }
 
     function closeEditor() {
@@ -2182,6 +2313,7 @@
         name: document.getElementById("editName").value.trim() || "Ejercicio sin titulo",
         sets: document.getElementById("editSets").value.trim() || "3",
         reps: document.getElementById("editReps").value.trim() || "12",
+        roundReps: Array.from(document.querySelectorAll("[data-round-reps]")).map(input => input.value.trim()),
         rest: Number(document.getElementById("editRest").value) || 60,
         category: document.getElementById("editCategory").value.trim(),
         video: document.getElementById("editVideo").value.trim(),
@@ -2208,6 +2340,7 @@
       if (session && isAdmin) {
         render();
         updateRoutineFields();
+        applyDraftFields();
       }
     }
 
@@ -2257,6 +2390,12 @@
     function applyRoutineRecord(record) {
       const data = record.data || {};
       state.routine = data.routine?.length ? data.routine : structuredClone(starterRoutine);
+      state.routine.forEach(group => {
+        group.exercises = (group.exercises || []).map(item => ({
+          ...item,
+          roundReps: Array.isArray(item.roundReps) ? item.roundReps.map(rep => String(rep || "").trim()) : []
+        }));
+      });
       state.totalRounds = normalizeRounds(data.totalRounds);
       state.musicUrl = spotifyEmbedUrl(data.musicUrl) ? data.musicUrl : "";
       state.youtubeUrl = youtubeEmbedUrl(data.youtubeUrl) ? data.youtubeUrl : "";
@@ -2268,6 +2407,12 @@
       state.rounds = {};
       state.view = "routine";
       if (record.title && state.routine[0]) state.routine[0].title = record.title;
+      state.draft = {
+        title: record.title || state.routine[0]?.title || "",
+        clientName: record.client_name || "",
+        slug: record.slug || "",
+        savedAt: new Date().toISOString()
+      };
       updateRoutineFields(record);
       render();
     }
@@ -2358,6 +2503,8 @@
         const clientName = els.clientName.value.trim();
         const slug = slugify(els.routineSlug.value || clientName || title);
         if (state.routine[0]) state.routine[0].title = title;
+        state.draft = { title, clientName, slug, savedAt: new Date().toISOString() };
+        saveState();
         const body = {
           slug,
           title,
@@ -2377,7 +2524,14 @@
         });
         const saved = rows?.[0];
         remoteRoutineId = saved?.id || remoteRoutineId;
-        if (!silent) updateRoutineFields(saved || body);
+        state.draft = {
+          title: saved?.title || title,
+          clientName: saved?.client_name || clientName,
+          slug: saved?.slug || slug,
+          savedAt: new Date().toISOString()
+        };
+        updateRoutineFields(saved || body);
+        saveState();
         await loadAdminRoutines();
         setSaveState("Guardado");
         setRemoteStatus(silent ? "Cambios guardados automaticamente." : "Rutina guardada online. Link listo para enviar.");
@@ -2409,6 +2563,7 @@
           state.youtubeUrl = "";
           state.musicOpen = false;
           state.musicProvider = "spotify";
+          state.draft = {};
           updateRoutineFields({ title: "NUEVA RUTINA", client_name: "", slug: "" });
           render();
         }
@@ -2433,6 +2588,7 @@
       state.musicOpen = false;
       state.musicProvider = "spotify";
       state.view = "routine";
+      state.draft = {};
       updateRoutineFields({ title: "NUEVA RUTINA", client_name: "", slug });
       render();
       setRemoteStatus("Rutina vacia creada. Completa los datos y se guardara automaticamente.");
@@ -2646,8 +2802,13 @@
     if (canRenderApp) {
       render();
       updateRoutineFields();
+      applyDraftFields();
     }
     updateRemoteStatus();
+    if (recoveredLocalBackup && isAdmin) {
+      setSaveState("Respaldo recuperado");
+      setRemoteStatus("Recupere una copia local anterior. Revisa y guarda online.");
+    }
     if (routineParam && !isAdmin) loadRemoteRoutine(routineParam);
     if (isAdmin && authSession?.access_token) {
       loadAdminRoutines();
