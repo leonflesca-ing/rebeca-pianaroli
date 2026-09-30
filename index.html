@@ -4,1321 +4,818 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Rebeca Pianaroli</title>
-  <meta name="theme-color" content="#111014">
+  <meta name="theme-color" content="#0a090c">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Rebeca PT">
   <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #111014;
-      --surface: #18151b;
-      --surface-2: #221b24;
-      --line: rgba(255, 255, 255, .1);
-      --line-strong: rgba(236, 0, 121, .45);
-      --text: #f9f4f7;
-      --muted: #b7aab2;
-      --pink: #ec0079;
-      --pink-2: #ff4ea8;
-      --pink-soft: rgba(236, 0, 121, .13);
-      --white: #ffffff;
-      --black: #050406;
-      --warn: #f9b84e;
-      --radius: 8px;
-      --shadow: 0 16px 48px rgba(0, 0, 0, .38);
+      --bg: #0a090c;
+      --bg-2: #0f0d12;
+      --surface: #141217;
+      --surface-2: #1a171e;
+      --surface-3: #221e27;
+      --line: rgba(255, 255, 255, .07);
+      --line-2: rgba(255, 255, 255, .12);
+      --text: #f6f2f5;
+      --text-2: #cfc6cc;
+      --muted: #8f858c;
+      --pink: #ec0f7c;
+      --pink-2: #ff5aa8;
+      --pink-soft: rgba(236, 15, 124, .12);
+      --pink-line: rgba(236, 15, 124, .38);
+      --gradient: linear-gradient(135deg, #ff3d97 0%, #ec0f7c 55%, #c80a68 100%);
+      --ok: #3ddc97;
+      --ok-soft: rgba(61, 220, 151, .12);
+      --warn: #ffb547;
+      --danger: #ff5c6c;
+      --danger-soft: rgba(255, 92, 108, .1);
+      --radius-sm: 10px;
+      --radius: 16px;
+      --radius-lg: 22px;
+      --shadow: 0 1px 0 rgba(255, 255, 255, .04) inset, 0 20px 50px -20px rgba(0, 0, 0, .7);
+      --shadow-pink: 0 12px 32px -10px rgba(236, 15, 124, .55);
+      --display: "Montserrat", "Inter", ui-sans-serif, system-ui, sans-serif;
+      --body: "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --ease: cubic-bezier(.2, .8, .2, 1);
       color-scheme: dark;
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-family: var(--body);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
     }
 
     * { box-sizing: border-box; }
-    html { background: var(--bg); }
+    html { background: var(--bg); -webkit-text-size-adjust: 100%; }
     body {
       margin: 0;
       min-height: 100dvh;
       background:
-        linear-gradient(135deg, rgba(236, 0, 121, .16), transparent 38%),
-        radial-gradient(circle at top right, rgba(255, 78, 168, .16), transparent 34%),
+        radial-gradient(900px 500px at 100% -10%, rgba(236, 15, 124, .13), transparent 60%),
+        radial-gradient(700px 420px at -10% 0%, rgba(255, 90, 168, .06), transparent 60%),
         var(--bg);
+      background-attachment: fixed;
       color: var(--text);
-    }
-
-    button, input, select, textarea {
-      font: inherit;
-      color: inherit;
-    }
-
-    button {
-      border: 0;
-      cursor: pointer;
-    }
-
-    .app {
-      width: min(1180px, 100%);
-      margin: 0 auto;
-      padding: 18px;
-    }
-
-    .topbar {
-      display: grid;
-      grid-template-columns: 92px 1fr auto;
-      gap: 16px;
-      align-items: center;
-      padding: 14px 0 18px;
-    }
-
-    .brand-mark {
-      width: 92px;
-      aspect-ratio: 1;
-      border-radius: 50%;
-      overflow: hidden;
-      background: var(--white);
-      border: 1px solid rgba(255, 255, 255, .18);
-      box-shadow: 0 10px 34px rgba(236, 0, 121, .22);
-    }
-
-    .brand-mark img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-    }
-
-    .brand h1 {
-      margin: 0;
-      font-size: clamp(2rem, 5vw, 4.2rem);
-      line-height: .92;
-      letter-spacing: 0;
-      text-transform: uppercase;
-    }
-
-    .brand p {
-      margin: 8px 0 0;
-      color: var(--muted);
-      font-size: 1rem;
-      text-transform: uppercase;
-      letter-spacing: .16em;
-    }
-
-    .actions {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-      justify-content: flex-end;
-      flex-wrap: wrap;
-    }
-
-    .btn {
-      min-height: 42px;
-      padding: 0 14px;
-      border-radius: var(--radius);
-      background: var(--surface-2);
-      border: 1px solid var(--line);
-      color: var(--text);
-      font-weight: 760;
-      transition: transform .16s ease, border-color .16s ease, background .16s ease;
-    }
-
-    .btn:hover {
-      transform: translateY(-1px);
-      border-color: var(--line-strong);
-    }
-
-    .btn.primary {
-      background: linear-gradient(135deg, var(--pink), var(--pink-2));
-      border-color: transparent;
-      color: var(--white);
-    }
-
-    .btn.warning {
-      color: var(--warn);
-    }
-
-    .admin-only {
-      display: none !important;
-    }
-
-    body.admin .admin-only {
-      display: revert !important;
-    }
-
-    .admin-login-screen.admin-only {
-      display: none !important;
-    }
-
-    body.admin:not(.admin-authenticated) .admin-login-screen.admin-only {
-      display: grid !important;
-    }
-
-    body.admin:not(.admin-authenticated) .app {
-      display: none;
-    }
-
-    body.admin:not(.admin-authenticated) .admin-tools.admin-only {
-      display: none !important;
-    }
-
-    body.admin.admin-authenticated .app {
-      animation: dashboardIn .36s ease both;
-    }
-
-    body.admin.admin-authenticated .topbar {
-      display: none;
-    }
-
-    body.admin.admin-authenticated .admin-tools {
-      margin-top: 0;
-    }
-
-    .admin-login-screen {
-      min-height: 100dvh;
-      place-items: center;
-      padding: 24px;
-      position: relative;
-      overflow: hidden;
-      background:
-        radial-gradient(circle at 18% 22%, rgba(236, 0, 121, .34), transparent 28%),
-        radial-gradient(circle at 82% 18%, rgba(255, 78, 168, .24), transparent 30%),
-        linear-gradient(135deg, #050406 0%, #111014 46%, #2a1020 100%);
-    }
-
-    .admin-login-screen::before,
-    .admin-login-screen::after {
-      content: "";
-      position: absolute;
-      inset: -18%;
-      pointer-events: none;
-    }
-
-    .admin-login-screen::before {
-      background:
-        linear-gradient(115deg, transparent 0 26%, rgba(236, 0, 121, .14) 34%, transparent 48% 100%),
-        linear-gradient(245deg, transparent 0 42%, rgba(255, 78, 168, .12) 54%, transparent 66% 100%);
-      animation: loginGlow 9s ease-in-out infinite alternate;
-    }
-
-    .admin-login-screen::after {
-      background-image:
-        linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px);
-      background-size: 54px 54px;
-      -webkit-mask-image: radial-gradient(circle at center, black, transparent 72%);
-      mask-image: radial-gradient(circle at center, black, transparent 72%);
-      opacity: .42;
-    }
-
-    .admin-login-card {
-      position: relative;
-      z-index: 1;
-      width: min(430px, 100%);
-      border: 1px solid rgba(255, 255, 255, .14);
-      border-radius: 14px;
-      padding: 24px;
-      background: rgba(17, 16, 20, .76);
-      box-shadow: 0 24px 80px rgba(0, 0, 0, .52);
-      -webkit-backdrop-filter: blur(18px);
-      backdrop-filter: blur(18px);
-      display: grid;
-      gap: 18px;
-      animation: loginCardIn .42s ease both;
-    }
-
-    body.admin-login-exiting .admin-login-card {
-      animation: loginCardOut .28s ease both;
-    }
-
-    .admin-login-brand {
-      display: grid;
-      justify-items: center;
-      text-align: center;
-      gap: 10px;
-    }
-
-    .admin-login-logo {
-      width: 110px;
-      aspect-ratio: 1;
-      border-radius: 50%;
-      overflow: hidden;
-      background: var(--white);
-      border: 1px solid rgba(255, 255, 255, .2);
-      box-shadow: 0 18px 48px rgba(236, 0, 121, .32);
-    }
-
-    .admin-login-logo img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-    }
-
-    .admin-login-brand h1 {
-      margin: 0;
-      font-size: clamp(1.9rem, 7vw, 2.75rem);
-      line-height: .94;
-      text-transform: uppercase;
-      letter-spacing: 0;
-    }
-
-    .admin-login-brand p {
-      margin: 0;
-      color: var(--muted);
+      font-size: 15px;
       line-height: 1.45;
-      max-width: 310px;
+      overflow-x: hidden;
     }
 
-    .admin-login-form {
-      display: grid;
-      gap: 12px;
-    }
+    img, video, iframe { max-width: 100%; }
+    button, input, select, textarea { font: inherit; color: inherit; }
+    button { border: 0; cursor: pointer; background: none; -webkit-tap-highlight-color: transparent; }
+    h1, h2, h3 { margin: 0; font-family: var(--display); letter-spacing: -.01em; overflow-wrap: anywhere; }
+    p { margin: 0; }
+    svg.icon { width: 18px; height: 18px; flex: none; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
-    .admin-login-form .btn.primary {
-      min-height: 48px;
-      font-size: 1rem;
-    }
+    ::selection { background: rgba(236, 15, 124, .35); }
+    :focus-visible { outline: 2px solid var(--pink-2); outline-offset: 2px; }
 
-    .login-status {
-      min-height: 22px;
-      color: var(--muted);
-      font-size: .9rem;
-      line-height: 1.35;
-      text-align: center;
-    }
-
-    @keyframes loginGlow {
-      0% { transform: translate3d(-2%, -1%, 0) rotate(0deg); opacity: .72; }
-      100% { transform: translate3d(3%, 2%, 0) rotate(4deg); opacity: 1; }
-    }
-
-    @keyframes loginCardIn {
-      from { opacity: 0; transform: translateY(18px) scale(.98); }
-      to { opacity: 1; transform: translateY(0) scale(1); }
-    }
-
-    @keyframes loginCardOut {
-      from { opacity: 1; transform: translateY(0) scale(1); }
-      to { opacity: 0; transform: translateY(-12px) scale(.985); }
-    }
-
-    @keyframes dashboardIn {
-      from { opacity: 0; transform: translateY(12px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .layout {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) 390px;
-      gap: 18px;
-      align-items: start;
-    }
-
-    body.admin:not(.admin-authenticated) .layout {
-      display: none;
-    }
-
-    .panel {
-      background: rgba(24, 21, 27, .92);
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      overflow: hidden;
-    }
-
-    .panel-head {
-      min-height: 56px;
-      padding: 14px 16px;
-      border-bottom: 1px solid var(--line);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-    }
-
-    .panel-head h2 {
-      margin: 0;
-      font-size: 1rem;
-      letter-spacing: 0;
-    }
-
-    .panel-kicker {
-      color: var(--muted);
-      font-size: .78rem;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: .08em;
-    }
-
-    .panel-body { padding: 16px; }
-
-    .tabs {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 8px;
-      margin-bottom: 12px;
-    }
-
-    .tab {
-      min-height: 70px;
-      text-align: left;
-      border-radius: var(--radius);
-      background: rgba(255, 255, 255, .04);
-      border: 1px solid var(--line);
-      padding: 12px;
-    }
-
-    .tab.active {
-      border-color: var(--pink);
-      background: linear-gradient(180deg, rgba(236, 0, 121, .24), rgba(236, 0, 121, .08));
-    }
-
-    .tab strong {
-      display: block;
-      font-size: 1rem;
-    }
-
-    .tab span {
-      display: block;
-      color: var(--muted);
-      font-size: .86rem;
-      margin-top: 4px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .stats {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 8px;
-      margin-bottom: 12px;
-    }
-
-    .stat {
-      border: 1px solid var(--line);
-      background: rgba(255, 255, 255, .035);
-      border-radius: var(--radius);
-      padding: 11px 12px;
-    }
-
-    .stat span {
-      display: block;
-      color: var(--muted);
-      font-size: .78rem;
-      font-weight: 760;
-    }
-
-    .stat strong {
-      display: block;
-      margin-top: 4px;
-      font-size: 1.35rem;
-    }
-
-    .progress {
-      height: 8px;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, .08);
-      overflow: hidden;
-      margin-bottom: 12px;
-    }
-
-    .progress span {
-      display: block;
-      height: 100%;
-      width: 0%;
-      background: linear-gradient(90deg, var(--pink), var(--pink-2));
-      transition: width .2s ease;
-    }
-
-    .exercise-list {
-      display: grid;
-      gap: 10px;
-    }
-
-    .exercise-card {
-      display: grid;
-      grid-template-columns: 118px minmax(0, 1fr) auto;
-      gap: 12px;
-      align-items: center;
-      padding: 12px;
-      border: 1px solid var(--line);
-      background: rgba(255, 255, 255, .035);
-      border-radius: var(--radius);
-    }
-
-    .exercise-card.active {
-      border-color: var(--pink);
-      background: rgba(236, 0, 121, .12);
-    }
-
-    .exercise-card.expanded {
-      align-items: start;
-    }
-
-    .thumb, .video-frame {
-      position: relative;
-      aspect-ratio: 9 / 12;
-      border-radius: var(--radius);
-      background:
-        linear-gradient(135deg, rgba(236, 0, 121, .22), rgba(255, 255, 255, .04)),
-        #211922;
-      border: 1px solid rgba(255, 255, 255, .11);
-      overflow: hidden;
-    }
-
-    .thumb video, .video-frame video,
-    .thumb img.media-asset, .video-frame img.media-asset {
-      width: 100%;
-      height: 100%;
-      object-fit: contain;
-      display: block;
-      background: var(--black);
-    }
-
-    .video-frame {
-      aspect-ratio: 9 / 13;
-      margin-bottom: 14px;
-    }
-
-    .expanded-video {
-      grid-column: 1 / -1;
-      aspect-ratio: 9 / 14;
-      max-height: min(76dvh, 760px);
-    }
-
-    .placeholder {
-      position: absolute;
-      inset: 0;
-      display: grid;
-      place-items: center;
-      padding: 12px;
-      text-align: center;
-    }
-
-    .placeholder img {
-      width: 70%;
-      max-width: 170px;
-      border-radius: 50%;
-      background: #fff;
-      opacity: .96;
-    }
-
-    .placeholder span {
-      position: absolute;
-      left: 10px;
-      right: 10px;
-      bottom: 10px;
-      color: var(--muted);
-      font-size: .74rem;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: .08em;
-    }
-
-    .exercise-main {
-      min-width: 0;
-    }
-
-    .exercise-main h3 {
-      margin: 0;
-      font-size: 1.02rem;
-      line-height: 1.2;
-    }
-
-    .meta {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-      margin: 8px 0;
-    }
-
-    .pill {
+    /* ---------- Botones ---------- */
+    .btn {
       display: inline-flex;
       align-items: center;
-      min-height: 28px;
-      padding: 0 9px;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, .07);
-      border: 1px solid var(--line);
-      color: var(--muted);
-      font-weight: 800;
-      font-size: .82rem;
-    }
-
-    .music-card {
-      display: none;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      margin: 0 0 14px;
-      padding: 12px;
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      background: rgba(255, 255, 255, .035);
-    }
-
-    .music-card.ready {
-      display: flex;
-    }
-
-    .music-card.open {
-      display: grid;
-      grid-template-columns: 1fr auto;
-    }
-
-    .music-card h2 {
-      margin: 0;
-      font-size: 1rem;
-      line-height: 1;
-    }
-
-    .music-frame {
-      grid-column: 1 / -1;
-      width: 100%;
-      height: 152px;
-      border: 0;
-      border-radius: var(--radius);
-      overflow: hidden;
-      background: var(--black);
-    }
-
-    .music-switch {
-      grid-column: 1 / -1;
-      width: fit-content;
-      margin: -2px auto 0;
-      padding: 0;
-      border: 0;
-      background: transparent;
-      color: var(--muted);
-      font-size: .78rem;
-      font-weight: 800;
-      text-decoration: underline;
-    }
-
-    .exercise-main p {
-      margin: 0;
-      color: var(--muted);
+      justify-content: center;
+      gap: 8px;
+      min-height: 42px;
+      padding: 0 16px;
+      border-radius: 12px;
+      border: 1px solid var(--line-2);
+      background: rgba(255, 255, 255, .03);
+      color: var(--text);
+      font-weight: 600;
       font-size: .9rem;
-      line-height: 1.35;
+      white-space: nowrap;
+      text-decoration: none;
+      transition: background .2s var(--ease), border-color .2s var(--ease), transform .15s var(--ease), box-shadow .2s var(--ease), color .2s;
     }
-
-    .card-actions {
-      display: grid;
-      gap: 8px;
-      width: 96px;
-    }
-
-    .check {
-      width: 64px;
-      height: 42px;
-      margin-left: auto;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, .08);
-      border: 1px solid var(--line);
-      color: var(--white);
-      font-size: .9rem;
-      font-weight: 900;
-    }
-
-    .check.done {
-      background: var(--pink);
-      border-color: var(--pink);
-    }
-
-    .timer {
-      text-align: center;
-    }
-
-    .timer-display {
-      font-size: clamp(3rem, 10vw, 4.7rem);
-      line-height: 1;
-      font-weight: 900;
-      font-variant-numeric: tabular-nums;
-      margin: 12px 0 16px;
-    }
-
-    .timer-buttons {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-    }
-
-    .detail-title {
-      font-size: 1.4rem;
-      margin: 0 0 8px;
-      line-height: 1.1;
-    }
-
-    .log-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      margin-top: 12px;
-    }
-
-    .round-progress {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 8px;
-      margin: 12px 0;
-    }
-
-    .round-dot {
-      min-height: 44px;
-      border-radius: var(--radius);
-      border: 1px solid var(--line);
-      background: rgba(255, 255, 255, .045);
-      color: var(--muted);
-      display: grid;
-      place-items: center;
-      font-weight: 900;
-    }
-
-    .round-dot.done {
+    .btn:hover { background: rgba(255, 255, 255, .07); border-color: rgba(255, 255, 255, .2); }
+    .btn:active { transform: scale(.97); }
+    .btn:disabled { opacity: .45; cursor: not-allowed; transform: none; }
+    .btn.primary {
       border-color: transparent;
-      background: linear-gradient(135deg, var(--pink), var(--pink-2));
-      color: var(--white);
+      background: var(--gradient);
+      color: #fff;
+      box-shadow: var(--shadow-pink);
     }
+    .btn.primary:hover { filter: brightness(1.08); }
+    .btn.ghost { border-color: transparent; background: transparent; color: var(--text-2); }
+    .btn.ghost:hover { background: rgba(255, 255, 255, .06); color: var(--text); }
+    .btn.warning, .btn.danger { color: var(--danger); border-color: rgba(255, 92, 108, .25); background: var(--danger-soft); }
+    .btn.warning:hover, .btn.danger:hover { background: rgba(255, 92, 108, .18); border-color: rgba(255, 92, 108, .45); }
+    .btn.sm { min-height: 34px; padding: 0 12px; font-size: .82rem; border-radius: 10px; }
+    .btn.icon-only { width: 42px; padding: 0; }
+    .btn.sm.icon-only { width: 34px; }
 
-    .round-actions {
-      display: grid;
-      grid-template-columns: 1fr 1fr 1fr;
-      gap: 8px;
-      margin-top: 10px;
-    }
-
-    .round-reps-editor {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(112px, 1fr));
-      gap: 8px;
-    }
-
-    .round-reps-card {
-      display: grid;
-      gap: 6px;
-      padding: 9px;
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      background: rgba(255, 255, 255, .035);
-    }
-
-    .round-reps-card span {
+    /* ---------- Campos ---------- */
+    .field { display: grid; gap: 7px; min-width: 0; }
+    .field label, .field > span {
+      font-size: .74rem;
+      font-weight: 600;
+      letter-spacing: .06em;
+      text-transform: uppercase;
       color: var(--muted);
-      font-size: .76rem;
-      font-weight: 850;
     }
-
-    .round-dot small {
-      display: block;
-      margin-top: 2px;
-      font-size: .68rem;
-      font-weight: 800;
-      color: currentColor;
-      opacity: .78;
-    }
-
-    .field {
-      display: grid;
-      gap: 6px;
-    }
-
-    label {
-      color: var(--muted);
-      font-size: .78rem;
-      font-weight: 800;
-    }
-
+    .field .hint { font-size: .78rem; color: var(--muted); letter-spacing: 0; text-transform: none; font-weight: 500; }
     input, select, textarea {
       width: 100%;
-      border-radius: var(--radius);
-      border: 1px solid var(--line);
-      background: rgba(255, 255, 255, .05);
-      min-height: 42px;
-      padding: 9px 10px;
-      outline: none;
-    }
-
-    textarea {
-      min-height: 84px;
-      resize: vertical;
-    }
-
-    .password-control {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
-      gap: 8px;
-      align-items: center;
-    }
-
-    .password-control input {
       min-width: 0;
+      min-height: 46px;
+      padding: 11px 14px;
+      border-radius: 12px;
+      border: 1px solid var(--line-2);
+      background: var(--bg-2);
+      color: var(--text);
+      font-size: .95rem;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s, background .2s;
     }
-
+    input::placeholder, textarea::placeholder { color: #5f575d; }
     input:focus, select:focus, textarea:focus {
-      border-color: var(--pink);
-      box-shadow: 0 0 0 3px rgba(236, 0, 121, .16);
+      border-color: var(--pink-line);
+      box-shadow: 0 0 0 4px rgba(236, 15, 124, .12);
+      background: #110f14;
     }
+    input[readonly] { color: var(--text-2); }
+    textarea { min-height: 96px; resize: vertical; line-height: 1.5; }
+    select { appearance: none; background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%), linear-gradient(135deg, var(--muted) 50%, transparent 50%); background-position: calc(100% - 20px) 50%, calc(100% - 15px) 50%; background-size: 5px 5px; background-repeat: no-repeat; padding-right: 36px; }
+    .input-group { display: flex; gap: 8px; min-width: 0; }
+    .input-group input { flex: 1; }
 
-    .history-list {
-      display: grid;
-      gap: 8px;
-      margin-top: 12px;
+    /* ---------- Visibilidad por modo ---------- */
+    .admin-only { display: none !important; }
+    body.admin .admin-only { display: revert !important; }
+    body.admin .admin-login-screen.admin-only { display: none !important; }
+    body.admin:not(.admin-authenticated) .admin-login-screen.admin-only { display: grid !important; }
+    body.admin.admin-checking .admin-login-screen.admin-only { display: none !important; }
+    body.admin:not(.admin-authenticated) .shell { display: none; }
+    body.admin .topbar { display: none; }
+    .file-actions { display: none; }
+
+    .boot-screen { display: none; }
+    body.admin.admin-checking .boot-screen {
+      position: fixed; inset: 0; z-index: 60;
+      display: grid; place-items: center; gap: 18px; align-content: center;
+      color: var(--muted); font-size: .9rem;
     }
+    .boot-screen img { width: 64px; height: 64px; border-radius: 50%; background: #fff; object-fit: cover; animation: pulse 1.4s ease-in-out infinite; }
+    @keyframes pulse { 50% { transform: scale(.94); opacity: .7; } }
 
-    .session {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      padding: 12px;
-      border-radius: var(--radius);
-      background: rgba(255, 255, 255, .045);
-      border: 1px solid var(--line);
-    }
-
-    .modal {
+    /* ---------- Login ---------- */
+    .admin-login-screen {
       position: fixed;
       inset: 0;
-      z-index: 30;
-      display: none;
+      z-index: 50;
       place-items: center;
-      padding: 16px;
-      background: rgba(0, 0, 0, .72);
+      padding: 24px 16px;
+      overflow-y: auto;
+      background:
+        radial-gradient(600px 400px at 85% 10%, rgba(236, 15, 124, .22), transparent 60%),
+        radial-gradient(500px 380px at 10% 95%, rgba(255, 90, 168, .12), transparent 60%),
+        var(--bg);
     }
+    .admin-login-card {
+      width: min(420px, 100%);
+      padding: 36px 32px 30px;
+      border-radius: 26px;
+      border: 1px solid var(--line-2);
+      background: linear-gradient(180deg, rgba(30, 26, 34, .9), rgba(18, 16, 21, .92));
+      box-shadow: 0 40px 100px -30px rgba(0, 0, 0, .9), 0 0 0 1px rgba(236, 15, 124, .06);
+      -webkit-backdrop-filter: blur(20px);
+      backdrop-filter: blur(20px);
+      animation: rise .5s var(--ease) both;
+    }
+    body.admin-login-exiting .admin-login-card { animation: fadeOut .28s ease both; }
+    .admin-login-brand { display: grid; justify-items: center; text-align: center; gap: 14px; margin-bottom: 28px; }
+    .admin-login-logo { width: 84px; height: 84px; border-radius: 50%; overflow: hidden; background: #fff; box-shadow: 0 0 0 6px rgba(236, 15, 124, .12), var(--shadow-pink); }
+    .admin-login-logo img { width: 100%; height: 100%; object-fit: cover; transform: scale(1.35); }
+    .admin-login-brand .eyebrow { justify-self: center; }
+    .admin-login-brand h1 { font-size: 1.6rem; font-weight: 700; }
+    .admin-login-brand p { color: var(--muted); font-size: .92rem; }
+    .admin-login-form { display: grid; gap: 16px; }
+    .admin-login-form .btn.primary { min-height: 50px; margin-top: 6px; font-size: .95rem; }
+    .password-control { position: relative; }
+    .password-control input { padding-right: 84px; }
+    .password-control .btn { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); min-height: 34px; padding: 0 12px; font-size: .8rem; border-color: transparent; background: transparent; color: var(--muted); }
+    .password-control .btn:hover { color: var(--text); background: rgba(255, 255, 255, .06); }
+    .login-status { min-height: 20px; text-align: center; font-size: .86rem; color: var(--muted); }
+    .login-status.error { color: var(--danger); }
+    .login-foot { margin-top: 22px; padding-top: 18px; border-top: 1px solid var(--line); text-align: center; font-size: .78rem; color: #6d646b; }
 
-    .modal.open { display: grid; }
+    @keyframes rise { from { opacity: 0; transform: translateY(14px) scale(.985); } to { opacity: 1; transform: none; } }
+    @keyframes fadeOut { to { opacity: 0; transform: translateY(-8px) scale(.98); } }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 
-    .modal-card {
-      width: min(760px, 100%);
-      max-height: 90dvh;
-      overflow: auto;
-      background: var(--surface);
+    .eyebrow {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-family: var(--display);
+      font-size: .7rem; font-weight: 700; letter-spacing: .22em; text-transform: uppercase;
+      color: var(--pink-2);
+    }
+    .eyebrow::before { content: ""; width: 18px; height: 2px; border-radius: 2px; background: var(--gradient); }
+
+    /* ---------- Estructura ---------- */
+    .shell { min-height: 100dvh; }
+    body.admin .shell { display: grid; grid-template-columns: 290px minmax(0, 1fr); }
+    body.admin.admin-authenticated .shell { animation: fadeIn .4s var(--ease) both; }
+
+    .app { width: min(1180px, 100%); margin: 0 auto; padding: 22px 20px 60px; min-width: 0; }
+    body.admin .app { width: 100%; max-width: 1240px; padding: 28px 32px 80px; }
+
+    /* ---------- Topbar alumna ---------- */
+    .topbar { display: flex; align-items: center; gap: 14px; padding: 6px 2px 22px; }
+    .brand-mark { width: 54px; height: 54px; border-radius: 50%; overflow: hidden; background: #fff; flex: none; box-shadow: 0 0 0 4px rgba(236, 15, 124, .14); }
+    .brand-mark img { width: 100%; height: 100%; object-fit: cover; transform: scale(1.35); }
+    .brand { min-width: 0; }
+    .brand h1 { font-size: 1.05rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+    .brand p { margin-top: 2px; font-family: var(--display); font-size: .68rem; font-weight: 600; letter-spacing: .32em; text-transform: uppercase; color: var(--pink-2); }
+
+    /* ---------- Sidebar profesora ---------- */
+    .admin-sidebar {
+      position: sticky; top: 0;
+      height: 100dvh;
+      flex-direction: column;
+      gap: 18px;
+      padding: 24px 18px 18px;
+      border-right: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(20, 18, 23, .96), rgba(12, 11, 14, .96));
+      min-width: 0;
+    }
+    body.admin .admin-sidebar.admin-only { display: flex !important; }
+    .sidebar-brand { display: flex; align-items: center; gap: 12px; padding: 0 6px 18px; border-bottom: 1px solid var(--line); }
+    .sidebar-brand .brand-mark { width: 44px; height: 44px; }
+    .sidebar-brand strong { display: block; font-family: var(--display); font-size: .82rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+    .sidebar-brand span { display: block; margin-top: 2px; font-size: .74rem; color: var(--muted); }
+    .sidebar-section-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 0 6px; }
+    .sidebar-section-head h2 { font-size: .72rem; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+    .sidebar-count { margin-left: 6px; padding: 2px 8px; border-radius: 999px; background: var(--surface-3); color: var(--text-2); font-size: .7rem; letter-spacing: 0; }
+    .sidebar-search { position: relative; }
+    .sidebar-search svg { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--muted); width: 16px; height: 16px; }
+    .sidebar-search input { min-height: 40px; padding: 8px 12px 8px 36px; font-size: .88rem; border-radius: 11px; background: rgba(255, 255, 255, .03); }
+    .routine-list { flex: 1; min-height: 0; overflow-y: auto; display: grid; align-content: start; gap: 4px; margin: 0 -6px; padding: 0 6px; scrollbar-width: thin; }
+    .routine-item {
+      position: relative;
+      display: flex; align-items: center; gap: 12px;
+      width: 100%;
+      padding: 10px;
+      border-radius: 12px;
+      border: 1px solid transparent;
+      text-align: left;
+      transition: background .2s, border-color .2s;
+      cursor: pointer;
+    }
+    .routine-item:hover { background: rgba(255, 255, 255, .04); }
+    .routine-item.active { background: var(--pink-soft); border-color: rgba(236, 15, 124, .25); }
+    .routine-item.active::before { content: ""; position: absolute; left: -6px; top: 12px; bottom: 12px; width: 3px; border-radius: 3px; background: var(--gradient); }
+    .avatar {
+      width: 38px; height: 38px; flex: none;
+      display: grid; place-items: center;
+      border-radius: 11px;
+      background: var(--surface-3);
+      color: var(--text-2);
+      font-family: var(--display); font-weight: 700; font-size: .85rem;
+    }
+    .routine-item.active .avatar { background: var(--gradient); color: #fff; }
+    .routine-item-text { min-width: 0; flex: 1; }
+    .routine-item-text strong { display: block; font-size: .9rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .routine-item-text span { display: block; margin-top: 1px; font-size: .76rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .routine-actions { display: flex; opacity: 0; transition: opacity .2s; }
+    .routine-item:hover .routine-actions, .routine-item.active .routine-actions, .routine-item:focus-within .routine-actions { opacity: 1; }
+    .routine-actions .btn { width: 30px; min-height: 30px; padding: 0; border-color: transparent; background: transparent; color: var(--muted); }
+    .routine-actions .btn:hover { color: var(--danger); background: var(--danger-soft); }
+    .routine-actions svg { width: 16px; height: 16px; }
+    .sidebar-empty { padding: 18px 10px; text-align: center; color: var(--muted); font-size: .86rem; }
+    .sidebar-foot { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding-top: 14px; border-top: 1px solid var(--line); }
+    .sidebar-foot .btn { min-height: 38px; font-size: .82rem; }
+    .sidebar-foot .logout { grid-column: 1 / -1; }
+
+    /* ---------- Cabecera de rutina (profesora) ---------- */
+    .admin-main { gap: 22px; margin-bottom: 30px; min-width: 0; }
+    body.admin .admin-main.admin-only { display: grid !important; }
+    .admin-header { display: flex; align-items: flex-end; justify-content: space-between; gap: 18px; flex-wrap: wrap; }
+    .admin-header-text { min-width: 0; flex: 1 1 320px; }
+    .admin-header h1 { margin-top: 10px; font-size: clamp(1.6rem, 3vw, 2.3rem); font-weight: 800; line-height: 1.1; text-transform: uppercase; letter-spacing: .01em; }
+    .admin-header-meta { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 10px; color: var(--muted); font-size: .88rem; }
+    .admin-header-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+    .save-pill {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 5px 11px; border-radius: 999px;
+      background: var(--ok-soft); color: var(--ok);
+      font-size: .76rem; font-weight: 600;
+    }
+    .save-pill::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; box-shadow: 0 0 0 3px rgba(61, 220, 151, .18); }
+    .save-pill.saving { background: rgba(255, 181, 71, .12); color: var(--warn); }
+    .save-pill.saving::before { animation: pulse 1s infinite; box-shadow: none; }
+    .save-pill.error { background: var(--danger-soft); color: var(--danger); }
+    .dot-sep { width: 4px; height: 4px; border-radius: 50%; background: #4a4248; }
+
+    .status-line {
+      display: flex; align-items: center; gap: 10px;
+      padding: 11px 14px;
+      border-radius: 12px;
       border: 1px solid var(--line);
+      background: rgba(255, 255, 255, .02);
+      color: var(--text-2);
+      font-size: .86rem;
+    }
+    .status-line:empty { display: none; }
+    .status-line::before { content: ""; width: 6px; height: 6px; flex: none; border-radius: 50%; background: var(--pink-2); }
+
+    .admin-grid { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 16px; }
+    .card {
+      min-width: 0;
+      padding: 20px;
       border-radius: var(--radius);
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, var(--surface-2), var(--surface));
       box-shadow: var(--shadow);
     }
-
-    .editor-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 12px;
+    .card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 16px; }
+    .card-title { display: flex; align-items: center; gap: 11px; min-width: 0; }
+    .card-icon { width: 34px; height: 34px; flex: none; display: grid; place-items: center; border-radius: 10px; background: var(--pink-soft); color: var(--pink-2); }
+    .card-icon svg { width: 17px; height: 17px; }
+    .card-title h2 { font-size: .98rem; font-weight: 700; }
+    .card-title p { font-size: .78rem; color: var(--muted); margin-top: 1px; }
+    .card-data { grid-column: span 7; }
+    .card-link { grid-column: span 5; display: flex; flex-direction: column; }
+    .card-music { grid-column: span 12; }
+    .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    .card-link .link-box { margin-top: auto; display: grid; gap: 12px; }
+    .link-preview {
+      padding: 12px 14px; border-radius: 12px;
+      border: 1px dashed var(--pink-line);
+      background: rgba(236, 15, 124, .05);
+      font-size: .84rem; color: var(--text-2);
+      overflow-wrap: anywhere;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
     }
+    .link-actions { display: grid; grid-template-columns: 1fr auto; gap: 8px; }
 
-    .editor-grid .wide {
-      grid-column: 1 / -1;
-    }
+    .section-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 14px; flex-wrap: wrap; margin: 6px 0 16px; }
+    .section-head h2 { font-size: 1.25rem; font-weight: 800; }
+    .section-head p { color: var(--muted); font-size: .86rem; margin-top: 4px; }
+    .section-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+    body.admin .section-head.admin-only { display: flex !important; }
 
-    .modal-actions {
-      display: flex;
-      gap: 8px;
-      justify-content: space-between;
-      flex-wrap: wrap;
-      margin-top: 16px;
-    }
-
-    .modal-actions .danger-zone,
-    .modal-actions .primary-zone {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .file-actions {
-      display: none;
-    }
-
-    .admin-tools {
-      margin-top: 18px;
-    }
-
-    .admin-tools .panel-body {
-      display: grid;
-      gap: 12px;
-    }
-
-    .admin-summary {
-      display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 8px;
-    }
-
-    .admin-summary.requires-auth {
-      display: none;
-    }
-
-    body.admin-authenticated .admin-summary.requires-auth {
-      display: grid;
-    }
-
-    .summary-card {
-      min-height: 78px;
+    /* ---------- Hero / progreso ---------- */
+    .hero {
+      position: relative;
+      overflow: hidden;
+      padding: 24px;
+      border-radius: var(--radius-lg);
       border: 1px solid var(--line);
+      background:
+        radial-gradient(420px 220px at 100% 0%, rgba(236, 15, 124, .22), transparent 70%),
+        linear-gradient(180deg, var(--surface-2), var(--surface));
+      box-shadow: var(--shadow);
+      margin-bottom: 18px;
+    }
+    body.admin .hero { display: none; }
+    .tabs { display: flex; gap: 8px; flex-wrap: wrap; }
+    .tab { text-align: left; padding: 10px 14px; border-radius: 12px; border: 1px solid var(--line-2); background: rgba(255, 255, 255, .03); transition: .2s; min-width: 0; }
+    .tab.active { border-color: var(--pink-line); background: var(--pink-soft); }
+    .tab strong { display: block; font-size: .9rem; }
+    .tab span { font-size: .76rem; color: var(--muted); }
+    .hero-title { display: grid; gap: 8px; min-width: 0; }
+    .hero-title h2 { font-size: clamp(1.5rem, 5vw, 2.2rem); font-weight: 800; line-height: 1.05; text-transform: uppercase; }
+    .hero-title p { color: var(--muted); font-size: .9rem; }
+    .stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 22px; }
+    .stat { min-width: 0; padding: 12px 14px; border-radius: 14px; background: rgba(0, 0, 0, .25); border: 1px solid var(--line); }
+    .stat span { display: block; font-size: .7rem; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .stat strong { display: block; margin-top: 4px; font-family: var(--display); font-size: 1.35rem; font-weight: 800; }
+    .progress-row { display: flex; align-items: center; gap: 12px; margin-top: 16px; }
+    .progress { flex: 1; height: 8px; border-radius: 999px; background: rgba(255, 255, 255, .07); overflow: hidden; }
+    .progress span { display: block; height: 100%; width: 0; border-radius: inherit; background: var(--gradient); box-shadow: 0 0 16px rgba(236, 15, 124, .6); transition: width .5s var(--ease); }
+    .progress-pct { font-family: var(--display); font-weight: 800; font-size: .9rem; min-width: 42px; text-align: right; }
+
+    /* ---------- Música ---------- */
+    .music-card { display: none; }
+    .music-card.ready {
+      display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 14px;
+      padding: 14px 16px; margin-bottom: 18px;
       border-radius: var(--radius);
-      padding: 12px;
-      background: rgba(255, 255, 255, .035);
-    }
-
-    .summary-card span {
-      display: block;
-      color: var(--muted);
-      font-size: .78rem;
-      font-weight: 850;
-      margin-bottom: 6px;
-    }
-
-    .summary-card strong {
-      display: block;
-      font-size: 1.05rem;
-      line-height: 1.15;
-    }
-
-    .admin-flow {
-      display: grid;
-      gap: 12px;
-    }
-
-    .admin-step {
-      display: grid;
-      grid-template-columns: 38px minmax(0, 1fr);
-      gap: 12px;
-      padding: 12px;
       border: 1px solid var(--line);
+      background: linear-gradient(180deg, var(--surface-2), var(--surface));
+    }
+    .music-card .music-icon { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 12px; background: var(--pink-soft); color: var(--pink-2); }
+    .music-card h2 { font-size: .95rem; font-weight: 700; }
+    .music-card .music-sub { font-size: .78rem; color: var(--muted); }
+    .music-frame { grid-column: 1 / -1; width: 100%; height: 152px; border: 0; border-radius: 12px; background: #000; }
+    .music-switch { grid-column: 1 / -1; justify-self: start; font-size: .82rem; color: var(--pink-2); font-weight: 600; padding: 4px 0; }
+
+    /* ---------- Lista de ejercicios ---------- */
+    .layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 420px); gap: 20px; align-items: start; }
+    .layout > div { min-width: 0; }
+    .exercise-list { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+    .exercise-list > * { min-width: 0; }
+    .detail-shell > * { min-width: 0; }
+    body.admin .layout { grid-template-columns: minmax(0, 1fr) minmax(0, 380px); }
+    .exercise-card {
+      display: grid;
+      grid-template-columns: 92px minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 16px;
+      padding: 12px;
       border-radius: var(--radius);
-      background: rgba(255, 255, 255, .035);
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, var(--surface-2), var(--surface));
+      cursor: pointer;
+      transition: border-color .2s, background .2s, transform .2s var(--ease), box-shadow .2s;
+      animation: fadeIn .35s var(--ease) both;
     }
-
-    .admin-step.wide {
-      grid-column: 1 / -1;
+    .exercise-card:hover { border-color: var(--line-2); }
+    .exercise-card.active { border-color: var(--pink-line); box-shadow: 0 0 0 1px rgba(236, 15, 124, .15), 0 18px 40px -24px rgba(236, 15, 124, .6); }
+    .exercise-card.completed { opacity: .72; }
+    .thumb { width: 92px; aspect-ratio: 1; border-radius: 12px; overflow: hidden; background: #0c0b0e; }
+    .thumb video, .thumb img, .thumb iframe { width: 100%; height: 100%; object-fit: cover; display: block; border: 0; pointer-events: none; }
+    .exercise-main { min-width: 0; }
+    .exercise-main h3 { font-size: 1rem; font-weight: 700; line-height: 1.25; text-transform: uppercase; letter-spacing: .01em; }
+    .exercise-num { color: var(--pink-2); margin-right: 4px; }
+    .meta { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+    .pill {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 4px 9px; border-radius: 999px;
+      background: rgba(255, 255, 255, .05);
+      border: 1px solid var(--line);
+      color: var(--text-2);
+      font-size: .74rem; font-weight: 500;
+      white-space: nowrap;
     }
-
-    .admin-step.compact {
-      background: rgba(255, 255, 255, .02);
-    }
-
-    .admin-step.requires-auth {
-      display: none;
-    }
-
-    body.admin-authenticated .admin-step.requires-auth {
-      display: grid;
-    }
-
-    .step-badge {
-      width: 34px;
-      height: 34px;
-      display: grid;
-      place-items: center;
+    .pill.accent { color: var(--pink-2); border-color: rgba(236, 15, 124, .25); background: var(--pink-soft); }
+    .card-actions { display: flex; align-items: center; gap: 8px; }
+    .card-actions .btn { min-height: 38px; padding: 0 12px; font-size: .8rem; }
+    .check {
+      position: relative;
+      width: 52px; height: 52px; flex: none;
+      display: grid; place-items: center;
       border-radius: 50%;
-      background: linear-gradient(135deg, var(--pink), var(--pink-2));
-      color: var(--white);
-      font-weight: 900;
+      background: conic-gradient(var(--pink) calc(var(--p, 0) * 1%), rgba(255, 255, 255, .08) 0);
+      font-family: var(--display); font-size: .76rem; font-weight: 800;
+      transition: transform .15s var(--ease);
+    }
+    .check::before { content: ""; position: absolute; inset: 4px; border-radius: 50%; background: var(--surface); }
+    .check span { position: relative; z-index: 1; }
+    .check:active { transform: scale(.92); }
+    .check.done { background: var(--ok); }
+    .check.done::before { background: #11271e; }
+    .check.done span { color: var(--ok); }
+    .expanded-video { grid-column: 1 / -1; border-radius: 12px; overflow: hidden; }
+
+    /* ---------- Detalle ---------- */
+    .panel { min-width: 0; border-radius: var(--radius-lg); border: 1px solid var(--line); background: linear-gradient(180deg, var(--surface-2), var(--surface)); box-shadow: var(--shadow); }
+    .panel-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 18px; border-bottom: 1px solid var(--line); }
+    .panel-head h2 { font-size: .8rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .panel-body { padding: 18px; }
+    .detail-panel { position: sticky; top: 20px; }
+    .detail-shell { display: grid; gap: 16px; animation: fadeIn .3s var(--ease) both; }
+    .video-frame { position: relative; border-radius: 14px; overflow: hidden; background: #050406; aspect-ratio: 4 / 5; max-height: 460px; }
+    .video-frame video, .video-frame img, .video-frame iframe { width: 100%; height: 100%; object-fit: contain; display: block; border: 0; background: #050406; }
+    .video-embed { width: 100%; height: 100%; border: 0; }
+    .placeholder { width: 100%; height: 100%; display: grid; place-items: center; align-content: center; gap: 10px; color: var(--muted); font-size: .8rem; }
+    .placeholder img { width: 44%; max-width: 120px; border-radius: 50%; background: #fff; opacity: .9; }
+    .thumb .placeholder img { width: 60%; }
+    .thumb .placeholder span { display: none; }
+    .detail-title { font-size: 1.35rem; font-weight: 800; line-height: 1.15; text-transform: uppercase; }
+    .detail-notes { padding: 12px 14px; border-radius: 12px; background: rgba(255, 255, 255, .03); border: 1px solid var(--line); color: var(--text-2); font-size: .88rem; white-space: pre-wrap; }
+
+    .sub-card { padding: 16px; border-radius: 14px; border: 1px solid var(--line); background: rgba(0, 0, 0, .22); }
+    .sub-card-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; }
+    .sub-card-head h4 { margin: 0; font-size: .74rem; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+    .timer-display { font-family: var(--display); font-size: 2.8rem; font-weight: 800; letter-spacing: .02em; text-align: center; line-height: 1; padding: 8px 0 14px; font-variant-numeric: tabular-nums; }
+    .timer-display.running { color: var(--pink-2); text-shadow: 0 0 30px rgba(236, 15, 124, .45); }
+    .timer-buttons { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+    .timer-buttons .btn { padding: 0 8px; }
+    .round-progress { display: grid; grid-template-columns: repeat(auto-fill, minmax(58px, 1fr)); gap: 8px; }
+    .round-dot { display: grid; justify-items: center; gap: 2px; padding: 9px 4px; border-radius: 12px; border: 1px solid var(--line); background: rgba(255, 255, 255, .02); transition: .25s var(--ease); min-width: 0; }
+    .round-dot span { font-family: var(--display); font-weight: 800; font-size: .95rem; }
+    .round-dot small { font-size: .7rem; color: var(--muted); max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .round-dot.done { background: var(--gradient); border-color: transparent; box-shadow: var(--shadow-pink); }
+    .round-dot.done small { color: rgba(255, 255, 255, .85); }
+    .round-actions { display: grid; grid-template-columns: auto 1fr auto; gap: 8px; margin-top: 12px; }
+    .session { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; font-size: .84rem; color: var(--muted); }
+    .session strong { color: var(--text); font-family: var(--display); }
+    .mobile-detail { display: none; }
+
+    .notice { padding: 18px; border-radius: var(--radius); border: 1px dashed var(--line-2); color: var(--text-2); text-align: center; font-size: .92rem; }
+    .notice .btn { margin-top: 12px; }
+
+    /* ---------- Modal editor ---------- */
+    .modal { position: fixed; inset: 0; z-index: 70; display: none; place-items: center; padding: 20px; background: rgba(5, 4, 6, .72); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+    .modal.open { display: grid; animation: fadeIn .2s ease both; }
+    .modal-card { width: min(720px, 100%); max-height: calc(100dvh - 40px); display: flex; flex-direction: column; border-radius: 22px; border: 1px solid var(--line-2); background: linear-gradient(180deg, #1c1920, #141217); box-shadow: 0 40px 120px -20px rgba(0, 0, 0, .9); overflow: hidden; animation: rise .3s var(--ease) both; }
+    .modal-card .panel-head { padding: 18px 22px; }
+    .modal-card .panel-head h2 { font-size: 1.05rem; letter-spacing: 0; text-transform: none; color: var(--text); }
+    .modal-card .panel-body { overflow-y: auto; padding: 22px; }
+    .editor-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+    .editor-grid .wide { grid-column: 1 / -1; }
+    .round-reps-editor { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; }
+    .round-reps-card { display: grid; gap: 5px; padding: 10px; border-radius: 12px; border: 1px solid var(--line); background: rgba(255, 255, 255, .02); }
+    .round-reps-card span { font-size: .72rem; color: var(--muted); font-weight: 600; }
+    .round-reps-card input { min-height: 38px; padding: 8px 10px; }
+    .modal-actions { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; padding: 16px 22px; border-top: 1px solid var(--line); background: rgba(0, 0, 0, .2); }
+    .danger-zone, .primary-zone { display: flex; gap: 8px; flex-wrap: wrap; }
+
+    /* ---------- Toast ---------- */
+    .toast { position: fixed; left: 50%; bottom: 24px; z-index: 80; transform: translate(-50%, 20px); opacity: 0; pointer-events: none; padding: 12px 18px; border-radius: 12px; background: #fff; color: #111; font-weight: 600; font-size: .88rem; box-shadow: 0 20px 50px -10px rgba(0, 0, 0, .6); transition: .3s var(--ease); max-width: calc(100% - 32px); }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+    /* ---------- Responsive ---------- */
+    @media (max-width: 1180px) {
+      .card-data, .card-link { grid-column: span 12; }
     }
 
-    .step-content {
-      min-width: 0;
-      display: grid;
-      gap: 10px;
+    @media (max-width: 1024px) {
+      body.admin .shell { grid-template-columns: minmax(0, 1fr); }
+      .admin-sidebar { position: relative; height: auto; border-right: 0; border-bottom: 1px solid var(--line); padding: 16px; gap: 14px; }
+      .routine-list { max-height: 260px; }
+      .sidebar-foot { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .sidebar-foot .logout { grid-column: auto; }
+      body.admin .app { padding: 22px 16px 60px; }
+      .layout, body.admin .layout { grid-template-columns: minmax(0, 1fr); }
+      .detail-panel { display: none; }
+      .mobile-detail { display: block; padding: 16px; border-radius: var(--radius); border: 1px solid var(--pink-line); background: linear-gradient(180deg, #1d1920, var(--surface)); animation: fadeIn .3s var(--ease) both; }
+      .exercise-card.expanded .expanded-video { display: none; }
+      .routine-actions { opacity: 1; }
     }
 
-    .step-title {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      flex-wrap: wrap;
+    @media (max-width: 640px) {
+      body { font-size: 14.5px; }
+      .app { padding: 16px 14px 48px; }
+      .hero { padding: 18px; border-radius: 18px; }
+      .stats { gap: 8px; margin-top: 18px; }
+      .stat { padding: 10px; }
+      .stat strong { font-size: 1.1rem; }
+      .form-grid, .editor-grid { grid-template-columns: minmax(0, 1fr); }
+      .exercise-card { grid-template-columns: 68px minmax(0, 1fr) auto; gap: 12px; padding: 10px; }
+      .thumb { width: 68px; }
+      body:not(.admin) .card-actions [data-rest] { display: none; }
+      body.admin .exercise-card { grid-template-columns: 68px minmax(0, 1fr); }
+      body.admin .card-actions { grid-column: 1 / -1; justify-content: space-between; }
+      body.admin .card-actions .btn { flex: 1; }
+      .check { width: 46px; height: 46px; }
+      .exercise-main h3 { font-size: .92rem; }
+      .card { padding: 16px; }
+      .admin-header-actions { width: 100%; }
+      .admin-header-actions .btn { flex: 1; }
+      .section-actions { width: 100%; }
+      .section-actions .btn { flex: 1; }
+      .modal { padding: 0; place-items: end stretch; }
+      .modal-card { width: 100%; max-height: 92dvh; border-radius: 22px 22px 0 0; }
+      .modal-actions { flex-direction: column-reverse; }
+      .danger-zone, .primary-zone { width: 100%; }
+      .danger-zone .btn, .primary-zone .btn { flex: 1; }
+      .video-frame { aspect-ratio: 1; }
+      .timer-display { font-size: 2.4rem; }
+      .link-actions { grid-template-columns: minmax(0, 1fr); }
     }
 
-    .step-title h3 {
-      margin: 0;
-      font-size: 1rem;
+    @media (max-width: 380px) {
+      .stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .stat span { font-size: .62rem; letter-spacing: .04em; }
+      .sidebar-foot { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+      .sidebar-foot .logout { grid-column: 1 / -1; }
     }
 
-    .step-title span {
-      color: var(--muted);
-      font-size: .86rem;
-      font-weight: 800;
-    }
-
-    .admin-row {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-      gap: 8px;
-      align-items: end;
-    }
-
-    .admin-actions {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-    }
-
-    .notice {
-      border: 1px solid var(--line);
-      border-left: 3px solid var(--pink);
-      border-radius: var(--radius);
-      padding: 10px 12px;
-      color: var(--muted);
-      background: rgba(255, 255, 255, .04);
-      font-size: .9rem;
-      line-height: 1.4;
-    }
-
-    .routine-list {
-      display: grid;
-      gap: 8px;
-      max-height: 320px;
-      overflow: auto;
-      padding-right: 2px;
-    }
-
-    .routine-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 10px;
-      border: 1px solid var(--line);
-      background: rgba(255, 255, 255, .04);
-      border-radius: var(--radius);
-      padding: 10px;
-    }
-
-    .routine-actions {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-      justify-content: flex-end;
-    }
-
-    .routine-item span {
-      color: var(--muted);
-      font-size: .86rem;
-    }
-
-    .routine-item.active {
-      border-color: var(--pink);
-      background: rgba(236, 0, 121, .1);
-    }
-
-    .mobile-detail {
-      display: none;
-    }
-
-    body.admin.admin-authenticated::before {
-      content: "MODO PROFESORA";
-      position: fixed;
-      right: 14px;
-      bottom: 14px;
-      z-index: 20;
-      padding: 8px 10px;
-      border-radius: 999px;
-      border: 1px solid rgba(236, 0, 121, .35);
-      background: rgba(17, 16, 20, .86);
-      color: var(--muted);
-      font-size: .72rem;
-      font-weight: 900;
-      letter-spacing: .08em;
-      pointer-events: none;
-    }
-
-    iframe.video-embed {
-      width: 100%;
-      height: 100%;
-      border: 0;
-      display: block;
-      background: var(--black);
-    }
-
-    @media (max-width: 900px) {
-      .app { padding: 14px; }
-      .topbar {
-        grid-template-columns: 72px 1fr;
-      }
-      .brand-mark { width: 72px; }
-      .actions {
-        grid-column: 1 / -1;
-        justify-content: stretch;
-      }
-      .actions .btn { flex: 1; }
-      .layout {
-        grid-template-columns: 1fr;
-      }
-      .detail-panel {
-        display: none;
-      }
-      .mobile-detail {
-        display: block;
-        grid-column: 1 / -1;
-        border: 1px solid var(--line);
-        border-radius: var(--radius);
-        background: rgba(24, 21, 27, .86);
-        padding: 12px;
-      }
-      .exercise-card.expanded .expanded-video {
-        display: none;
-      }
-    }
-
-    @media (min-width: 901px) {
-      .admin-flow {
-        grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr);
-      }
-      .admin-step.routine-list-step {
-        align-self: start;
-      }
-      .detail-panel {
-        position: sticky;
-        top: 16px;
-      }
-    }
-
-    @media (max-width: 620px) {
-      .brand h1 { font-size: 1.9rem; }
-      .brand p { font-size: .78rem; }
-      .tabs {
-        display: flex;
-        overflow-x: auto;
-        padding-bottom: 2px;
-      }
-      .tab {
-        min-width: 185px;
-      }
-      .stats {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-      .music-card.open {
-        grid-template-columns: 1fr;
-      }
-      .exercise-card {
-        grid-template-columns: 92px minmax(0, 1fr);
-      }
-      .exercise-card.expanded {
-        grid-template-columns: 1fr;
-      }
-      .exercise-card.expanded .thumb {
-        display: none;
-      }
-      .card-actions {
-        grid-column: 1 / -1;
-        grid-template-columns: 1fr auto;
-        width: 100%;
-      }
-      body.admin .card-actions {
-        grid-template-columns: 1fr 1fr auto;
-      }
-      .check {
-        margin: 0;
-      }
-      .editor-grid,
-      .admin-row,
-      .admin-step,
-      .admin-summary,
-      .log-grid,
-      .round-actions {
-        grid-template-columns: 1fr;
-      }
-      .video-frame {
-        aspect-ratio: 9 / 12;
-      }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
     }
   </style>
 </head>
 <body>
+  <div class="boot-screen" aria-live="polite">
+    <img src="./assets/logo.jpg" alt="">
+    <span>Verificando acceso...</span>
+  </div>
+
   <section class="admin-login-screen admin-only" aria-label="Acceso profesora">
     <div class="admin-login-card">
       <div class="admin-login-brand">
         <div class="admin-login-logo"><img src="./assets/logo.jpg" alt="Rebeca Pianaroli"></div>
-        <div>
-          <h1>Acceso profesora</h1>
-          <p>Gestiona rutinas, alumnos y links privados.</p>
-        </div>
+        <span class="eyebrow">Panel privado</span>
+        <h1>Bienvenida, Rebeca</h1>
+        <p>Ingresá para gestionar las rutinas de tus alumnas.</p>
       </div>
-      <div class="admin-login-form">
+      <form class="admin-login-form" id="loginForm" autocomplete="on" novalidate>
         <div class="field">
-          <label for="adminEmail">Email profesora</label>
-          <input id="adminEmail" type="email" autocomplete="off" autocapitalize="none" spellcheck="false">
+          <label for="adminEmail">Email</label>
+          <input id="adminEmail" type="email" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="tu@email.com">
         </div>
         <div class="field">
-          <label for="adminPassword">Clave</label>
+          <label for="adminPassword">Contraseña</label>
           <div class="password-control">
-            <input id="adminPassword" type="password" autocomplete="new-password" autocapitalize="none" spellcheck="false">
+            <input id="adminPassword" type="password" autocomplete="current-password" autocapitalize="none" spellcheck="false" placeholder="••••••••">
             <button class="btn" id="togglePasswordBtn" type="button">Ver</button>
           </div>
         </div>
-        <button class="btn primary" id="loginBtn">Entrar al panel</button>
-        <div class="login-status" id="adminLoginStatus">Acceso privado para administracion.</div>
-      </div>
+        <button class="btn primary" id="loginBtn" type="submit">Iniciar sesión</button>
+        <div class="login-status" id="adminLoginStatus" role="status"></div>
+      </form>
+      <div class="login-foot">Rebeca Pianaroli · Personal Trainer</div>
     </div>
   </section>
 
-  <main class="app">
-    <header class="topbar">
-      <div class="brand-mark"><img src="./assets/logo.jpg" alt="Rebeca Pianaroli"></div>
-      <div class="brand">
-        <h1>Rebeca Pianaroli</h1>
-        <p>Personal Trainer</p>
-      </div>
-    </header>
-
-    <section class="panel admin-tools admin-only">
-      <div class="panel-head">
+  <div class="shell">
+    <aside class="admin-sidebar admin-only">
+      <div class="sidebar-brand">
+        <div class="brand-mark"><img src="./assets/logo.jpg" alt="Rebeca Pianaroli"></div>
         <div>
-          <div class="panel-kicker">Administracion privada</div>
-          <h2>Panel de profesora</h2>
+          <strong>Rebeca Pianaroli</strong>
+          <span>Panel de profesora</span>
         </div>
-        <button class="btn warning" id="logoutBtn">Salir</button>
       </div>
-      <div class="panel-body">
-        <div class="notice" id="remoteStatus">Entrar con el usuario de profesora para editar rutinas online.</div>
-        <div class="admin-summary requires-auth">
-          <div class="summary-card">
-            <span>Rutina activa</span>
-            <strong id="activeRoutineName">Sin rutina seleccionada</strong>
-          </div>
-          <div class="summary-card">
-            <span>Contenido</span>
-            <strong id="adminContentSummary">0 ejercicios</strong>
-          </div>
-          <div class="summary-card">
-            <span>Guardado</span>
-            <strong id="adminSaveState">Sin cambios</strong>
-          </div>
+
+      <div class="sidebar-section-head">
+        <h2>Alumnas <span class="sidebar-count" id="routineCount">0</span></h2>
+        <button class="btn primary sm" id="newRoutineBtn" type="button">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Nueva
+        </button>
+      </div>
+      <div class="sidebar-search">
+        <svg class="icon" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="routineSearch" type="search" placeholder="Buscar alumna..." autocomplete="off">
+      </div>
+      <div class="routine-list" id="routineList"></div>
+
+      <div class="sidebar-foot">
+        <button class="btn ghost" id="exportBtn" type="button">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M12 3v12m0 0-4-4m4 4 4-4M5 21h14"/></svg>Exportar
+        </button>
+        <button class="btn ghost" id="importBtn" type="button">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M12 15V3m0 0L8 7m4-4 4 4M5 21h14"/></svg>Importar
+        </button>
+        <button class="btn ghost logout" id="logoutBtn" type="button">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M15 12H4m0 0 4-4m-4 4 4 4M14 4h5a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1h-5"/></svg>Cerrar sesión
+        </button>
+      </div>
+    </aside>
+
+    <main class="app">
+      <header class="topbar">
+        <div class="brand-mark"><img src="./assets/logo.jpg" alt="Rebeca Pianaroli"></div>
+        <div class="brand">
+          <h1>Rebeca Pianaroli</h1>
+          <p>Personal Trainer</p>
         </div>
+      </header>
 
-        <div class="admin-flow">
-          <section class="admin-step requires-auth routine-list-step">
-            <div class="step-badge">1</div>
-            <div class="step-content">
-              <div class="step-title">
-                <h3>Rutinas</h3>
-                <span>Alumnos cargados</span>
-              </div>
-              <div class="admin-actions">
-                <button class="btn primary" id="newRoutineBtn">Crear nueva rutina</button>
-              </div>
-              <div class="routine-list" id="routineList"></div>
+      <section class="admin-main admin-only">
+        <header class="admin-header">
+          <div class="admin-header-text">
+            <span class="eyebrow">Rutina activa</span>
+            <h1 id="activeRoutineName">Sin rutina seleccionada</h1>
+            <div class="admin-header-meta">
+              <span id="adminContentSummary">0 ejercicios</span>
+              <span class="dot-sep"></span>
+              <span class="save-pill" id="adminSaveState">Guardado</span>
             </div>
-          </section>
+          </div>
+          <div class="admin-header-actions">
+            <button class="btn" id="previewBtn" type="button">
+              <svg class="icon" viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg>Ver como alumna
+            </button>
+            <button class="btn primary" id="copyLinkBtn" type="button">
+              <svg class="icon" viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>Copiar link
+            </button>
+          </div>
+        </header>
 
-          <section class="admin-step requires-auth">
-            <div class="step-badge">2</div>
-            <div class="step-content">
-              <div class="step-title">
-                <h3>Rutina del alumno</h3>
-                <span>Datos del alumno</span>
-              </div>
-              <div class="admin-row">
-                <div class="field">
-                  <label for="routineTitle">Titulo de rutina</label>
-                  <input id="routineTitle" type="text" placeholder="Rutina Sabrina">
-                </div>
-                <div class="field">
-                  <label for="clientName">Nombre alumno</label>
-                  <input id="clientName" type="text" placeholder="Sabrina">
-                </div>
-                <div class="field">
-                  <label for="routineSlug">Codigo link</label>
-                  <input id="routineSlug" type="text" placeholder="alumno-a8f3k2">
-                </div>
-                <div class="field">
-                  <label for="musicUrl">Spotify</label>
-                  <input id="musicUrl" type="url" inputmode="url" placeholder="https://open.spotify.com/playlist/...">
-                </div>
-                <div class="field">
-                  <label for="youtubeUrl">YouTube</label>
-                  <input id="youtubeUrl" type="url" inputmode="url" placeholder="https://youtube.com/...">
-                </div>
+        <div class="status-line" id="remoteStatus" role="status"></div>
+
+        <div class="admin-grid">
+          <section class="card card-data">
+            <div class="card-head">
+              <div class="card-title">
+                <div class="card-icon"><svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></div>
+                <div><h2>Datos de la alumna</h2><p>Se guardan automáticamente</p></div>
               </div>
             </div>
-          </section>
-
-          <section class="admin-step requires-auth">
-            <div class="step-badge">3</div>
-            <div class="step-content">
-              <div class="step-title">
-                <h3>Ejercicios</h3>
-                <span id="adminExerciseSummary">0 cargados</span>
-              </div>
-              <div class="admin-row">
-                <div class="field">
-                  <label for="routineRounds">Rondas del circuito</label>
-                  <input id="routineRounds" type="number" min="1" max="20" step="1" inputmode="numeric">
-                </div>
-              </div>
-              <div class="admin-actions">
-                <button class="btn primary" id="addExerciseBtn">Agregar ejercicio</button>
-                <button class="btn" id="editorBtn">Editar seleccionado</button>
-              </div>
-            </div>
-          </section>
-
-          <section class="admin-step requires-auth wide">
-            <div class="step-badge">4</div>
-            <div class="step-content">
-              <div class="step-title">
-                <h3>Link para enviar</h3>
-                <span>Solo ve esta rutina</span>
+            <div class="form-grid">
+              <div class="field">
+                <label for="clientName">Nombre de la alumna</label>
+                <input id="clientName" type="text" placeholder="Ej: Sabrina">
               </div>
               <div class="field">
-                <label for="clientLink">Link para alumno</label>
-                <input id="clientLink" type="text" readonly>
+                <label for="routineTitle">Título de la rutina</label>
+                <input id="routineTitle" type="text" placeholder="Ej: Rutina Sabrina">
               </div>
-              <div class="admin-actions">
-                <button class="btn primary" id="copyLinkBtn">Copiar link</button>
+              <div class="field">
+                <label for="routineRounds">Rondas del circuito</label>
+                <input id="routineRounds" type="number" min="1" max="20" step="1" inputmode="numeric">
+              </div>
+              <div class="field">
+                <label for="routineSlug">Código del link</label>
+                <input id="routineSlug" type="text" placeholder="alumna-a8f3k2" autocapitalize="none" spellcheck="false">
               </div>
             </div>
           </section>
 
-          <section class="admin-step requires-auth compact wide">
-            <div class="step-badge">+</div>
-            <div class="step-content">
-              <div class="step-title">
-                <h3>Herramientas</h3>
-                <span>Respaldo manual</span>
+          <section class="card card-link">
+            <div class="card-head">
+              <div class="card-title">
+                <div class="card-icon"><svg class="icon" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7"/><path d="M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></svg></div>
+                <div><h2>Link privado</h2><p>La alumna solo ve esta rutina</p></div>
               </div>
-              <div class="admin-actions">
-                <button class="btn" id="exportBtn">Exportar</button>
-                <button class="btn" id="importBtn">Importar</button>
+            </div>
+            <div class="link-box">
+              <input id="clientLink" type="text" readonly aria-label="Link para la alumna">
+              <div class="link-actions">
+                <button class="btn" id="copyLinkBtn2" type="button">
+                  <svg class="icon" viewBox="0 0 24 24"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>Copiar
+                </button>
+                <a class="btn" id="whatsappBtn" target="_blank" rel="noopener" href="#">
+                  <svg class="icon" viewBox="0 0 24 24"><path d="M21 12a9 9 0 0 1-13.3 7.9L3 21l1.2-4.5A9 9 0 1 1 21 12Z"/></svg>WhatsApp
+                </a>
+              </div>
+            </div>
+          </section>
+
+          <section class="card card-music">
+            <div class="card-head">
+              <div class="card-title">
+                <div class="card-icon"><svg class="icon" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg></div>
+                <div><h2>Música para entrenar</h2><p>Opcional · Pegá el link de una playlist</p></div>
+              </div>
+            </div>
+            <div class="form-grid">
+              <div class="field">
+                <label for="musicUrl">Spotify</label>
+                <input id="musicUrl" type="url" inputmode="url" placeholder="https://open.spotify.com/playlist/...">
+              </div>
+              <div class="field">
+                <label for="youtubeUrl">YouTube</label>
+                <input id="youtubeUrl" type="url" inputmode="url" placeholder="https://youtube.com/...">
               </div>
             </div>
           </section>
         </div>
+      </section>
+
+      <div class="section-head admin-only">
+        <div>
+          <h2>Ejercicios</h2>
+          <p id="adminExerciseSummary">0 ejercicios cargados</p>
+        </div>
+        <div class="section-actions">
+          <button class="btn" id="editorBtn" type="button">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>Editar seleccionado
+          </button>
+          <button class="btn primary" id="addExerciseBtn" type="button">
+            <svg class="icon" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Agregar ejercicio
+          </button>
+        </div>
       </div>
-    </section>
 
-    <section class="music-card" id="musicCard"></section>
+      <section class="music-card" id="musicCard"></section>
 
-    <section class="layout">
-      <div>
+      <section class="hero">
         <div class="tabs" id="tabs"></div>
         <div class="stats" id="stats"></div>
-        <div class="progress"><span id="progress"></span></div>
-        <div class="exercise-list" id="exerciseList"></div>
-      </div>
-
-      <aside class="panel detail-panel">
-        <div class="panel-head">
-          <h2 id="detailHead">Ejercicio</h2>
-          <button class="btn" id="finishBtn">Reiniciar progreso</button>
+        <div class="progress-row">
+          <div class="progress"><span id="progress"></span></div>
+          <span class="progress-pct" id="progressPct">0%</span>
         </div>
-        <div class="panel-body" id="detail"></div>
-      </aside>
-    </section>
-  </main>
+      </section>
 
-  <div class="modal" id="editorModal">
+      <section class="layout">
+        <div>
+          <div class="exercise-list" id="exerciseList"></div>
+        </div>
+
+        <aside class="panel detail-panel">
+          <div class="panel-head">
+            <h2 id="detailHead">Ejercicio</h2>
+            <button class="btn sm ghost" id="finishBtn" type="button">Reiniciar progreso</button>
+          </div>
+          <div class="panel-body" id="detail"></div>
+        </aside>
+      </section>
+    </main>
+  </div>
+
+  <div class="modal" id="editorModal" role="dialog" aria-modal="true" aria-labelledby="editorTitle">
     <div class="modal-card">
       <div class="panel-head">
         <h2 id="editorTitle">Editar ejercicio</h2>
-        <button class="btn" id="closeEditorBtn">Cerrar</button>
+        <button class="btn sm icon-only ghost" id="closeEditorBtn" type="button" aria-label="Cerrar">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>
+        </button>
       </div>
       <div class="panel-body">
         <div class="editor-grid">
           <input id="editId" type="hidden">
+          <div class="field wide">
+            <label for="editName">Nombre del ejercicio</label>
+            <input id="editName" type="text" placeholder="Ej: Sentadilla goblet">
+          </div>
           <div class="field">
-            <label for="editDay">Dia</label>
+            <label for="editDay">Rutina</label>
             <select id="editDay"></select>
           </div>
           <div class="field">
-            <label for="editOrder">Numero</label>
+            <label for="editOrder">Posición en la lista</label>
             <input id="editOrder" type="number" min="1">
-          </div>
-          <div class="field wide">
-            <label for="editName">Titulo del ejercicio</label>
-            <input id="editName" type="text" placeholder="Ej: Sentadilla goblet">
           </div>
           <div class="field">
             <label for="editSets">Series</label>
@@ -1329,40 +826,41 @@
             <input id="editReps" type="text" placeholder="12-15">
           </div>
           <div class="field wide">
-            <label>Repeticiones por ronda</label>
+            <label>Repeticiones por ronda <span class="hint">· opcional, si cambian en cada ronda</span></label>
             <div class="round-reps-editor" id="editRoundReps"></div>
           </div>
           <div class="field">
-            <label for="editRest">Descanso en segundos</label>
+            <label for="editRest">Descanso (segundos)</label>
             <input id="editRest" type="number" min="0" step="15">
           </div>
           <div class="field">
-            <label for="editCategory">Categoria</label>
-            <input id="editCategory" type="text" placeholder="Gluteos, piernas">
+            <label for="editCategory">Zona que trabaja</label>
+            <input id="editCategory" type="text" placeholder="Glúteos, piernas">
           </div>
           <div class="field wide">
-            <label for="editVideo">Video URL o archivo local</label>
-            <input id="editVideo" type="text" placeholder="./assets/videos-web/sentadilla.mp4">
+            <label for="editVideo">Video, GIF o link de Google Drive</label>
+            <input id="editVideo" type="text" placeholder="https://...">
           </div>
           <div class="field wide">
-            <label for="editNotes">Notas</label>
-            <textarea id="editNotes" placeholder="Indicaciones de tecnica o variantes"></textarea>
+            <label for="editNotes">Indicaciones</label>
+            <textarea id="editNotes" placeholder="Técnica, respiración o variantes"></textarea>
           </div>
         </div>
-        <div class="modal-actions">
-          <div class="danger-zone">
-            <button class="btn warning" id="deleteBtn">Eliminar</button>
-            <button class="btn" id="newBtn">Duplicar</button>
-          </div>
-          <div class="primary-zone">
-            <button class="btn" id="cancelEditorBtn">Cancelar</button>
-            <button class="btn primary" id="saveBtn">Guardar</button>
-          </div>
+      </div>
+      <div class="modal-actions">
+        <div class="danger-zone">
+          <button class="btn warning" id="deleteBtn" type="button">Eliminar</button>
+          <button class="btn" id="newBtn" type="button">Duplicar</button>
+        </div>
+        <div class="primary-zone">
+          <button class="btn" id="cancelEditorBtn" type="button">Cancelar</button>
+          <button class="btn primary" id="saveBtn" type="button">Guardar ejercicio</button>
         </div>
       </div>
     </div>
   </div>
 
+  <div class="toast" id="toast" role="status"></div>
   <input class="file-actions" id="importFile" type="file" accept="application/json">
 
   <script src="./config.js"></script>
@@ -1370,7 +868,7 @@
     const SUPABASE_URL = window.REBECA_CONFIG?.SUPABASE_URL || "";
     const SUPABASE_ANON_KEY = window.REBECA_CONFIG?.SUPABASE_ANON_KEY || "";
     const DEFAULT_TOTAL_ROUNDS = 4;
-    const APP_VERSION = "25";
+    const APP_VERSION = "26";
     const params = new URLSearchParams(window.location.search);
     const isAdmin = params.get("admin") === "1";
     const routineParam = params.get("rutina") || "";
@@ -1538,7 +1036,28 @@
       adminSaveState: document.getElementById("adminSaveState"),
       finishBtn: document.getElementById("finishBtn"),
       editorModal: document.getElementById("editorModal"),
-      importFile: document.getElementById("importFile")
+      importFile: document.getElementById("importFile"),
+      loginForm: document.getElementById("loginForm"),
+      routineSearch: document.getElementById("routineSearch"),
+      routineCount: document.getElementById("routineCount"),
+      copyLinkBtn2: document.getElementById("copyLinkBtn2"),
+      whatsappBtn: document.getElementById("whatsappBtn"),
+      previewBtn: document.getElementById("previewBtn"),
+      progressPct: document.getElementById("progressPct"),
+      toast: document.getElementById("toast")
+    };
+    let adminRoutineRows = [];
+    let statusTimer = null;
+    let toastTimer = null;
+
+    const ICONS = {
+      edit: '<svg class="icon" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>',
+      trash: '<svg class="icon" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>',
+      timer: '<svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2 2M9 2h6"/></svg>',
+      music: '<svg class="icon" viewBox="0 0 24 24"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>',
+      play: '<svg class="icon" viewBox="0 0 24 24"><path d="M7 4v16l13-8Z"/></svg>',
+      close: '<svg class="icon" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></svg>',
+      check: '<svg class="icon" viewBox="0 0 24 24"><path d="m5 12 5 5L20 7"/></svg>'
     };
     let remoteRoutineId = "";
     let authSession = loadAuthSession();
@@ -1705,6 +1224,11 @@
       if (value) url.searchParams.set("rutina", value);
       url.searchParams.set("v", APP_VERSION);
       els.clientLink.value = value ? url.toString() : "";
+      if (els.whatsappBtn) {
+        const name = els.clientName?.value.trim();
+        const text = `Hola${name ? ` ${name}` : ""}! Te dejo tu rutina personalizada 💪\n${els.clientLink.value}`;
+        els.whatsappBtn.href = value ? `https://wa.me/?text=${encodeURIComponent(text)}` : "#";
+      }
     }
 
     function currentRoutineTitle() {
@@ -1760,7 +1284,7 @@
       requestAnimationFrame(() => {
         document.querySelector(".exercise-card.active")?.scrollIntoView({
           behavior: "smooth",
-          block: window.innerWidth <= 900 ? "start" : "nearest"
+          block: window.innerWidth <= 1024 ? "start" : "nearest"
         });
       });
     }
@@ -1769,7 +1293,7 @@
       if (!isAdmin) return;
       requestAnimationFrame(() => {
         window.scrollTo({ top: 0, behavior: "auto" });
-        document.querySelector(".admin-tools")?.scrollIntoView({
+        document.querySelector(".admin-main")?.scrollIntoView({
           behavior: "auto",
           block: "start"
         });
@@ -1792,10 +1316,23 @@
     }
 
     function renderTabs() {
+      if (state.routine.length <= 1) {
+        const group = state.routine[0];
+        const total = group?.exercises.length || 0;
+        const done = group ? group.exercises.filter(item => isComplete(item.id)).length : 0;
+        els.tabs.innerHTML = `
+          <div class="hero-title">
+            <span class="eyebrow">Tu entrenamiento</span>
+            <h2>${escapeHtml(group?.title || "Rutina")}</h2>
+            <p>${total ? `${done} de ${total} ejercicios completados · ${routineRounds()} ${routineRounds() === 1 ? "ronda" : "rondas"}` : "Tu rutina personalizada"}</p>
+          </div>
+        `;
+        return;
+      }
       els.tabs.innerHTML = state.routine.map(group => `
         <button class="tab ${state.view === "routine" && group.id === state.activeDay ? "active" : ""}" data-day="${group.id}">
           <strong>${escapeHtml(group.title)}</strong>
-          <span>Completados ${group.exercises.filter(item => isComplete(item.id)).length}/${group.exercises.length} ejercicios</span>
+          <span>${group.exercises.filter(item => isComplete(item.id)).length}/${group.exercises.length} completados</span>
         </button>
       `).join("");
     }
@@ -1809,10 +1346,11 @@
       const pendingExerciseRounds = Math.max(0, totalExerciseRounds - doneRounds);
       const pct = totalExerciseRounds ? Math.round((doneRounds / totalExerciseRounds) * 100) : 0;
       els.progress.style.width = pct + "%";
+      if (els.progressPct) els.progressPct.textContent = pct + "%";
       els.stats.innerHTML = [
-        ["Completados", `${completed}/${day.exercises.length}`],
+        ["Ejercicios", `${completed}/${day.exercises.length}`],
         ["Rondas", `${circuitRounds}/${routineRounds()}`],
-        ["Pasos pendientes", pendingExerciseRounds]
+        ["Restantes", pendingExerciseRounds]
       ].map(([label, value]) => `
         <div class="stat"><span>${label}</span><strong>${value}</strong></div>
       `).join("");
@@ -1851,7 +1389,7 @@
     }
 
     function isMobileLayout() {
-      return window.innerWidth <= 900;
+      return window.innerWidth <= 1024;
     }
 
     function renderMusic() {
@@ -1866,12 +1404,16 @@
       }
       const provider = state.musicProvider === "youtube" && youtubeUrl ? "youtube" : spotifyUrl ? "spotify" : "youtube";
       const embedUrl = provider === "youtube" ? youtubeUrl : spotifyUrl;
-      const switchLabel = provider === "youtube" ? "Presione aqui para cambiar a Spotify" : "Presione aqui para cambiar a YouTube";
+      const switchLabel = provider === "youtube" ? "Cambiar a Spotify" : "Cambiar a YouTube";
       const canSwitch = Boolean(spotifyUrl && youtubeUrl);
       els.musicCard.className = `music-card ready ${state.musicOpen ? "open" : ""}`;
       els.musicCard.innerHTML = `
-        <h2>Musica</h2>
-        <button class="btn primary" type="button" data-music-play>${state.musicOpen ? "Cerrar" : "Play"}</button>
+        <div class="music-icon">${ICONS.music}</div>
+        <div>
+          <h2>Música para entrenar</h2>
+          <div class="music-sub">Playlist elegida por Rebeca · ${provider === "youtube" ? "YouTube" : "Spotify"}</div>
+        </div>
+        <button class="btn ${state.musicOpen ? "" : "primary"} sm" type="button" data-music-play>${state.musicOpen ? `${ICONS.close}Cerrar` : `${ICONS.play}Play`}</button>
         ${state.musicOpen ? `<iframe class="music-frame" src="${escapeAttr(embedUrl)}" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" allowfullscreen loading="lazy"></iframe>` : ""}
         ${state.musicOpen && canSwitch ? `<button class="music-switch" type="button" data-music-switch>${switchLabel}</button>` : ""}
       `;
@@ -1895,22 +1437,20 @@
       }
       const showInlineDetail = isMobileLayout();
       setHtmlKeepingMedia(els.list, day.exercises.map((item, index) => `
-        <article class="exercise-card ${item.id === state.selected ? "active" : ""} ${state.expanded === item.id ? "expanded" : ""}" data-select="${item.id}">
+        <article class="exercise-card ${item.id === state.selected ? "active" : ""} ${state.expanded === item.id ? "expanded" : ""} ${isComplete(item.id) ? "completed" : ""}" data-select="${item.id}">
           ${renderVideo(item, "thumb", false)}
           <div class="exercise-main">
-            <h3>${index + 1}. ${escapeHtml(item.name)}</h3>
+            <h3><span class="exercise-num">${String(index + 1).padStart(2, "0")}</span> ${escapeHtml(item.name)}</h3>
             <div class="meta">
-              <span class="pill">${escapeHtml(item.sets)} x ${roundRepsSummary(item)}</span>
-              <span class="pill">${formatRest(item.rest)}</span>
-              <span class="pill">Ronda ${roundCount(item.id)}/${routineRounds()}</span>
-              <span class="pill">${escapeHtml(item.category || "General")}</span>
+              <span class="pill accent">${escapeHtml(item.sets)} × ${roundRepsSummary(item)}</span>
+              <span class="pill">${formatRest(item.rest)} descanso</span>
+              ${item.category ? `<span class="pill">${escapeHtml(item.category)}</span>` : ""}
             </div>
           </div>
           ${state.expanded === item.id && !showInlineDetail ? renderVideo(item, "expanded-video video-frame", true) : ""}
           <div class="card-actions">
-            <button class="btn" data-rest="${item.rest}">Descanso</button>
-            ${isAdmin ? `<button class="btn admin-only" data-edit="${item.id}">Editar</button>` : ""}
-            <button class="check ${isComplete(item.id) ? "done" : ""}" data-round-add="${item.id}">${isComplete(item.id) ? "OK" : `${roundCount(item.id)}/${routineRounds()}`}</button>
+            ${isAdmin ? `<button class="btn sm" data-edit="${item.id}" aria-label="Editar ${escapeAttr(item.name)}">${ICONS.edit}Editar</button>` : `<button class="btn sm ghost" data-rest="${item.rest}" aria-label="Iniciar descanso">${ICONS.timer}</button>`}
+            <button class="check ${isComplete(item.id) ? "done" : ""}" style="--p:${Math.round((roundCount(item.id) / routineRounds()) * 100)}" data-round-add="${item.id}" aria-label="Marcar ronda"><span>${isComplete(item.id) ? "✓" : `${roundCount(item.id)}/${routineRounds()}`}</span></button>
           </div>
         </article>
         ${showInlineDetail && item.id === state.selected ? `<div class="mobile-detail" data-mobile-detail="${escapeAttr(item.id)}">${renderExerciseDetail(item, `mobile-${item.id}`)}</div>` : ""}
@@ -1947,44 +1487,47 @@
       return `
         <div class="detail-shell" id="detailShell-${escapeAttr(suffix)}">
         ${renderVideo(item, "video-frame", true)}
-        <h3 class="detail-title">${escapeHtml(item.name)}</h3>
-        <div class="meta">
-          <span class="pill">${escapeHtml(item.sets)} series</span>
-          <span class="pill">${nextRoundRepsText(item)}</span>
-          <span class="pill">${formatRest(item.rest)}</span>
-          <span class="pill">${rounds}/${routineRounds()} rondas</span>
-        </div>
-
-        <section class="panel timer" style="margin-top:16px;">
-          <div class="panel-head"><h2>Descanso</h2><button class="btn" id="timerStopBtn-${escapeAttr(suffix)}">Listo</button></div>
-          <div class="panel-body">
-            <div class="timer-display" data-timer-display>${formatClock(timer.left)}</div>
-            <div class="timer-buttons">
-              <button class="btn" data-quick="45">45 s</button>
-              <button class="btn" data-quick="60">60 s</button>
-              <button class="btn" data-quick="${item.rest || 75}">${formatRest(item.rest || 75)}</button>
-            </div>
+        <div>
+          <h3 class="detail-title">${escapeHtml(item.name)}</h3>
+          <div class="meta">
+            <span class="pill accent">${nextRoundRepsText(item)}</span>
+            <span class="pill">${escapeHtml(item.sets)} ${String(item.sets) === "1" ? "serie" : "series"}</span>
+            <span class="pill">${formatRest(item.rest)} descanso</span>
+            ${item.category ? `<span class="pill">${escapeHtml(item.category)}</span>` : ""}
           </div>
-        </section>
+        </div>
+        ${item.notes ? `<div class="detail-notes">${escapeHtml(item.notes)}</div>` : ""}
 
-        <section style="margin-top:16px;">
-          <h3 style="margin:0 0 10px;">Rondas</h3>
+        <section class="sub-card">
+          <div class="sub-card-head">
+            <h4>Rondas</h4>
+            <span class="pill ${isComplete(item.id) ? "accent" : ""}">${rounds}/${routineRounds()} ${isComplete(item.id) ? "· Completado" : ""}</span>
+          </div>
           <div class="round-progress">
             ${Array.from({ length: routineRounds() }, (_, index) => `
               <div class="round-dot ${index < rounds ? "done" : ""}">
                 <span>${index + 1}</span>
-                <small>${escapeHtml(roundReps(item, index))}</small>
+                <small>${escapeHtml(roundReps(item, index))} reps</small>
               </div>
             `).join("")}
           </div>
           <div class="round-actions">
-            <button class="btn" id="minusRoundBtn-${escapeAttr(suffix)}">Restar</button>
-            <button class="btn primary" id="addRoundBtn-${escapeAttr(suffix)}">${isComplete(item.id) ? "Completado" : "Marcar ronda"}</button>
-            <button class="btn warning" id="resetRoundBtn-${escapeAttr(suffix)}">Reiniciar</button>
+            <button class="btn" id="minusRoundBtn-${escapeAttr(suffix)}" aria-label="Restar ronda">−</button>
+            <button class="btn primary" id="addRoundBtn-${escapeAttr(suffix)}">${isComplete(item.id) ? `${ICONS.check}Completado` : "Marcar ronda"}</button>
+            <button class="btn ghost" id="resetRoundBtn-${escapeAttr(suffix)}">Reiniciar</button>
           </div>
-          <div class="session" style="margin-top:10px;">
-            <span>${isComplete(item.id) ? "Ejercicio completado" : "Pendiente"}</span>
-            <strong>${rounds}/${routineRounds()}</strong>
+        </section>
+
+        <section class="sub-card timer">
+          <div class="sub-card-head">
+            <h4>Descanso</h4>
+            <button class="btn sm ghost" id="timerStopBtn-${escapeAttr(suffix)}">Detener</button>
+          </div>
+          <div class="timer-display ${timer.interval ? "running" : ""}" data-timer-display>${formatClock(timer.left)}</div>
+          <div class="timer-buttons">
+            <button class="btn" data-quick="45">45 s</button>
+            <button class="btn" data-quick="60">60 s</button>
+            <button class="btn primary" data-quick="${item.rest || 75}">${formatRest(item.rest || 75)}</button>
           </div>
         </section>
         </div>
@@ -2010,7 +1553,7 @@
         }
         return `
           <div class="${className}">
-            <video src="${escapeAttr(item.video)}" ${controls ? "controls" : ""} muted playsinline preload="metadata" data-fullscreen-video></video>
+            <video src="${escapeAttr(item.video)}${controls || /#/.test(item.video) ? "" : "#t=0.1"}" ${controls ? "controls" : ""} muted playsinline preload="metadata" data-fullscreen-video></video>
           </div>
         `;
       }
@@ -2083,6 +1626,7 @@
     function tickTimer() {
       document.querySelectorAll("[data-timer-display]").forEach(display => {
         display.textContent = formatClock(timer.left);
+        display.classList.toggle("running", Boolean(timer.interval));
       });
     }
 
@@ -2210,24 +1754,43 @@
       event.target.value = "";
     });
 
-    els.loginBtn?.addEventListener("click", adminLogin);
-    [els.adminEmail, els.adminPassword].forEach(input => {
-      input?.addEventListener("keydown", event => {
-        if (event.key === "Enter") adminLogin();
-      });
+    els.loginForm?.addEventListener("submit", event => {
+      event.preventDefault();
+      adminLogin();
     });
     els.togglePasswordBtn?.addEventListener("click", () => {
       const visible = els.adminPassword.type === "text";
       els.adminPassword.type = visible ? "password" : "text";
       els.togglePasswordBtn.textContent = visible ? "Ver" : "Ocultar";
+      els.adminPassword.focus();
     });
     els.logoutBtn?.addEventListener("click", () => {
       saveAuthSession(null);
       renderRoutineList([]);
-      setRemoteStatus("Acceso privado para administracion.");
+      setRemoteStatus("Cerraste sesión.");
     });
     els.newRoutineBtn?.addEventListener("click", newOnlineRoutine);
     els.copyLinkBtn?.addEventListener("click", copyClientLink);
+    els.copyLinkBtn2?.addEventListener("click", copyClientLink);
+    els.whatsappBtn?.addEventListener("click", event => {
+      if (!els.clientLink.value) {
+        event.preventDefault();
+        showToast("Primero completá el código del link");
+      }
+    });
+    els.previewBtn?.addEventListener("click", () => {
+      if (!els.clientLink.value) {
+        showToast("Primero completá el código del link");
+        return;
+      }
+      window.open(els.clientLink.value, "_blank", "noopener");
+    });
+    els.routineSearch?.addEventListener("input", () => renderRoutineList());
+    els.routineList?.addEventListener("keydown", event => {
+      if (event.key !== "Enter") return;
+      const item = event.target.closest("[data-load-routine]");
+      if (item) item.click();
+    });
     els.routineTitle?.addEventListener("input", () => {
       if (state.routine[0]) state.routine[0].title = els.routineTitle.value.trim() || "Rutina";
       render();
@@ -2276,6 +1839,8 @@
       }
       if (loadBtn) {
         await loadRemoteRoutine(loadBtn.dataset.loadRoutine);
+        renderRoutineList();
+        if (window.innerWidth <= 1024) document.querySelector(".admin-main")?.scrollIntoView({ behavior: "smooth", block: "start" });
       }
     });
 
@@ -2497,64 +2062,152 @@
 
     async function adminLogin() {
       if (!remoteReady) {
-        setRemoteStatus("Falta configurar Supabase URL y anon key.");
+        setRemoteStatus("Falta configurar Supabase URL y anon key.", { error: true });
+        return;
+      }
+      const email = els.adminEmail.value.trim();
+      const password = els.adminPassword.value;
+      if (!email || !password) {
+        setRemoteStatus("Completá tu email y contraseña.", { error: true });
         return;
       }
       try {
-        setRemoteStatus("Entrando...");
+        els.loginBtn.disabled = true;
+        els.loginBtn.textContent = "Ingresando...";
+        setRemoteStatus("");
         const session = await supabaseRequest("/auth/v1/token?grant_type=password", {
           method: "POST",
           headers: {
             apikey: SUPABASE_ANON_KEY,
             "Content-Type": "application/json"
           },
-          body: JSON.stringify({
-            email: els.adminEmail.value.trim(),
-            password: els.adminPassword.value
-          })
+          body: JSON.stringify({ email, password })
         });
-        setRemoteStatus("Acceso correcto.");
         document.body.classList.add("admin-login-exiting");
         els.adminPassword.value = "";
         await new Promise(resolve => setTimeout(resolve, 260));
-        saveAuthSession(session);
+        saveAuthSession(withExpiry(session));
         document.body.classList.remove("admin-login-exiting");
         await loadAdminRoutines();
         focusAdminPanel();
-        setRemoteStatus("Profesora conectada.");
+        setRemoteStatus("Sesión iniciada. Elegí una alumna o creá una rutina nueva.");
       } catch (error) {
         document.body.classList.remove("admin-login-exiting");
-        setRemoteStatus(friendlyError(error));
+        setRemoteStatus(friendlyError(error), { error: true });
+      } finally {
+        els.loginBtn.disabled = false;
+        els.loginBtn.textContent = "Iniciar sesión";
       }
+    }
+
+    function withExpiry(session) {
+      if (!session) return session;
+      if (!session.expires_at && session.expires_in) {
+        session.expires_at = Math.floor(Date.now() / 1000) + Number(session.expires_in);
+      }
+      return session;
+    }
+
+    function sessionIsFresh(session, marginSeconds = 60) {
+      if (!session?.access_token) return false;
+      const exp = Number(session.expires_at) || 0;
+      return exp - marginSeconds > Math.floor(Date.now() / 1000);
+    }
+
+    // Renueva la sesion con el refresh token. Si no se puede, vuelve al login.
+    let refreshPromise = null;
+    let booting = false;
+    async function ensureFreshSession() {
+      if (!authSession?.access_token) return false;
+      if (sessionIsFresh(authSession)) return true;
+      if (!authSession.refresh_token) {
+        handleSessionExpired(booting);
+        return false;
+      }
+      if (!refreshPromise) {
+        refreshPromise = (async () => {
+          try {
+            const session = await supabaseRequest("/auth/v1/token?grant_type=refresh_token", {
+              method: "POST",
+              headers: { apikey: SUPABASE_ANON_KEY, "Content-Type": "application/json" },
+              body: JSON.stringify({ refresh_token: authSession.refresh_token })
+            });
+            authSession = withExpiry(session);
+            localStorage.setItem(authStorageKey, JSON.stringify(authSession));
+            return true;
+          } catch (error) {
+            if (/failed to fetch|network|load failed/i.test(String(error?.message))) throw error;
+            handleSessionExpired(booting);
+            return false;
+          } finally {
+            refreshPromise = null;
+          }
+        })();
+      }
+      return refreshPromise;
+    }
+
+    function handleSessionExpired(silent = false) {
+      saveAuthSession(null);
+      adminRoutineRows = [];
+      renderRoutineList([]);
+      setRemoteStatus(silent ? "" : "Por seguridad, volvé a iniciar sesión.");
+    }
+
+    function isAuthError(error) {
+      return /jwt|token|session|expired|401|unauthorized/i.test(String(error?.message || error || ""));
     }
 
     async function loadAdminRoutines() {
       if (!remoteReady || !authSession?.access_token || !isAdmin) return;
       try {
+        if (!(await ensureFreshSession())) return;
         const owner = authSession?.user?.id;
         const rows = await supabaseRequest(`/rest/v1/routines?owner_id=eq.${encodeURIComponent(owner)}&select=*&order=updated_at.desc`, {
           headers: supabaseHeaders(true)
         });
         renderRoutineList(rows || []);
       } catch (error) {
-        setRemoteStatus(friendlyError(error));
+        if (isAuthError(error)) {
+          handleSessionExpired();
+          return;
+        }
+        setRemoteStatus(friendlyError(error), { error: true });
       }
     }
 
     function renderRoutineList(rows) {
+      if (rows) adminRoutineRows = rows;
       if (!els.routineList) return;
-      els.routineList.innerHTML = rows.length ? rows.map(row => `
-        <div class="routine-item ${row.id === remoteRoutineId ? "active" : ""}">
-          <div>
-            <strong>${escapeHtml(row.title)}</strong>
-            <span>${escapeHtml(row.client_name || row.slug)}</span>
+      if (els.routineCount) els.routineCount.textContent = adminRoutineRows.length;
+      const query = (els.routineSearch?.value || "").trim().toLowerCase();
+      const visible = adminRoutineRows.filter(row =>
+        !query || `${row.title} ${row.client_name || ""} ${row.slug}`.toLowerCase().includes(query)
+      );
+      if (!adminRoutineRows.length) {
+        els.routineList.innerHTML = `<div class="sidebar-empty">Todavía no hay rutinas.<br>Creá la primera con “Nueva”.</div>`;
+        return;
+      }
+      if (!visible.length) {
+        els.routineList.innerHTML = `<div class="sidebar-empty">Sin resultados para “${escapeHtml(query)}”.</div>`;
+        return;
+      }
+      els.routineList.innerHTML = visible.map(row => {
+        const name = row.client_name || row.title || row.slug;
+        const initials = String(name).trim().split(/\s+/).slice(0, 2).map(part => part[0] || "").join("").toUpperCase() || "R";
+        return `
+          <div class="routine-item ${row.id === remoteRoutineId ? "active" : ""}" data-load-routine="${escapeAttr(row.slug)}" role="button" tabindex="0">
+            <div class="avatar">${escapeHtml(initials)}</div>
+            <div class="routine-item-text">
+              <strong>${escapeHtml(name)}</strong>
+              <span>${escapeHtml(row.title || row.slug)}</span>
+            </div>
+            <div class="routine-actions">
+              <button class="btn" type="button" data-delete-routine="${escapeAttr(row.id)}" data-delete-title="${escapeAttr(row.title)}" aria-label="Eliminar rutina">${ICONS.trash}</button>
+            </div>
           </div>
-          <div class="routine-actions">
-            <button class="btn" data-load-routine="${escapeAttr(row.slug)}">Abrir</button>
-            <button class="btn warning" data-delete-routine="${escapeAttr(row.id)}" data-delete-title="${escapeAttr(row.title)}">Eliminar</button>
-          </div>
-        </div>
-      `).join("") : `<div class="notice">Todavia no hay rutinas online.</div>`;
+        `;
+      }).join("");
     }
 
     function routinePayload() {
@@ -2573,10 +2226,11 @@
         return;
       }
       if (!authSession?.access_token) {
-        setRemoteStatus("Primero entra con el usuario de profesora.");
+        setRemoteStatus("Primero iniciá sesión.");
         return;
       }
       try {
+        if (!(await ensureFreshSession())) return;
         const title = els.routineTitle.value.trim() || activeDay().title || "Rutina";
         const clientName = els.clientName.value.trim();
         const slug = slugify(els.routineSlug.value || clientName || title);
@@ -2612,18 +2266,23 @@
         saveState();
         await loadAdminRoutines();
         setSaveState("Guardado");
-        setRemoteStatus(silent ? "Cambios guardados automaticamente." : "Rutina guardada online. Link listo para enviar.");
+        if (!silent) setRemoteStatus("Rutina guardada. El link está listo para enviar.");
       } catch (error) {
+        if (isAuthError(error)) {
+          handleSessionExpired();
+          return;
+        }
         setSaveState("Error al guardar");
-        setRemoteStatus(friendlyError(error));
+        setRemoteStatus(friendlyError(error), { error: true });
       }
     }
 
     async function deleteOnlineRoutine(id, title) {
       if (!remoteReady || !authSession?.access_token || !id) return;
-      const ok = confirm(`Vas a eliminar la rutina "${title || "sin titulo"}". Esta accion no se puede deshacer. Confirmas?`);
+      const ok = confirm(`¿Eliminar la rutina "${title || "sin título"}"? Esta acción no se puede deshacer.`);
       if (!ok) return;
       try {
+        if (!(await ensureFreshSession())) return;
         setRemoteStatus("Eliminando rutina...");
         await supabaseRequest(`/rest/v1/routines?id=eq.${encodeURIComponent(id)}`, {
           method: "DELETE",
@@ -2669,31 +2328,66 @@
       state.draft = {};
       updateRoutineFields({ title: "NUEVA RUTINA", client_name: "", slug });
       render();
-      setRemoteStatus("Rutina vacia creada. Completa los datos y se guardara automaticamente.");
+      setRemoteStatus("Rutina nueva creada. Completá el nombre de la alumna y agregá ejercicios: todo se guarda solo.");
+      els.clientName?.focus();
     }
 
     function copyClientLink() {
       const value = els.clientLink.value;
-      if (!value) return;
-      navigator.clipboard?.writeText(value);
-      setRemoteStatus("Link copiado.");
+      if (!value) {
+        showToast("Primero completá el código del link");
+        return;
+      }
+      const done = () => showToast("Link copiado ✓");
+      if (navigator.clipboard?.writeText) {
+        navigator.clipboard.writeText(value).then(done).catch(() => {
+          els.clientLink.select();
+          document.execCommand?.("copy");
+          done();
+        });
+      } else {
+        els.clientLink.select();
+        document.execCommand?.("copy");
+        done();
+      }
     }
 
-    function setRemoteStatus(message) {
-      if (els.remoteStatus) els.remoteStatus.textContent = message;
-      if (els.adminLoginStatus) els.adminLoginStatus.textContent = message;
+    function setRemoteStatus(message, options = {}) {
+      const text = String(message || "");
+      const isError = Boolean(options.error);
+      if (els.adminLoginStatus) {
+        els.adminLoginStatus.textContent = text;
+        els.adminLoginStatus.classList.toggle("error", isError);
+      }
+      if (!els.remoteStatus) return;
+      clearTimeout(statusTimer);
+      els.remoteStatus.textContent = text;
+      if (text && !options.persist && !isError) {
+        statusTimer = setTimeout(() => { els.remoteStatus.textContent = ""; }, 4500);
+      }
+    }
+
+    function showToast(message) {
+      if (!els.toast) return;
+      clearTimeout(toastTimer);
+      els.toast.textContent = message;
+      els.toast.classList.add("show");
+      toastTimer = setTimeout(() => els.toast.classList.remove("show"), 2200);
     }
 
     function setSaveState(message) {
-      if (els.adminSaveState) els.adminSaveState.textContent = message;
+      if (!els.adminSaveState) return;
+      els.adminSaveState.textContent = message;
+      els.adminSaveState.classList.toggle("saving", /guardando/i.test(message));
+      els.adminSaveState.classList.toggle("error", /error|no se pudo|sin conexion/i.test(message));
     }
 
     function friendlyError(error) {
       const raw = String(error?.message || error || "");
-      if (/invalid login|invalid_credentials|email/i.test(raw)) return "No se pudo entrar. Revisa el email y la clave.";
+      if (/invalid login|invalid_credentials|email/i.test(raw)) return "Email o contraseña incorrectos.";
       if (/duplicate|unique|slug/i.test(raw)) return "Ese codigo de link ya existe. Cambialo por otro y proba de nuevo.";
-      if (/failed to fetch|network|load failed/i.test(raw)) return "No se pudo conectar. Revisa internet e intenta otra vez.";
-      if (/jwt|token|session|expired/i.test(raw)) return "La sesion vencio. Volve a entrar con la profesora.";
+      if (/failed to fetch|network|load failed/i.test(raw)) return "Sin conexión. Revisá internet e intentá de nuevo.";
+      if (/jwt|token|session|expired/i.test(raw)) return "Por seguridad, volvé a iniciar sesión.";
       return "No se pudo completar la accion. Intenta de nuevo.";
     }
 
@@ -2702,13 +2396,9 @@
       document.body.classList.toggle("admin-authenticated", Boolean(authSession?.access_token));
       if (!remoteReady) {
         setSaveState("Sin conexion");
-        setRemoteStatus("Modo local. Falta pegar SUPABASE_URL y SUPABASE_ANON_KEY en config.js.");
+        setRemoteStatus("Falta configurar la conexión con Supabase.", { error: true });
       } else if (authSession?.access_token) {
         setSaveState("Guardado");
-        setRemoteStatus("Sesion iniciada. Crea o abre una rutina; los cambios se guardan automaticamente.");
-      } else {
-        setSaveState("Privado");
-        setRemoteStatus("Acceso privado para administracion.");
       }
     }
 
@@ -2716,17 +2406,18 @@
       if (!isAdmin) return;
       const total = allExercises().length;
       if (els.adminExerciseSummary) {
-        els.adminExerciseSummary.textContent = `${total} ${total === 1 ? "ejercicio" : "ejercicios"} cargados`;
+        els.adminExerciseSummary.textContent = total
+          ? `${total} ${total === 1 ? "ejercicio" : "ejercicios"} · tocá uno para verlo, o “Editar” para modificarlo`
+          : "Todavía no hay ejercicios en esta rutina";
       }
       if (els.activeRoutineName) {
         els.activeRoutineName.textContent = currentRoutineTitle();
       }
       if (els.adminContentSummary) {
-        els.adminContentSummary.textContent = `${total} ${total === 1 ? "ejercicio" : "ejercicios"} - ${routineRounds()} ${routineRounds() === 1 ? "ronda" : "rondas"}`;
+        els.adminContentSummary.textContent = `${total} ${total === 1 ? "ejercicio" : "ejercicios"} · ${routineRounds()} ${routineRounds() === 1 ? "ronda" : "rondas"}`;
       }
       if (els.editorBtn) {
         els.editorBtn.disabled = total === 0;
-        els.editorBtn.textContent = total ? "Editar seleccionado" : "Sin ejercicio seleccionado";
       }
       document.body.classList.toggle("admin-authenticated", Boolean(authSession?.access_token));
     }
@@ -2883,21 +2574,56 @@
       state.activeDay = "d1";
       state.selected = "";
     }
-    const canRenderApp = !isAdmin || Boolean(authSession?.access_token);
-    if (canRenderApp) {
+    async function bootAdmin() {
+      // Antes de mostrar el panel verificamos que la sesion guardada siga valida.
+      if (authSession?.access_token) {
+        document.body.classList.add("admin-checking");
+        authSession = withExpiry(authSession);
+        let ok = false;
+        booting = true;
+        try {
+          ok = await ensureFreshSession();
+        } catch {
+          ok = sessionIsFresh(authSession, 0);
+        }
+        booting = false;
+        document.body.classList.remove("admin-checking");
+        if (!ok) {
+          if (authSession) handleSessionExpired(true);
+          setRemoteStatus("");
+          updateRemoteStatus();
+          return;
+        }
+        render();
+        updateRoutineFields();
+        applyDraftFields();
+        updateRemoteStatus();
+        if (recoveredLocalBackup) {
+          setSaveState("Respaldo recuperado");
+          setRemoteStatus("Se recuperó una copia local anterior. Revisala antes de seguir.", { persist: true });
+        }
+        loadAdminRoutines();
+        focusAdminPanel();
+      } else {
+        updateRemoteStatus();
+      }
+    }
+
+    if (isAdmin) {
+      bootAdmin();
+    } else {
       render();
       updateRoutineFields();
-      applyDraftFields();
+      if (routineParam) loadRemoteRoutine(routineParam);
     }
-    updateRemoteStatus();
-    if (recoveredLocalBackup && isAdmin) {
-      setSaveState("Respaldo recuperado");
-      setRemoteStatus("Recupere una copia local anterior. Revisa y guarda online.");
-    }
-    if (routineParam && !isAdmin) loadRemoteRoutine(routineParam);
-    if (isAdmin && authSession?.access_token) {
-      loadAdminRoutines();
-      focusAdminPanel();
+
+    if (isAdmin) {
+      setInterval(() => {
+        if (authSession?.access_token && !sessionIsFresh(authSession, 300)) ensureFreshSession().catch(() => {});
+      }, 60000);
+      document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "visible" && authSession?.access_token) ensureFreshSession().catch(() => {});
+      });
     }
 
     let lastMobileLayout = isMobileLayout();
