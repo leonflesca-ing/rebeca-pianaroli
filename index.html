@@ -1370,7 +1370,7 @@
     const SUPABASE_URL = window.REBECA_CONFIG?.SUPABASE_URL || "";
     const SUPABASE_ANON_KEY = window.REBECA_CONFIG?.SUPABASE_ANON_KEY || "";
     const DEFAULT_TOTAL_ROUNDS = 4;
-    const APP_VERSION = "24";
+    const APP_VERSION = "25";
     const params = new URLSearchParams(window.location.search);
     const isAdmin = params.get("admin") === "1";
     const routineParam = params.get("rutina") || "";
@@ -1496,6 +1496,10 @@
     ];
 
     let recoveredLocalBackup = false;
+    let hadStoredState = false;
+    let remoteLoading = false;
+    let remoteLoadFailed = false;
+    let lastMusicKey = null;
     const state = loadState();
     let timer = { interval: null, left: 0 };
 
@@ -1569,6 +1573,7 @@
         try {
           const stored = JSON.parse(localStorage.getItem(key));
           if (stored?.routine?.length) {
+            hadStoredState = true;
             const normalized = normalizeStoredState(stored);
             if (key !== storageKey) {
               recoveredLocalBackup = true;
@@ -1646,6 +1651,8 @@
     }
 
     function saveState() {
+      // No pisamos la copia local con la pantalla de "Cargando" o un error de conexion.
+      if (remoteLoading || remoteLoadFailed) return;
       updateLocalDraft();
       localStorage.setItem(storageKey, JSON.stringify(state));
     }
@@ -1777,7 +1784,7 @@
 
       renderTabs();
       renderStats();
-      renderMusic();
+      renderMusicIfChanged();
       renderList();
       renderDetail();
       updateAdminUi();
@@ -1811,7 +1818,44 @@
       `).join("");
     }
 
+    function musicKey() {
+      return [isAdmin, state.musicUrl, state.youtubeUrl, state.musicProvider, state.musicOpen].join("|");
+    }
+
+    // Solo reconstruye el reproductor si cambio algo de la musica,
+    // asi no se corta Spotify/YouTube cada vez que se marca una ronda.
+    function renderMusicIfChanged() {
+      const key = musicKey();
+      if (key === lastMusicKey) return;
+      renderMusic();
+    }
+
+    // Reemplaza el HTML de un contenedor pero reutiliza los videos/GIFs que ya
+    // estaban cargados, para que no parpadeen ni se reinicien en cada toque.
+    function setHtmlKeepingMedia(container, html) {
+      const pool = new Map();
+      container.querySelectorAll("video[src], img.media-asset").forEach(node => {
+        const key = `${node.tagName}|${node.getAttribute("src")}|${node.parentElement?.className || ""}`;
+        if (!pool.has(key)) pool.set(key, []);
+        pool.get(key).push(node);
+      });
+      container.innerHTML = html;
+      if (!pool.size) return;
+      container.querySelectorAll("video[src], img.media-asset").forEach(node => {
+        const key = `${node.tagName}|${node.getAttribute("src")}|${node.parentElement?.className || ""}`;
+        const old = pool.get(key)?.shift();
+        if (!old) return;
+        if (node.tagName === "VIDEO") old.controls = node.hasAttribute("controls");
+        node.replaceWith(old);
+      });
+    }
+
+    function isMobileLayout() {
+      return window.innerWidth <= 900;
+    }
+
     function renderMusic() {
+      lastMusicKey = musicKey();
       if (!els.musicCard) return;
       const spotifyUrl = spotifyEmbedUrl(state.musicUrl);
       const youtubeUrl = youtubeEmbedUrl(state.youtubeUrl);
@@ -1836,16 +1880,21 @@
     function renderList() {
       const day = activeDay();
       if (!day.exercises.length) {
+        const message = remoteLoading
+          ? "Cargando tu rutina..."
+          : remoteLoadFailed
+            ? "No se pudo cargar la rutina. Revisa tu conexion y volve a abrir el link."
+            : "Esta rutina todavia no tiene ejercicios.";
         els.list.innerHTML = `
           <div class="notice">
-            Esta rutina todavia no tiene ejercicios.
+            ${message}
             ${isAdmin ? `<button class="btn primary" data-add-first style="margin-top:10px;">Agregar primer ejercicio</button>` : ""}
           </div>
         `;
         return;
       }
-      const showInlineDetail = window.innerWidth <= 900;
-      els.list.innerHTML = day.exercises.map((item, index) => `
+      const showInlineDetail = isMobileLayout();
+      setHtmlKeepingMedia(els.list, day.exercises.map((item, index) => `
         <article class="exercise-card ${item.id === state.selected ? "active" : ""} ${state.expanded === item.id ? "expanded" : ""}" data-select="${item.id}">
           ${renderVideo(item, "thumb", false)}
           <div class="exercise-main">
@@ -1857,7 +1906,7 @@
               <span class="pill">${escapeHtml(item.category || "General")}</span>
             </div>
           </div>
-          ${state.expanded === item.id ? renderVideo(item, "expanded-video video-frame", true) : ""}
+          ${state.expanded === item.id && !showInlineDetail ? renderVideo(item, "expanded-video video-frame", true) : ""}
           <div class="card-actions">
             <button class="btn" data-rest="${item.rest}">Descanso</button>
             ${isAdmin ? `<button class="btn admin-only" data-edit="${item.id}">Editar</button>` : ""}
@@ -1865,7 +1914,7 @@
           </div>
         </article>
         ${showInlineDetail && item.id === state.selected ? `<div class="mobile-detail" data-mobile-detail="${escapeAttr(item.id)}">${renderExerciseDetail(item, `mobile-${item.id}`)}</div>` : ""}
-      `).join("");
+      `).join(""));
       const mobileItem = selectedExercise();
       if (showInlineDetail && mobileItem) bindDetailEvents(mobileItem, `mobile-${mobileItem.id}`);
     }
@@ -1884,7 +1933,12 @@
         return;
       }
       els.detailHead.textContent = activeDay().title;
-      els.detail.innerHTML = renderExerciseDetail(item, "side");
+      if (isMobileLayout()) {
+        // En celular este panel esta oculto: no cargamos otro video de mas.
+        els.detail.innerHTML = "";
+        return;
+      }
+      setHtmlKeepingMedia(els.detail, renderExerciseDetail(item, "side"));
       bindDetailEvents(item, "side");
     }
 
@@ -1978,6 +2032,8 @@
       });
       document.getElementById(`timerStopBtn-${suffix}`)?.addEventListener("click", () => stopTimer());
       root.querySelectorAll("[data-fullscreen-video]").forEach(video => {
+        if (video.dataset.fullscreenBound) return;
+        video.dataset.fullscreenBound = "1";
         video.addEventListener("click", () => openFullscreenVideo(video));
       });
       document.getElementById(`addRoundBtn-${suffix}`)?.addEventListener("click", () => {
@@ -2368,6 +2424,8 @@
     async function loadRemoteRoutine(slug) {
       if (!remoteReady || !slug) return;
       try {
+        remoteLoading = true;
+        remoteLoadFailed = false;
         setRemoteStatus("Cargando rutina online...");
         const rows = await supabaseRequest("/rest/v1/rpc/get_routine_by_slug", {
           method: "POST",
@@ -2375,20 +2433,31 @@
           body: JSON.stringify({ p_slug: slug })
         });
         const routine = rows?.[0];
+        remoteLoading = false;
         if (!routine) {
+          remoteLoadFailed = !hadStoredState;
           setRemoteStatus("No se encontro esa rutina.");
+          render();
           return;
         }
         remoteRoutineId = routine.id;
         applyRoutineRecord(routine);
         setRemoteStatus("Rutina online cargada.");
       } catch (error) {
+        remoteLoading = false;
+        remoteLoadFailed = !hadStoredState;
         setRemoteStatus(friendlyError(error));
+        render();
       }
     }
 
     function applyRoutineRecord(record) {
       const data = record.data || {};
+      // Si la alumna recarga la misma rutina, conservamos sus rondas marcadas.
+      const sameRoutine = !isAdmin && record.id && state.remoteId === record.id;
+      const previous = sameRoutine
+        ? { rounds: state.rounds || {}, selected: state.selected, activeDay: state.activeDay, musicOpen: state.musicOpen, musicProvider: state.musicProvider }
+        : null;
       state.routine = data.routine?.length ? data.routine : structuredClone(starterRoutine);
       state.routine.forEach(group => {
         group.exercises = (group.exercises || []).map(item => ({
@@ -2406,6 +2475,15 @@
       state.expanded = "";
       state.rounds = {};
       state.view = "routine";
+      state.remoteId = record.id || "";
+      if (previous) {
+        const ids = new Set(state.routine.flatMap(group => group.exercises.map(item => item.id)));
+        Object.entries(previous.rounds).forEach(([id, value]) => {
+          if (ids.has(id)) state.rounds[id] = value;
+        });
+        if (ids.has(previous.selected)) state.selected = previous.selected;
+        if (state.routine.some(group => group.id === previous.activeDay)) state.activeDay = previous.activeDay;
+      }
       if (record.title && state.routine[0]) state.routine[0].title = record.title;
       state.draft = {
         title: record.title || state.routine[0]?.title || "",
@@ -2798,6 +2876,13 @@
       return escapeHtml(text).replace(/`/g, "&#096;");
     }
 
+    if (routineParam && !isAdmin && !hadStoredState && remoteReady) {
+      // Primera visita de una alumna: mostramos "Cargando" en vez de una rutina de ejemplo.
+      remoteLoading = true;
+      state.routine = [day("d1", "RUTINA", "", [])];
+      state.activeDay = "d1";
+      state.selected = "";
+    }
     const canRenderApp = !isAdmin || Boolean(authSession?.access_token);
     if (canRenderApp) {
       render();
@@ -2814,6 +2899,18 @@
       loadAdminRoutines();
       focusAdminPanel();
     }
+
+    let lastMobileLayout = isMobileLayout();
+    let resizeTimer = null;
+    window.addEventListener("resize", () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        const mobile = isMobileLayout();
+        if (mobile === lastMobileLayout) return;
+        lastMobileLayout = mobile;
+        if (!isAdmin || authSession?.access_token) render();
+      }, 150);
+    });
 
     if ("serviceWorker" in navigator && location.protocol !== "file:") {
       navigator.serviceWorker.register("./sw.js").catch(() => {});
