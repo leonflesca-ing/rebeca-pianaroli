@@ -521,6 +521,59 @@
     .toast { position: fixed; left: 50%; bottom: 24px; z-index: 80; transform: translate(-50%, 20px); opacity: 0; pointer-events: none; padding: 12px 18px; border-radius: 12px; background: #fff; color: #111; font-weight: 600; font-size: .88rem; box-shadow: 0 20px 50px -10px rgba(0, 0, 0, .6); transition: .3s var(--ease); max-width: calc(100% - 32px); }
     .toast.show { opacity: 1; transform: translate(-50%, 0); }
 
+
+    /* ---------- Tour guiado (alumnas) ---------- */
+    .hero-actions { display: flex; justify-content: flex-end; margin: 12px -6px -8px 0; }
+    .hero-actions .btn { min-height: 34px; font-size: .78rem; padding: 0 12px; color: var(--muted); }
+    .hero-actions .btn:hover { color: var(--text); }
+    body.admin .help-fab { display: none; }
+    .help-fab {
+      position: fixed; right: 18px; bottom: calc(18px + env(safe-area-inset-bottom));
+      z-index: 40;
+      width: 48px; height: 48px; border-radius: 50%;
+      display: grid; place-items: center;
+      background: var(--gradient); color: #fff;
+      font-family: var(--display); font-weight: 800; font-size: 1.2rem;
+      box-shadow: var(--shadow-pink), 0 10px 30px rgba(0, 0, 0, .5);
+      transition: transform .2s var(--ease);
+    }
+    .help-fab:hover { transform: scale(1.06); }
+    body:not(.admin) .app { padding-bottom: 96px; }
+
+    .tour { position: fixed; inset: 0; z-index: 90; display: none; }
+    .tour.open { display: block; }
+    .tour-catcher { position: absolute; inset: 0; }
+    .tour-spot {
+      position: absolute;
+      border-radius: 16px;
+      box-shadow: 0 0 0 9999px rgba(5, 4, 7, .78), 0 0 0 2px var(--pink-2), 0 0 30px 6px rgba(236, 15, 124, .45);
+      transition: width .25s var(--ease), height .25s var(--ease), border-radius .25s var(--ease);
+      pointer-events: none;
+    }
+    .tour-spot.hidden { box-shadow: 0 0 0 9999px rgba(5, 4, 7, .78); width: 0 !important; height: 0 !important; top: 50% !important; left: 50% !important; }
+    .tour-card {
+      position: absolute;
+      width: min(360px, calc(100vw - 32px));
+      padding: 20px 20px 16px;
+      border-radius: 20px;
+      border: 1px solid var(--line-2);
+      background: linear-gradient(180deg, #221d26, #17141a);
+      box-shadow: 0 30px 80px -20px rgba(0, 0, 0, .9);
+      animation: fadeIn .3s var(--ease) both;
+    }
+    .tour-card.center { inset: 0; margin: auto; height: fit-content; text-align: center; }
+    .tour-emoji { font-size: 2rem; line-height: 1; margin-bottom: 10px; }
+    .tour-step { font-family: var(--display); font-size: .68rem; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: var(--pink-2); }
+    .tour-card h3 { margin-top: 6px; font-size: 1.15rem; font-weight: 800; }
+    .tour-card p { margin-top: 8px; color: var(--text-2); font-size: .92rem; line-height: 1.5; }
+    .tour-dots { display: flex; gap: 6px; margin-top: 16px; }
+    .tour-card.center .tour-dots { justify-content: center; }
+    .tour-dots span { width: 6px; height: 6px; border-radius: 3px; background: rgba(255, 255, 255, .18); transition: width .3s var(--ease), background .3s; }
+    .tour-dots span.on { width: 18px; background: var(--pink-2); }
+    .tour-actions { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 16px; }
+    .tour-actions .right { display: flex; gap: 8px; }
+    .tour-card.center .tour-actions { justify-content: center; }
+
     /* ---------- Responsive ---------- */
     @media (max-width: 1180px) {
       .card-data, .card-link { grid-column: span 12; }
@@ -776,6 +829,9 @@
           <div class="progress"><span id="progress"></span></div>
           <span class="progress-pct" id="progressPct">0%</span>
         </div>
+        <div class="hero-actions">
+          <button class="btn ghost" id="heroResetBtn" type="button">↺ Reiniciar progreso</button>
+        </div>
       </section>
 
       <section class="layout">
@@ -860,6 +916,14 @@
     </div>
   </div>
 
+  <button class="help-fab" id="helpBtn" type="button" aria-label="Cómo usar la app" title="Cómo usar la app">?</button>
+
+  <div class="tour" id="tour" role="dialog" aria-modal="true" aria-live="polite">
+    <div class="tour-catcher"></div>
+    <div class="tour-spot" id="tourSpot"></div>
+    <div class="tour-card" id="tourCard"></div>
+  </div>
+
   <div class="toast" id="toast" role="status"></div>
   <input class="file-actions" id="importFile" type="file" accept="application/json">
 
@@ -868,7 +932,7 @@
     const SUPABASE_URL = window.REBECA_CONFIG?.SUPABASE_URL || "";
     const SUPABASE_ANON_KEY = window.REBECA_CONFIG?.SUPABASE_ANON_KEY || "";
     const DEFAULT_TOTAL_ROUNDS = 4;
-    const APP_VERSION = "27";
+    const APP_VERSION = "28";
     const params = new URLSearchParams(window.location.search);
     const isAdmin = params.get("admin") === "1";
     const routineParam = params.get("rutina") || "";
@@ -1701,13 +1765,20 @@
     document.getElementById("deleteBtn").addEventListener("click", deleteExercise);
     document.getElementById("editDay").addEventListener("change", updateOrderMax);
 
-    els.finishBtn.addEventListener("click", () => {
+    function resetProgress() {
       const day = activeDay();
+      const hasProgress = day.exercises.some(item => roundCount(item.id) > 0);
+      if (hasProgress && !confirm("¿Reiniciar todo el progreso de hoy? Las rondas marcadas vuelven a 0.")) return;
       day.exercises.forEach(item => setRoundCount(item.id, 0));
       state.selected = day.exercises[0]?.id || "";
       state.expanded = "";
+      stopTimer();
       render();
-    });
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      showToast("Progreso reiniciado");
+    }
+    els.finishBtn.addEventListener("click", resetProgress);
+    document.getElementById("heroResetBtn")?.addEventListener("click", resetProgress);
 
     els.musicCard?.addEventListener("click", event => {
       if (event.target.closest("[data-music-switch]")) {
@@ -2621,7 +2692,11 @@
     } else {
       render();
       updateRoutineFields();
-      if (routineParam) loadRemoteRoutine(routineParam);
+      if (routineParam) {
+        loadRemoteRoutine(routineParam).finally(() => setTimeout(maybeStartTour, 50));
+      } else {
+        setTimeout(maybeStartTour, 50);
+      }
     }
 
     if (isAdmin) {
@@ -2631,6 +2706,235 @@
       document.addEventListener("visibilitychange", () => {
         if (document.visibilityState === "visible" && authSession?.access_token) ensureFreshSession().catch(() => {});
       });
+    }
+
+
+    // ---------- Tour guiado para alumnas ----------
+    // Subir TOUR_VERSION cuando haya funciones nuevas para que la guia se muestre otra vez.
+    const TOUR_VERSION = 1;
+    const tourStorageKey = "rebecaTourSeen";
+    const tourEls = {
+      root: document.getElementById("tour"),
+      spot: document.getElementById("tourSpot"),
+      card: document.getElementById("tourCard")
+    };
+    const tour = { steps: [], index: 0, open: false, started: false };
+
+    function tourSeenVersion() {
+      try { return Number(localStorage.getItem(tourStorageKey)) || 0; } catch { return 0; }
+    }
+
+    function markTourSeen() {
+      try { localStorage.setItem(tourStorageKey, String(TOUR_VERSION)); } catch {}
+    }
+
+    function visible(el) {
+      if (!el) return false;
+      const rect = el.getBoundingClientRect();
+      return rect.width > 0 && rect.height > 0 && getComputedStyle(el).visibility !== "hidden";
+    }
+
+    function detailRoot() {
+      return isMobileLayout() ? document.querySelector(".mobile-detail") : document.querySelector(".detail-panel");
+    }
+
+    function buildTourSteps() {
+      const name = (state.draft?.clientName || "").trim();
+      const steps = [
+        {
+          emoji: "👋",
+          title: name ? `¡Hola ${escapeHtml(name)}!` : "¡Bienvenida!",
+          text: "Rebeca preparó esta rutina para vos. Te muestro en 30 segundos cómo usarla."
+        },
+        {
+          target: () => document.querySelector(".hero"),
+          title: "Tu progreso",
+          text: "Acá ves cuántos ejercicios y rondas llevás completadas. La barra se llena a medida que avanzás."
+        },
+        {
+          target: () => document.querySelector(".exercise-card"),
+          title: "Cada tarjeta es un ejercicio",
+          text: "Debajo del nombre ves cuántas repeticiones te tocan <strong>en esta ronda</strong>. Tocá la tarjeta para ver el video."
+        },
+        {
+          target: () => document.querySelector(".exercise-card .check"),
+          title: "Marcá la ronda",
+          text: "Cuando terminás el ejercicio, tocá este círculo. Se suma la ronda y la app te lleva al siguiente ejercicio.",
+          round: true
+        },
+        {
+          target: () => detailRoot()?.querySelector(".round-actions") ? detailRoot().querySelector(".sub-card") : null,
+          title: "Rondas del ejercicio",
+          text: "Acá ves las repeticiones de cada ronda. Si te equivocaste, tocá <strong>−</strong> para restar una, o <strong>Reiniciar</strong> para empezar ese ejercicio de cero."
+        },
+        {
+          target: () => detailRoot()?.querySelector(".sub-card.timer"),
+          title: "Temporizador de descanso",
+          text: "Elegí 45 s, 60 s o el descanso que indicó Rebeca, y descansá sin mirar el reloj."
+        },
+        {
+          target: () => {
+            const card = document.querySelector(".music-card.ready");
+            return visible(card) ? card : null;
+          },
+          title: "Música para entrenar",
+          text: "Tocá <strong>Play</strong> para escuchar la playlist que eligió Rebeca mientras entrenás."
+        },
+        {
+          target: () => document.getElementById("heroResetBtn"),
+          title: "Reiniciar progreso",
+          text: "Cuando vuelvas a entrenar otro día, tocá acá para poner todas las rondas en 0.",
+          round: true
+        },
+        {
+          target: () => document.getElementById("helpBtn"),
+          title: "¿Te olvidaste algo?",
+          text: "Tocá este botón cuando quieras para ver esta guía otra vez.",
+          round: true
+        },
+        {
+          emoji: "💪",
+          title: "¡Todo listo!",
+          text: "Empezá por el primer ejercicio y marcá cada ronda al terminar. ¡A entrenar!",
+          last: true
+        }
+      ];
+      return steps.filter(step => !step.target || visible(step.target()));
+    }
+
+    function startTour() {
+      if (isAdmin || !activeDay()?.exercises?.length) return;
+      tour.started = true;
+      tour.steps = buildTourSteps();
+      tour.index = 0;
+      tour.open = true;
+      tourEls.root.classList.add("open");
+      document.body.style.overflow = "hidden";
+      showTourStep();
+    }
+
+    function endTour() {
+      tour.open = false;
+      tourEls.root.classList.remove("open");
+      document.body.style.overflow = "";
+      markTourSeen();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function showTourStep() {
+      const step = tour.steps[tour.index];
+      if (!step) return endTour();
+      const total = tour.steps.length;
+      const target = step.target ? step.target() : null;
+      const isFirst = tour.index === 0;
+      tourEls.card.className = `tour-card ${target ? "" : "center"}`;
+      tourEls.card.innerHTML = `
+        ${step.emoji ? `<div class="tour-emoji">${step.emoji}</div>` : `<div class="tour-step">Paso ${tour.index} de ${total - 2}</div>`}
+        <h3>${step.title}</h3>
+        <p>${step.text}</p>
+        <div class="tour-dots">${tour.steps.map((_, i) => `<span class="${i === tour.index ? "on" : ""}"></span>`).join("")}</div>
+        <div class="tour-actions">
+          ${step.last ? "" : `<button class="btn ghost sm" type="button" data-tour="skip">${isFirst ? "Ahora no" : "Saltar"}</button>`}
+          <div class="right">
+            ${!isFirst && !step.last ? `<button class="btn sm" type="button" data-tour="prev">Atrás</button>` : ""}
+            <button class="btn primary sm" type="button" data-tour="next">${isFirst ? "Empezar" : step.last ? "¡Empezar a entrenar!" : "Siguiente"}</button>
+          </div>
+        </div>
+      `;
+      if (!target) {
+        tourEls.spot.classList.add("hidden");
+        tourEls.card.style.top = "";
+        tourEls.card.style.left = "";
+        tour.target = null;
+        tourEls.card.querySelector('[data-tour="next"]')?.focus({ preventScroll: true });
+        return;
+      }
+      tourEls.spot.classList.remove("hidden");
+      tour.target = target;
+      target.scrollIntoView({ behavior: "smooth", block: "center" });
+      clearTimeout(tour.positionTimer);
+      positionTour(target, step);
+      tour.positionTimer = setTimeout(() => positionTour(target, step), 420);
+    }
+
+    function positionTour(target, step) {
+      if (!tour.open || !target) return;
+      const pad = step.round ? 8 : 6;
+      const rect = target.getBoundingClientRect();
+      const spot = {
+        top: rect.top - pad,
+        left: rect.left - pad,
+        width: rect.width + pad * 2,
+        height: rect.height + pad * 2
+      };
+      Object.assign(tourEls.spot.style, {
+        top: spot.top + "px",
+        left: spot.left + "px",
+        width: spot.width + "px",
+        height: spot.height + "px",
+        borderRadius: step.round ? "999px" : "18px"
+      });
+      const card = tourEls.card;
+      const cardW = card.offsetWidth;
+      const cardH = card.offsetHeight;
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const gap = 14;
+      let top = spot.top + spot.height + gap;
+      if (top + cardH > vh - 12) top = spot.top - cardH - gap;
+      if (top < 12) top = Math.max(12, Math.min(vh - cardH - 12, vh / 2 - cardH / 2));
+      let left = spot.left + spot.width / 2 - cardW / 2;
+      left = Math.max(16, Math.min(vw - cardW - 16, left));
+      card.style.top = top + "px";
+      card.style.left = left + "px";
+      card.querySelector('[data-tour="next"]')?.focus({ preventScroll: true });
+    }
+
+    tourEls.card?.addEventListener("click", event => {
+      const action = event.target.closest("[data-tour]")?.dataset.tour;
+      if (!action) return;
+      if (action === "skip") return endTour();
+      if (action === "prev") tour.index = Math.max(0, tour.index - 1);
+      if (action === "next") tour.index += 1;
+      if (tour.index >= tour.steps.length) return endTour();
+      showTourStep();
+    });
+
+    document.addEventListener("keydown", event => {
+      if (!tour.open) return;
+      if (event.key === "Escape") endTour();
+      if (event.key === "ArrowRight") tourEls.card.querySelector('[data-tour="next"]')?.click();
+      if (event.key === "ArrowLeft") tourEls.card.querySelector('[data-tour="prev"]')?.click();
+    });
+
+    // Mientras la pagina se desplaza, el resaltado sigue al elemento.
+    let tourScrollFrame = 0;
+    window.addEventListener("scroll", () => {
+      if (!tour.open || !tour.target || tourScrollFrame) return;
+      tourScrollFrame = requestAnimationFrame(() => {
+        tourScrollFrame = 0;
+        positionTour(tour.target, tour.steps[tour.index]);
+      });
+    }, { passive: true });
+
+    window.addEventListener("resize", () => {
+      if (!tour.open) return;
+      const step = tour.steps[tour.index];
+      const target = step?.target?.();
+      if (target) positionTour(target, step);
+    });
+
+    document.getElementById("helpBtn")?.addEventListener("click", () => {
+      if (!isAdmin) startTour();
+    });
+
+    // Se muestra sola la primera vez (o cuando sube TOUR_VERSION), cuando ya hay ejercicios en pantalla.
+    function maybeStartTour() {
+      if (isAdmin || tour.started || tour.open || remoteLoading) return;
+      if (tourSeenVersion() >= TOUR_VERSION) return;
+      if (!activeDay()?.exercises?.length) return;
+      tour.started = true;
+      setTimeout(startTour, 700);
     }
 
     let lastMobileLayout = isMobileLayout();
