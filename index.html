@@ -547,7 +547,6 @@
       position: absolute;
       border-radius: 16px;
       box-shadow: 0 0 0 9999px rgba(5, 4, 7, .78), 0 0 0 2px var(--pink-2), 0 0 30px 6px rgba(236, 15, 124, .45);
-      transition: width .25s var(--ease), height .25s var(--ease), border-radius .25s var(--ease);
       pointer-events: none;
     }
     .tour-spot.hidden { box-shadow: 0 0 0 9999px rgba(5, 4, 7, .78); width: 0 !important; height: 0 !important; top: 50% !important; left: 50% !important; }
@@ -559,10 +558,22 @@
       border: 1px solid var(--line-2);
       background: linear-gradient(180deg, #221d26, #17141a);
       box-shadow: 0 30px 80px -20px rgba(0, 0, 0, .9);
-      animation: fadeIn .3s var(--ease) both;
+      opacity: 1;
+      transition: opacity .22s ease;
     }
+    .tour-card.hiding { opacity: 0; }
     .tour-card.center { inset: 0; margin: auto; height: fit-content; text-align: center; }
-    .tour-emoji { font-size: 2rem; line-height: 1; margin-bottom: 10px; }
+    .tour-spot { transition: top .3s var(--ease), left .3s var(--ease), width .3s var(--ease), height .3s var(--ease), border-radius .3s var(--ease); }
+    @media (max-width: 640px) {
+      .tour-card:not(.center) { left: 12px !important; right: 12px; width: auto; top: auto !important; bottom: calc(12px + env(safe-area-inset-bottom)); padding: 18px 18px 14px; border-radius: 20px; }
+      .tour-card.sheet-top:not(.center) { top: calc(12px + env(safe-area-inset-top)) !important; bottom: auto; }
+      .tour-card h3 { font-size: 1.05rem; }
+      .tour-card p { font-size: .9rem; }
+    }
+    .tour-mark { width: 56px; height: 56px; margin: 0 auto 14px; border-radius: 50%; overflow: hidden; background: #fff; box-shadow: 0 0 0 4px rgba(236, 15, 124, .16); }
+    .tour-mark img { width: 100%; height: 100%; object-fit: cover; transform: scale(1.35); }
+    .tour-icon { width: 52px; height: 52px; margin: 0 auto 14px; display: grid; place-items: center; border-radius: 50%; border: 1.5px solid var(--pink-line); color: var(--pink-2); }
+    .tour-icon svg { width: 24px; height: 24px; stroke-width: 1.8; }
     .tour-step { font-family: var(--display); font-size: .68rem; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: var(--pink-2); }
     .tour-card h3 { margin-top: 6px; font-size: 1.15rem; font-weight: 800; }
     .tour-card p { margin-top: 8px; color: var(--text-2); font-size: .92rem; line-height: 1.5; }
@@ -592,17 +603,18 @@
     }
     @keyframes pop { from { opacity: 0; transform: scale(.7) translateY(20px); } to { opacity: 1; transform: none; } }
     .celebrate-badge {
-      width: 86px; height: 86px; margin: 0 auto 18px;
+      width: 68px; height: 68px; margin: 0 auto 18px;
       display: grid; place-items: center;
       border-radius: 50%;
-      background: var(--gradient);
-      font-size: 2.6rem;
-      box-shadow: 0 0 0 8px rgba(236, 15, 124, .15), var(--shadow-pink);
-      animation: badgePulse 1.8s ease-in-out infinite;
+      border: 1.5px solid var(--pink-2);
+      color: var(--pink-2);
+      box-shadow: 0 0 0 6px rgba(236, 15, 124, .08);
     }
-    @keyframes badgePulse { 50% { box-shadow: 0 0 0 16px rgba(236, 15, 124, .06), var(--shadow-pink); } }
+    .celebrate-badge svg { width: 30px; height: 30px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 30; stroke-dashoffset: 30; animation: drawCheck .6s .35s ease forwards; }
+    @keyframes drawCheck { to { stroke-dashoffset: 0; } }
     .celebrate-card h2 { font-size: clamp(1.7rem, 7vw, 2.2rem); font-weight: 800; text-transform: uppercase; letter-spacing: .02em; background: linear-gradient(90deg, #fff, #ffb3d6, #fff); -webkit-background-clip: text; background-clip: text; color: transparent; }
     .celebrate-card p { margin-top: 10px; color: var(--text-2); font-size: .95rem; line-height: 1.5; }
+    .celebrate-card p strong { color: #fff; font-weight: 600; }
     .celebrate-stats { display: flex; justify-content: center; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
     .celebrate-stats span { padding: 7px 12px; border-radius: 999px; background: rgba(255, 255, 255, .06); border: 1px solid var(--line); font-size: .8rem; color: var(--text-2); }
     .celebrate-stats strong { color: #fff; font-family: var(--display); }
@@ -964,7 +976,7 @@
   <div class="celebrate" id="celebrate" role="dialog" aria-modal="true" aria-labelledby="celebrateTitle">
     <canvas id="confettiCanvas"></canvas>
     <div class="celebrate-card">
-      <div class="celebrate-badge">🏆</div>
+      <div class="celebrate-badge"><svg viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></div>
       <h2 id="celebrateTitle">¡Objetivo logrado!</h2>
       <p id="celebrateText">Completaste todos los ejercicios de tu rutina. ¡Excelente trabajo!</p>
       <div class="celebrate-stats" id="celebrateStats"></div>
@@ -983,7 +995,7 @@
     const SUPABASE_URL = window.REBECA_CONFIG?.SUPABASE_URL || "";
     const SUPABASE_ANON_KEY = window.REBECA_CONFIG?.SUPABASE_ANON_KEY || "";
     const DEFAULT_TOTAL_ROUNDS = 4;
-    const APP_VERSION = "29";
+    const APP_VERSION = "30";
     const params = new URLSearchParams(window.location.search);
     const isAdmin = params.get("admin") === "1";
     const routineParam = params.get("rutina") || "";
@@ -1341,7 +1353,7 @@
       els.clientLink.value = value ? url.toString() : "";
       if (els.whatsappBtn) {
         const name = els.clientName?.value.trim();
-        const text = `Hola${name ? ` ${name}` : ""}! Te dejo tu rutina personalizada 💪\n${els.clientLink.value}`;
+        const text = `Hola${name ? ` ${name}` : ""}! Te dejo tu rutina personalizada:\n${els.clientLink.value}`;
         els.whatsappBtn.href = value ? `https://wa.me/?text=${encodeURIComponent(text)}` : "#";
       }
     }
@@ -1463,9 +1475,9 @@
       if (!root || root.classList.contains("open")) return;
       const day = activeDay();
       const name = (state.draft?.clientName || "").trim();
-      document.getElementById("celebrateText").textContent = name
-        ? `¡Bien ahí, ${name}! Completaste todos los ejercicios de tu rutina.`
-        : "Completaste todos los ejercicios de tu rutina. ¡Excelente trabajo!";
+      document.getElementById("celebrateText").innerHTML = name
+        ? `Muy bien, <strong>${escapeHtml(name)}</strong>. Completaste todos los ejercicios de tu rutina. ¡Excelente trabajo!`
+        : "Muy bien. Completaste todos los ejercicios de tu rutina. ¡Excelente trabajo!";
       document.getElementById("celebrateStats").innerHTML = `
         <span><strong>${day.exercises.length}</strong> ejercicios</span>
         <span><strong>${routineRounds()}</strong> ${routineRounds() === 1 ? "ronda" : "rondas"}</span>
@@ -2913,7 +2925,7 @@
       spot: document.getElementById("tourSpot"),
       card: document.getElementById("tourCard")
     };
-    const tour = { steps: [], index: 0, open: false, started: false };
+    const tour = { steps: [], index: 0, open: false, started: false, token: 0, target: null };
 
     function tourSeenVersion() {
       try { return Number(localStorage.getItem(tourStorageKey)) || 0; } catch { return 0; }
@@ -2937,7 +2949,7 @@
       const name = (state.draft?.clientName || "").trim();
       const steps = [
         {
-          emoji: "👋",
+          mark: "logo",
           title: name ? `¡Hola ${escapeHtml(name)}!` : "¡Bienvenida!",
           text: "Rebeca preparó esta rutina para vos. Te muestro en 30 segundos cómo usarla."
         },
@@ -2988,7 +3000,7 @@
           round: true
         },
         {
-          emoji: "💪",
+          mark: "check",
           title: "¡Todo listo!",
           text: "Empezá por el primer ejercicio y marcá cada ronda al terminar. ¡A entrenar!",
           last: true
@@ -3010,21 +3022,70 @@
 
     function endTour() {
       tour.open = false;
+      tour.token++;
+      tour.target = null;
       tourEls.root.classList.remove("open");
       document.body.style.overflow = "";
       markTourSeen();
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
 
-    function showTourStep() {
+    function tourIsMobile() {
+      return window.innerWidth <= 640;
+    }
+
+    // Espera a que termine el desplazamiento suave (o un maximo de tiempo).
+    function waitForScrollEnd(maxMs = 900) {
+      return new Promise(resolve => {
+        let last = window.scrollY;
+        let still = 0;
+        const start = performance.now();
+        const tick = () => {
+          const y = window.scrollY;
+          still = Math.abs(y - last) < 1 ? still + 1 : 0;
+          last = y;
+          if (still >= 4 || performance.now() - start > maxMs) return resolve();
+          requestAnimationFrame(tick);
+        };
+        requestAnimationFrame(tick);
+      });
+    }
+
+    async function showTourStep() {
       const step = tour.steps[tour.index];
       if (!step) return endTour();
-      const total = tour.steps.length;
+      const token = ++tour.token;
       const target = step.target ? step.target() : null;
+
+      // 1) Ocultamos el globito mientras nos movemos.
+      tourEls.card.classList.add("hiding");
+      tourEls.spot.classList.add("hidden");
+
+      // 2) Llevamos el elemento a la vista (en celular, arriba; en compu, al centro).
+      if (target) {
+        const rect = target.getBoundingClientRect();
+        const maxScroll = document.documentElement.scrollHeight - window.innerHeight;
+        const desired = tourIsMobile()
+          ? rect.top + window.scrollY - Math.max(70, Math.min(140, window.innerHeight * .14))
+          : rect.top + window.scrollY - Math.max(20, (window.innerHeight - rect.height) / 2);
+        const top = Math.max(0, Math.min(maxScroll, desired));
+        if (Math.abs(top - window.scrollY) > 2) {
+          window.scrollTo({ top, behavior: "smooth" });
+          await waitForScrollEnd();
+        } else {
+          await new Promise(resolve => setTimeout(resolve, 160));
+        }
+      } else {
+        await new Promise(resolve => setTimeout(resolve, 160));
+      }
+      if (token !== tour.token || !tour.open) return;
+
+      // 3) Dibujamos el globito y el resaltado ya quietos.
+      const total = tour.steps.length;
       const isFirst = tour.index === 0;
-      tourEls.card.className = `tour-card ${target ? "" : "center"}`;
+      tourEls.card.className = `tour-card hiding ${target ? "" : "center"}`;
       tourEls.card.innerHTML = `
-        ${step.emoji ? `<div class="tour-emoji">${step.emoji}</div>` : `<div class="tour-step">Paso ${tour.index} de ${total - 2}</div>`}
+        ${step.mark === "logo" ? `<div class="tour-mark"><img src="./assets/logo.jpg" alt=""></div>` : step.mark === "check" ? `<div class="tour-icon">${ICONS.check}</div>` : `<div class="tour-step">Paso ${tour.index} de ${total - 2}</div>`}
         <h3>${step.title}</h3>
         <p>${step.text}</p>
         <div class="tour-dots">${tour.steps.map((_, i) => `<span class="${i === tour.index ? "on" : ""}"></span>`).join("")}</div>
@@ -3032,24 +3093,20 @@
           ${step.last ? "" : `<button class="btn ghost sm" type="button" data-tour="skip">${isFirst ? "Ahora no" : "Saltar"}</button>`}
           <div class="right">
             ${!isFirst && !step.last ? `<button class="btn sm" type="button" data-tour="prev">Atrás</button>` : ""}
-            <button class="btn primary sm" type="button" data-tour="next">${isFirst ? "Empezar" : step.last ? "¡Empezar a entrenar!" : "Siguiente"}</button>
+            <button class="btn primary sm" type="button" data-tour="next">${isFirst ? "Empezar" : step.last ? "Empezar a entrenar" : "Siguiente"}</button>
           </div>
         </div>
       `;
-      if (!target) {
-        tourEls.spot.classList.add("hidden");
+      tour.target = target;
+      if (target) {
+        tourEls.spot.classList.remove("hidden");
+        positionTour(target, step);
+      } else {
         tourEls.card.style.top = "";
         tourEls.card.style.left = "";
-        tour.target = null;
-        tourEls.card.querySelector('[data-tour="next"]')?.focus({ preventScroll: true });
-        return;
       }
-      tourEls.spot.classList.remove("hidden");
-      tour.target = target;
-      target.scrollIntoView({ behavior: "smooth", block: "center" });
-      clearTimeout(tour.positionTimer);
-      positionTour(target, step);
-      tour.positionTimer = setTimeout(() => positionTour(target, step), 420);
+      requestAnimationFrame(() => tourEls.card.classList.remove("hiding"));
+      if (!tourIsMobile()) tourEls.card.querySelector('[data-tour="next"]')?.focus({ preventScroll: true });
     }
 
     function positionTour(target, step) {
@@ -3070,10 +3127,16 @@
         borderRadius: step.round ? "999px" : "18px"
       });
       const card = tourEls.card;
+      const vh = window.innerHeight;
+      if (tourIsMobile()) {
+        // En celular el globito va fijo abajo (o arriba si tapa lo resaltado).
+        const sheetH = card.offsetHeight || 220;
+        card.classList.toggle("sheet-top", spot.top + spot.height > vh - sheetH - 24);
+        return;
+      }
       const cardW = card.offsetWidth;
       const cardH = card.offsetHeight;
       const vw = window.innerWidth;
-      const vh = window.innerHeight;
       const gap = 14;
       let top = spot.top + spot.height + gap;
       if (top + cardH > vh - 12) top = spot.top - cardH - gap;
@@ -3082,7 +3145,6 @@
       left = Math.max(16, Math.min(vw - cardW - 16, left));
       card.style.top = top + "px";
       card.style.left = left + "px";
-      card.querySelector('[data-tour="next"]')?.focus({ preventScroll: true });
     }
 
     tourEls.card?.addEventListener("click", event => {
@@ -3102,15 +3164,9 @@
       if (event.key === "ArrowLeft") tourEls.card.querySelector('[data-tour="prev"]')?.click();
     });
 
-    // Mientras la pagina se desplaza, el resaltado sigue al elemento.
-    let tourScrollFrame = 0;
-    window.addEventListener("scroll", () => {
-      if (!tour.open || !tour.target || tourScrollFrame) return;
-      tourScrollFrame = requestAnimationFrame(() => {
-        tourScrollFrame = 0;
-        positionTour(tour.target, tour.steps[tour.index]);
-      });
-    }, { passive: true });
+    // Durante la guia no se puede desplazar la pagina con el dedo.
+    tourEls.root?.addEventListener("touchmove", event => event.preventDefault(), { passive: false });
+    tourEls.root?.addEventListener("wheel", event => event.preventDefault(), { passive: false });
 
     window.addEventListener("resize", () => {
       if (!tour.open) return;
