@@ -868,7 +868,7 @@
     const SUPABASE_URL = window.REBECA_CONFIG?.SUPABASE_URL || "";
     const SUPABASE_ANON_KEY = window.REBECA_CONFIG?.SUPABASE_ANON_KEY || "";
     const DEFAULT_TOTAL_ROUNDS = 4;
-    const APP_VERSION = "26";
+    const APP_VERSION = "27";
     const params = new URLSearchParams(window.location.search);
     const isAdmin = params.get("admin") === "1";
     const routineParam = params.get("rutina") || "";
@@ -1268,9 +1268,17 @@
       return unique.length === 1 ? `${escapeHtml(unique[0])} reps` : "Reps por ronda";
     }
 
+    // "12" -> "12 reps"; "1min", "30 seg" o "10 x lado" se muestran tal cual.
+    function repsLabel(value) {
+      const text = String(value || "").trim();
+      if (!text) return "";
+      return /^[\d\s\-–/xX×]+$/.test(text) ? `${text} reps` : text;
+    }
+
+    // Lo que le toca hacer a la alumna en la ronda actual.
     function nextRoundRepsText(item) {
       const index = Math.min(routineRounds() - 1, roundCount(item.id));
-      return `Ronda ${index + 1}: ${escapeHtml(roundReps(item, index))} reps`;
+      return `Ronda ${index + 1}: ${escapeHtml(repsLabel(roundReps(item, index)))}`;
     }
 
     function nextExerciseId(id) {
@@ -1442,7 +1450,7 @@
           <div class="exercise-main">
             <h3><span class="exercise-num">${String(index + 1).padStart(2, "0")}</span> ${escapeHtml(item.name)}</h3>
             <div class="meta">
-              <span class="pill accent">${escapeHtml(item.sets)} × ${roundRepsSummary(item)}</span>
+              <span class="pill accent">${nextRoundRepsText(item)}</span>
               <span class="pill">${formatRest(item.rest)} descanso</span>
               ${item.category ? `<span class="pill">${escapeHtml(item.category)}</span>` : ""}
             </div>
@@ -1491,7 +1499,6 @@
           <h3 class="detail-title">${escapeHtml(item.name)}</h3>
           <div class="meta">
             <span class="pill accent">${nextRoundRepsText(item)}</span>
-            <span class="pill">${escapeHtml(item.sets)} ${String(item.sets) === "1" ? "serie" : "series"}</span>
             <span class="pill">${formatRest(item.rest)} descanso</span>
             ${item.category ? `<span class="pill">${escapeHtml(item.category)}</span>` : ""}
           </div>
@@ -1507,7 +1514,7 @@
             ${Array.from({ length: routineRounds() }, (_, index) => `
               <div class="round-dot ${index < rounds ? "done" : ""}">
                 <span>${index + 1}</span>
-                <small>${escapeHtml(roundReps(item, index))} reps</small>
+                <small>${escapeHtml(repsLabel(roundReps(item, index)))}</small>
               </div>
             `).join("")}
           </div>
