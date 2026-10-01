@@ -574,6 +574,43 @@
     .tour-actions .right { display: flex; gap: 8px; }
     .tour-card.center .tour-actions { justify-content: center; }
 
+
+    /* ---------- Celebracion: objetivo logrado ---------- */
+    .celebrate { position: fixed; inset: 0; z-index: 95; display: none; place-items: center; padding: 20px; background: radial-gradient(circle at 50% 40%, rgba(236, 15, 124, .28), rgba(5, 4, 7, .86) 65%); }
+    .celebrate.open { display: grid; animation: fadeIn .3s ease both; }
+    .celebrate canvas { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+    .celebrate-card {
+      position: relative; z-index: 1;
+      width: min(400px, 100%);
+      padding: 34px 26px 26px;
+      border-radius: 26px;
+      border: 1px solid rgba(255, 90, 168, .35);
+      background: linear-gradient(180deg, rgba(36, 28, 40, .96), rgba(20, 17, 23, .96));
+      box-shadow: 0 40px 100px -20px rgba(0, 0, 0, .9), 0 0 60px -10px rgba(236, 15, 124, .5);
+      text-align: center;
+      animation: pop .6s cubic-bezier(.2, 1.4, .4, 1) both;
+    }
+    @keyframes pop { from { opacity: 0; transform: scale(.7) translateY(20px); } to { opacity: 1; transform: none; } }
+    .celebrate-badge {
+      width: 86px; height: 86px; margin: 0 auto 18px;
+      display: grid; place-items: center;
+      border-radius: 50%;
+      background: var(--gradient);
+      font-size: 2.6rem;
+      box-shadow: 0 0 0 8px rgba(236, 15, 124, .15), var(--shadow-pink);
+      animation: badgePulse 1.8s ease-in-out infinite;
+    }
+    @keyframes badgePulse { 50% { box-shadow: 0 0 0 16px rgba(236, 15, 124, .06), var(--shadow-pink); } }
+    .celebrate-card h2 { font-size: clamp(1.7rem, 7vw, 2.2rem); font-weight: 800; text-transform: uppercase; letter-spacing: .02em; background: linear-gradient(90deg, #fff, #ffb3d6, #fff); -webkit-background-clip: text; background-clip: text; color: transparent; }
+    .celebrate-card p { margin-top: 10px; color: var(--text-2); font-size: .95rem; line-height: 1.5; }
+    .celebrate-stats { display: flex; justify-content: center; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
+    .celebrate-stats span { padding: 7px 12px; border-radius: 999px; background: rgba(255, 255, 255, .06); border: 1px solid var(--line); font-size: .8rem; color: var(--text-2); }
+    .celebrate-stats strong { color: #fff; font-family: var(--display); }
+    .celebrate-actions { display: grid; gap: 8px; margin-top: 22px; }
+    .celebrate-actions .btn.primary { min-height: 50px; font-size: .95rem; }
+    .hero.done { border-color: rgba(61, 220, 151, .35); }
+    .done-chip { display: inline-flex; align-items: center; gap: 6px; margin-left: 8px; padding: 3px 10px; border-radius: 999px; background: var(--ok-soft); color: var(--ok); font-size: .72rem; font-weight: 700; letter-spacing: .04em; vertical-align: middle; }
+
     /* ---------- Responsive ---------- */
     @media (max-width: 1180px) {
       .card-data, .card-link { grid-column: span 12; }
@@ -924,6 +961,20 @@
     <div class="tour-card" id="tourCard"></div>
   </div>
 
+  <div class="celebrate" id="celebrate" role="dialog" aria-modal="true" aria-labelledby="celebrateTitle">
+    <canvas id="confettiCanvas"></canvas>
+    <div class="celebrate-card">
+      <div class="celebrate-badge">🏆</div>
+      <h2 id="celebrateTitle">¡Objetivo logrado!</h2>
+      <p id="celebrateText">Completaste todos los ejercicios de tu rutina. ¡Excelente trabajo!</p>
+      <div class="celebrate-stats" id="celebrateStats"></div>
+      <div class="celebrate-actions">
+        <button class="btn primary" id="celebrateResetBtn" type="button">↺ Reiniciar rutina</button>
+        <button class="btn ghost" id="celebrateCloseBtn" type="button">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
   <div class="toast" id="toast" role="status"></div>
   <input class="file-actions" id="importFile" type="file" accept="application/json">
 
@@ -932,7 +983,7 @@
     const SUPABASE_URL = window.REBECA_CONFIG?.SUPABASE_URL || "";
     const SUPABASE_ANON_KEY = window.REBECA_CONFIG?.SUPABASE_ANON_KEY || "";
     const DEFAULT_TOTAL_ROUNDS = 4;
-    const APP_VERSION = "28";
+    const APP_VERSION = "29";
     const params = new URLSearchParams(window.location.search);
     const isAdmin = params.get("admin") === "1";
     const routineParam = params.get("rutina") || "";
@@ -1385,6 +1436,140 @@
       renderDetail();
       updateAdminUi();
       saveState();
+      checkRoutineCompleted();
+    }
+
+    // ---------- Objetivo logrado ----------
+    let lastAllDone = null;
+    let roundJustMarked = false;
+    let confettiStop = null;
+
+    function routineAllDone() {
+      const day = activeDay();
+      return Boolean(day?.exercises?.length) && day.exercises.every(item => isComplete(item.id));
+    }
+
+    function checkRoutineCompleted() {
+      const done = routineAllDone();
+      document.querySelector(".hero")?.classList.toggle("done", done);
+      // Solo festejamos en el momento en que se completa (no al abrir la pagina ya completa).
+      if (!isAdmin && roundJustMarked && lastAllDone === false && done) setTimeout(showCelebration, 350);
+      roundJustMarked = false;
+      lastAllDone = done;
+    }
+
+    function showCelebration() {
+      const root = document.getElementById("celebrate");
+      if (!root || root.classList.contains("open")) return;
+      const day = activeDay();
+      const name = (state.draft?.clientName || "").trim();
+      document.getElementById("celebrateText").textContent = name
+        ? `¡Bien ahí, ${name}! Completaste todos los ejercicios de tu rutina.`
+        : "Completaste todos los ejercicios de tu rutina. ¡Excelente trabajo!";
+      document.getElementById("celebrateStats").innerHTML = `
+        <span><strong>${day.exercises.length}</strong> ejercicios</span>
+        <span><strong>${routineRounds()}</strong> ${routineRounds() === 1 ? "ronda" : "rondas"}</span>
+      `;
+      stopTimer();
+      root.classList.add("open");
+      document.getElementById("celebrateResetBtn")?.focus({ preventScroll: true });
+      navigator.vibrate?.([80, 60, 120]);
+      confettiStop?.();
+      confettiStop = launchConfetti(document.getElementById("confettiCanvas"));
+    }
+
+    function closeCelebration() {
+      document.getElementById("celebrate")?.classList.remove("open");
+      confettiStop?.();
+      confettiStop = null;
+    }
+
+    // Serpentinas y papelitos en canvas (sin librerias).
+    function launchConfetti(canvas) {
+      if (!canvas || window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return () => {};
+      const ctx = canvas.getContext("2d");
+      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      let w = 0;
+      let h = 0;
+      const resize = () => {
+        w = canvas.clientWidth;
+        h = canvas.clientHeight;
+        canvas.width = w * dpr;
+        canvas.height = h * dpr;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      };
+      resize();
+      window.addEventListener("resize", resize);
+      const colors = ["#ff3d97", "#ec0f7c", "#ffd1e6", "#ffffff", "#ffb547", "#3ddc97", "#8b5cf6"];
+      const rand = (a, b) => a + Math.random() * (b - a);
+      const pieces = [];
+      const burst = (count, fromX) => {
+        for (let i = 0; i < count; i++) {
+          const streamer = Math.random() < .35;
+          pieces.push({
+            streamer,
+            x: fromX ?? rand(0, w),
+            y: fromX == null ? rand(-h * .6, -10) : h * .55,
+            vx: fromX == null ? rand(-.6, .6) : rand(-7, 7) + (fromX < w / 2 ? 4 : -4),
+            vy: fromX == null ? rand(1.5, 3.5) : rand(-14, -6),
+            size: streamer ? rand(26, 46) : rand(6, 11),
+            rot: rand(0, Math.PI * 2),
+            vr: rand(-.2, .2),
+            wobble: rand(0, Math.PI * 2),
+            color: colors[(Math.random() * colors.length) | 0]
+          });
+        }
+      };
+      burst(70, w * .12);
+      burst(70, w * .88);
+      burst(90);
+      let frame = 0;
+      let raf = 0;
+      let running = true;
+      const draw = () => {
+        if (!running) return;
+        frame++;
+        ctx.clearRect(0, 0, w, h);
+        if (frame % 50 === 0 && frame < 260) burst(25);
+        for (let i = pieces.length - 1; i >= 0; i--) {
+          const p = pieces[i];
+          p.vy = Math.min(p.vy + .22, p.streamer ? 2.6 : 4.2);
+          p.vx *= .985;
+          p.wobble += .08;
+          p.x += p.vx + Math.sin(p.wobble) * (p.streamer ? 1.2 : .6);
+          p.y += p.vy;
+          p.rot += p.vr;
+          if (p.y > h + 60) { pieces.splice(i, 1); continue; }
+          ctx.save();
+          ctx.translate(p.x, p.y);
+          ctx.rotate(p.rot);
+          ctx.strokeStyle = p.color;
+          ctx.fillStyle = p.color;
+          if (p.streamer) {
+            // serpentina: linea ondulada
+            ctx.lineWidth = 3;
+            ctx.lineCap = "round";
+            ctx.beginPath();
+            for (let t = 0; t <= p.size; t += 2) {
+              const yy = Math.sin(t / 5 + p.wobble) * 5;
+              t === 0 ? ctx.moveTo(t - p.size / 2, yy) : ctx.lineTo(t - p.size / 2, yy);
+            }
+            ctx.stroke();
+          } else {
+            ctx.scale(1, Math.cos(p.wobble));
+            ctx.fillRect(-p.size / 2, -p.size / 3, p.size, p.size * .66);
+          }
+          ctx.restore();
+        }
+        if (pieces.length) raf = requestAnimationFrame(draw);
+      };
+      raf = requestAnimationFrame(draw);
+      return () => {
+        running = false;
+        cancelAnimationFrame(raf);
+        window.removeEventListener("resize", resize);
+        ctx.clearRect(0, 0, w, h);
+      };
     }
 
     function renderTabs() {
@@ -1396,7 +1581,7 @@
           <div class="hero-title">
             <span class="eyebrow">Tu entrenamiento</span>
             <h2>${escapeHtml(group?.title || "Rutina")}</h2>
-            <p>${total ? `${done} de ${total} ejercicios completados · ${routineRounds()} ${routineRounds() === 1 ? "ronda" : "rondas"}` : "Tu rutina personalizada"}</p>
+            <p>${total ? `${done} de ${total} ejercicios completados · ${routineRounds()} ${routineRounds() === 1 ? "ronda" : "rondas"}` : "Tu rutina personalizada"}${total && done === total ? `<span class="done-chip">✓ Objetivo logrado</span>` : ""}</p>
           </div>
         `;
         return;
@@ -1652,6 +1837,7 @@
       });
       document.getElementById(`addRoundBtn-${suffix}`)?.addEventListener("click", () => {
         addRound(item.id);
+        roundJustMarked = true;
         state.selected = nextExerciseId(item.id);
         state.expanded = "";
         render();
@@ -1722,6 +1908,7 @@
       }
       if (roundAdd) {
         addRound(roundAdd.dataset.roundAdd);
+        roundJustMarked = true;
         state.selected = nextExerciseId(roundAdd.dataset.roundAdd);
         state.expanded = "";
         render();
@@ -1765,10 +1952,10 @@
     document.getElementById("deleteBtn").addEventListener("click", deleteExercise);
     document.getElementById("editDay").addEventListener("change", updateOrderMax);
 
-    function resetProgress() {
+    function resetProgress(options = {}) {
       const day = activeDay();
       const hasProgress = day.exercises.some(item => roundCount(item.id) > 0);
-      if (hasProgress && !confirm("¿Reiniciar todo el progreso de hoy? Las rondas marcadas vuelven a 0.")) return;
+      if (!options.skipConfirm && hasProgress && !confirm("¿Reiniciar todo el progreso de hoy? Las rondas marcadas vuelven a 0.")) return;
       day.exercises.forEach(item => setRoundCount(item.id, 0));
       state.selected = day.exercises[0]?.id || "";
       state.expanded = "";
@@ -1777,8 +1964,16 @@
       window.scrollTo({ top: 0, behavior: "smooth" });
       showToast("Progreso reiniciado");
     }
-    els.finishBtn.addEventListener("click", resetProgress);
-    document.getElementById("heroResetBtn")?.addEventListener("click", resetProgress);
+    els.finishBtn.addEventListener("click", () => resetProgress());
+    document.getElementById("heroResetBtn")?.addEventListener("click", () => resetProgress());
+    document.getElementById("celebrateResetBtn")?.addEventListener("click", () => {
+      closeCelebration();
+      resetProgress({ skipConfirm: true });
+    });
+    document.getElementById("celebrateCloseBtn")?.addEventListener("click", closeCelebration);
+    document.addEventListener("keydown", event => {
+      if (event.key === "Escape" && document.getElementById("celebrate")?.classList.contains("open")) closeCelebration();
+    });
 
     els.musicCard?.addEventListener("click", event => {
       if (event.target.closest("[data-music-switch]")) {
