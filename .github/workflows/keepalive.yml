@@ -1,0 +1,23 @@
+name: Mantener Supabase activo
+
+# Supabase pausa los proyectos gratis tras unos dias sin uso.
+# Esta tarea hace una consulta liviana cada 3 dias para que no se pause.
+on:
+  schedule:
+    - cron: "17 12 */3 * *"
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Consultar Supabase
+        run: |
+          URL=$(grep -o 'https://[a-z0-9]*\.supabase\.co' config.js)
+          KEY=$(grep -o 'eyJ[^"]*' config.js)
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$URL/rest/v1/rpc/get_routine_by_slug" \
+            -H "apikey: $KEY" -H "Authorization: Bearer $KEY" -H "Content-Type: application/json" \
+            -d '{"p_slug":"keepalive"}')
+          echo "Supabase respondio: $STATUS"
+          test "$STATUS" = "200"
