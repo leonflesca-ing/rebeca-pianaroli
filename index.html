@@ -1019,7 +1019,7 @@
     const SUPABASE_URL = window.REBECA_CONFIG?.SUPABASE_URL || "";
     const SUPABASE_ANON_KEY = window.REBECA_CONFIG?.SUPABASE_ANON_KEY || "";
     const DEFAULT_TOTAL_ROUNDS = 4;
-    const APP_VERSION = "32";
+    const APP_VERSION = "33";
     const params = new URLSearchParams(window.location.search);
     const isAdmin = params.get("admin") === "1";
     const routineParam = params.get("rutina") || "";
@@ -1521,7 +1521,31 @@
       updateAdminUi();
       saveState();
       checkRoutineCompleted();
+      playActiveVideos();
     }
+
+    // Todos los videos van sin sonido. El del ejercicio actual se reproduce solo y en bucle;
+    // cuando la alumna pasa al siguiente, el anterior se pausa y arranca el nuevo.
+    function playActiveVideos() {
+      requestAnimationFrame(() => {
+        document.querySelectorAll("video").forEach(video => {
+          video.muted = true;
+          video.defaultMuted = true;
+          video.volume = 0;
+          if (video.hasAttribute("data-autoplay") && video.offsetParent !== null) {
+            video.loop = true;
+            const play = video.play();
+            if (play?.catch) play.catch(() => {});
+          } else if (!video.paused) {
+            video.pause();
+          }
+        });
+      });
+    }
+
+    document.addEventListener("volumechange", event => {
+      if (event.target instanceof HTMLVideoElement && !event.target.muted) event.target.muted = true;
+    }, true);
 
     // ---------- Objetivo logrado ----------
     let lastAllDone = null;
@@ -1882,9 +1906,18 @@
       if (item.video) {
         const driveUrl = drivePreviewUrl(item.video);
         if (driveUrl) {
+          // Drive no permite reproducir solo/muteado/en bucle: en miniaturas mostramos su imagen y en el detalle el reproductor de Drive.
+          const driveId = (item.video.match(/\/d\/([^/?#]+)/) || item.video.match(/[?&]id=([^&#]+)/) || [])[1];
+          if (!controls && driveId) {
+            return `
+              <div class="${className}">
+                <img class="media-asset" src="https://drive.google.com/thumbnail?id=${escapeAttr(driveId)}&sz=w400" alt="${escapeAttr(item.name)}" loading="lazy">
+              </div>
+            `;
+          }
           return `
             <div class="${className}">
-              <iframe class="video-embed" src="${escapeAttr(driveUrl)}" allow="fullscreen; encrypted-media" allowfullscreen></iframe>
+              <iframe class="video-embed" src="${escapeAttr(driveUrl)}" allow="autoplay; fullscreen; encrypted-media" allowfullscreen></iframe>
             </div>
           `;
         }
@@ -1897,7 +1930,7 @@
         }
         return `
           <div class="${className}">
-            <video src="${escapeAttr(item.video)}${controls || /#/.test(item.video) ? "" : "#t=0.1"}" ${controls ? "controls" : ""} muted playsinline preload="metadata" data-fullscreen-video></video>
+            <video src="${escapeAttr(item.video)}${controls || /#/.test(item.video) ? "" : "#t=0.1"}" ${controls ? "autoplay loop data-autoplay" : ""} muted defaultmuted playsinline disablepictureinpicture preload="${controls ? "auto" : "metadata"}" data-fullscreen-video></video>
           </div>
         `;
       }
@@ -3014,7 +3047,8 @@
     // ---------- Tour guiado para alumnas ----------
     // Subir TOUR_VERSION cuando haya funciones nuevas para que la guia se muestre otra vez.
     const TOUR_VERSION = 1;
-    const tourStorageKey = "rebecaTourSeen";
+    // La guia se muestra la primera vez que se abre cada rutina (cada alumna tiene su link).
+    const tourStorageKey = `rebecaTourSeen:${routineParam || "local"}`;
     const tourEls = {
       root: document.getElementById("tour"),
       spot: document.getElementById("tourSpot"),
