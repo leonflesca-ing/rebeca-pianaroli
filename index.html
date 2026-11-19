@@ -623,6 +623,9 @@
     .hero.done { border-color: rgba(61, 220, 151, .35); }
     .done-chip { display: inline-flex; align-items: center; gap: 6px; margin-left: 8px; padding: 3px 10px; border-radius: 999px; background: var(--ok-soft); color: var(--ok); font-size: .72rem; font-weight: 700; letter-spacing: .04em; vertical-align: middle; }
 
+    .list-divider { display: flex; align-items: center; gap: 12px; margin: 14px 2px 4px; color: var(--pink-2); font-family: var(--display); font-size: .72rem; font-weight: 700; letter-spacing: .18em; text-transform: uppercase; }
+    .list-divider::before, .list-divider::after { content: ""; flex: 1; height: 1px; background: var(--pink-line); }
+
     /* ---------- Responsive ---------- */
     @media (max-width: 1180px) {
       .card-data, .card-link { grid-column: span 12; }
@@ -935,6 +938,17 @@
             <div class="round-reps-editor" id="editRoundReps"></div>
           </div>
           <div class="field">
+            <label for="editRounds">Series propias <span class="hint">· vacío = rondas del circuito</span></label>
+            <input id="editRounds" type="number" min="1" max="20" placeholder="Igual al circuito">
+          </div>
+          <div class="field">
+            <label for="editFinisher">Ubicación</label>
+            <select id="editFinisher">
+              <option value="">Dentro del circuito</option>
+              <option value="1">Al finalizar el circuito</option>
+            </select>
+          </div>
+          <div class="field">
             <label for="editRest">Descanso (segundos)</label>
             <input id="editRest" type="number" min="0" step="15">
           </div>
@@ -995,7 +1009,7 @@
     const SUPABASE_URL = window.REBECA_CONFIG?.SUPABASE_URL || "";
     const SUPABASE_ANON_KEY = window.REBECA_CONFIG?.SUPABASE_ANON_KEY || "";
     const DEFAULT_TOTAL_ROUNDS = 4;
-    const APP_VERSION = "30";
+    const APP_VERSION = "31";
     const params = new URLSearchParams(window.location.search);
     const isAdmin = params.get("admin") === "1";
     const routineParam = params.get("rutina") || "";
@@ -1362,17 +1376,36 @@
       return activeDay()?.title || els.routineTitle?.value || "Rutina";
     }
 
+    function findExercise(id) {
+      for (const group of state.routine) {
+        const found = group.exercises.find(item => item.id === id);
+        if (found) return found;
+      }
+      return null;
+    }
+
+    // Un ejercicio puede tener sus propias series (ej: abdominales al final del circuito).
+    function itemRounds(itemOrId) {
+      const item = typeof itemOrId === "string" ? findExercise(itemOrId) : itemOrId;
+      const own = Number(item?.rounds);
+      return own ? Math.min(20, Math.max(1, own)) : routineRounds();
+    }
+
+    function isFinisher(item) {
+      return Boolean(item?.finisher);
+    }
+
     function roundCount(id) {
-      return Math.min(routineRounds(), Math.max(0, Number(state.rounds?.[id]) || 0));
+      return Math.min(itemRounds(id), Math.max(0, Number(state.rounds?.[id]) || 0));
     }
 
     function isComplete(id) {
-      return roundCount(id) >= routineRounds();
+      return roundCount(id) >= itemRounds(id);
     }
 
     function setRoundCount(id, value) {
       state.rounds = state.rounds || {};
-      state.rounds[id] = Math.min(routineRounds(), Math.max(0, Number(value) || 0));
+      state.rounds[id] = Math.min(itemRounds(id), Math.max(0, Number(value) || 0));
     }
 
     function addRound(id) {
@@ -1391,7 +1424,7 @@
     function roundRepsSummary(item) {
       const custom = Array.isArray(item?.roundReps) ? item.roundReps.filter(Boolean) : [];
       if (!custom.length) return `${escapeHtml(item.reps)} reps`;
-      const unique = [...new Set(Array.from({ length: routineRounds() }, (_, index) => roundReps(item, index)))];
+      const unique = [...new Set(Array.from({ length: itemRounds(item) }, (_, index) => roundReps(item, index)))];
       return unique.length === 1 ? `${escapeHtml(unique[0])} reps` : "Reps por ronda";
     }
 
@@ -1404,15 +1437,29 @@
 
     // Lo que le toca hacer a la alumna en la ronda actual.
     function nextRoundRepsText(item) {
-      const index = Math.min(routineRounds() - 1, roundCount(item.id));
-      return `Ronda ${index + 1}: ${escapeHtml(repsLabel(roundReps(item, index)))}`;
+      const index = Math.min(itemRounds(item) - 1, roundCount(item.id));
+      return `${isFinisher(item) ? "Serie" : "Ronda"} ${index + 1}: ${escapeHtml(repsLabel(roundReps(item, index)))}`;
     }
 
     function nextExerciseId(id) {
       const day = activeDay();
       const index = day.exercises.findIndex(item => item.id === id);
       if (index === -1 || !day.exercises.length) return id;
-      return day.exercises[(index + 1) % day.exercises.length].id;
+      const current = day.exercises[index];
+      const circuit = day.exercises.filter(item => !isFinisher(item));
+      const finishers = day.exercises.filter(item => isFinisher(item));
+      if (isFinisher(current)) {
+        if (!isComplete(current.id)) return current.id;
+        return finishers.find(item => !isComplete(item.id))?.id || current.id;
+      }
+      // Dentro del circuito: siguiente ejercicio del circuito que todavia tenga rondas.
+      const pos = circuit.findIndex(item => item.id === id);
+      for (let step = 1; step <= circuit.length; step++) {
+        const candidate = circuit[(pos + step) % circuit.length];
+        if (!isComplete(candidate.id)) return candidate.id;
+      }
+      // Circuito terminado: pasamos a los ejercicios del final.
+      return finishers.find(item => !isComplete(item.id))?.id || circuit[(pos + 1) % circuit.length].id;
     }
 
     function scrollSelectedIntoView() {
@@ -1610,8 +1657,9 @@
       const day = activeDay();
       const completed = day.exercises.filter(item => isComplete(item.id)).length;
       const doneRounds = day.exercises.reduce((sum, item) => sum + roundCount(item.id), 0);
-      const totalExerciseRounds = day.exercises.length * routineRounds();
-      const circuitRounds = day.exercises.length ? Math.min(...day.exercises.map(item => roundCount(item.id))) : 0;
+      const totalExerciseRounds = day.exercises.reduce((sum, item) => sum + itemRounds(item), 0);
+      const circuitItems = day.exercises.filter(item => !isFinisher(item));
+      const circuitRounds = circuitItems.length ? Math.min(...circuitItems.map(item => roundCount(item.id))) : 0;
       const pendingExerciseRounds = Math.max(0, totalExerciseRounds - doneRounds);
       const pct = totalExerciseRounds ? Math.round((doneRounds / totalExerciseRounds) * 100) : 0;
       els.progress.style.width = pct + "%";
@@ -1705,7 +1753,9 @@
         return;
       }
       const showInlineDetail = isMobileLayout();
+      const firstFinisher = day.exercises.find(item => isFinisher(item))?.id;
       setHtmlKeepingMedia(els.list, day.exercises.map((item, index) => `
+        ${item.id === firstFinisher ? `<div class="list-divider"><span>Al finalizar el circuito</span></div>` : ""}
         <article class="exercise-card ${item.id === state.selected ? "active" : ""} ${state.expanded === item.id ? "expanded" : ""} ${isComplete(item.id) ? "completed" : ""}" data-select="${item.id}">
           ${renderVideo(item, "thumb", false)}
           <div class="exercise-main">
@@ -1719,7 +1769,7 @@
           ${state.expanded === item.id && !showInlineDetail ? renderVideo(item, "expanded-video video-frame", true) : ""}
           <div class="card-actions">
             ${isAdmin ? `<button class="btn sm" data-edit="${item.id}" aria-label="Editar ${escapeAttr(item.name)}">${ICONS.edit}Editar</button>` : `<button class="btn sm ghost" data-rest="${item.rest}" aria-label="Iniciar descanso">${ICONS.timer}</button>`}
-            <button class="check ${isComplete(item.id) ? "done" : ""}" style="--p:${Math.round((roundCount(item.id) / routineRounds()) * 100)}" data-round-add="${item.id}" aria-label="Marcar ronda"><span>${isComplete(item.id) ? "✓" : `${roundCount(item.id)}/${routineRounds()}`}</span></button>
+            <button class="check ${isComplete(item.id) ? "done" : ""}" style="--p:${Math.round((roundCount(item.id) / itemRounds(item)) * 100)}" data-round-add="${item.id}" aria-label="Marcar ronda"><span>${isComplete(item.id) ? "✓" : `${roundCount(item.id)}/${itemRounds(item)}`}</span></button>
           </div>
         </article>
         ${showInlineDetail && item.id === state.selected ? `<div class="mobile-detail" data-mobile-detail="${escapeAttr(item.id)}">${renderExerciseDetail(item, `mobile-${item.id}`)}</div>` : ""}
@@ -1768,11 +1818,11 @@
 
         <section class="sub-card">
           <div class="sub-card-head">
-            <h4>Rondas</h4>
-            <span class="pill ${isComplete(item.id) ? "accent" : ""}">${rounds}/${routineRounds()} ${isComplete(item.id) ? "· Completado" : ""}</span>
+            <h4>${isFinisher(item) ? "Series" : "Rondas"}</h4>
+            <span class="pill ${isComplete(item.id) ? "accent" : ""}">${rounds}/${itemRounds(item)} ${isComplete(item.id) ? "· Completado" : ""}</span>
           </div>
           <div class="round-progress">
-            ${Array.from({ length: routineRounds() }, (_, index) => `
+            ${Array.from({ length: itemRounds(item) }, (_, index) => `
               <div class="round-dot ${index < rounds ? "done" : ""}">
                 <span>${index + 1}</span>
                 <small>${escapeHtml(repsLabel(roundReps(item, index)))}</small>
@@ -1963,6 +2013,12 @@
     document.getElementById("newBtn").addEventListener("click", addNewExercise);
     document.getElementById("deleteBtn").addEventListener("click", deleteExercise);
     document.getElementById("editDay").addEventListener("change", updateOrderMax);
+    document.getElementById("editRounds")?.addEventListener("input", () => {
+      const values = Array.from(document.querySelectorAll("[data-round-reps]")).map(input => input.value);
+      const id = document.getElementById("editId").value;
+      const item = findExercise(id) || {};
+      renderRoundRepsEditor({ ...item, roundReps: values, reps: document.getElementById("editReps").value });
+    });
 
     function resetProgress(options = {}) {
       const day = activeDay();
@@ -2141,6 +2197,8 @@
       document.getElementById("editName").value = adding ? "" : item?.name || "";
       document.getElementById("editSets").value = adding ? "1" : item?.sets || "";
       document.getElementById("editReps").value = adding ? "" : item?.reps || "";
+      document.getElementById("editRounds").value = adding ? "" : item?.rounds || "";
+      document.getElementById("editFinisher").value = !adding && item?.finisher ? "1" : "";
       renderRoundRepsEditor(adding ? null : item);
       document.getElementById("editRest").value = adding ? 60 : item?.rest || 60;
       document.getElementById("editCategory").value = adding ? "" : item?.category || "";
@@ -2156,9 +2214,12 @@
     function renderRoundRepsEditor(item) {
       const container = document.getElementById("editRoundReps");
       if (!container) return;
-      container.innerHTML = Array.from({ length: routineRounds() }, (_, index) => `
+      const ownRounds = Number(document.getElementById("editRounds")?.value) || 0;
+      const count = ownRounds ? Math.min(20, Math.max(1, ownRounds)) : routineRounds();
+      const label = ownRounds ? "Serie" : "Ronda";
+      container.innerHTML = Array.from({ length: count }, (_, index) => `
         <label class="round-reps-card">
-          <span>Ronda ${index + 1}</span>
+          <span>${label} ${index + 1}</span>
           <input data-round-reps="${index}" type="text" value="${escapeAttr(item?.roundReps?.[index] || "")}" placeholder="General: ${escapeAttr(item?.reps || "12")}">
         </label>
       `).join("");
@@ -2220,6 +2281,8 @@
         sets: document.getElementById("editSets").value.trim() || "3",
         reps: document.getElementById("editReps").value.trim() || "12",
         roundReps: Array.from(document.querySelectorAll("[data-round-reps]")).map(input => input.value.trim()),
+        rounds: Number(document.getElementById("editRounds").value) || undefined,
+        finisher: document.getElementById("editFinisher").value === "1" || undefined,
         rest: Number(document.getElementById("editRest").value) || 60,
         category: document.getElementById("editCategory").value.trim(),
         video: document.getElementById("editVideo").value.trim(),
