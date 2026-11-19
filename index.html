@@ -406,7 +406,7 @@
     .music-switch { grid-column: 1 / -1; justify-self: start; font-size: .82rem; color: var(--pink-2); font-weight: 600; padding: 4px 0; }
 
     /* ---------- Lista de ejercicios ---------- */
-    .layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 420px); gap: 20px; align-items: start; }
+    .layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 500px); gap: 20px; align-items: start; }
     .layout > div { min-width: 0; }
     .exercise-list { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
     .exercise-list > * { min-width: 0; }
@@ -414,7 +414,7 @@
     body.admin .layout { grid-template-columns: minmax(0, 1fr) minmax(0, 380px); }
     .exercise-card {
       display: grid;
-      grid-template-columns: 92px minmax(0, 1fr) auto;
+      grid-template-columns: 128px minmax(0, 1fr) auto;
       align-items: center;
       gap: 16px;
       padding: 12px;
@@ -428,8 +428,8 @@
     .exercise-card:hover { border-color: var(--line-2); }
     .exercise-card.active { border-color: var(--pink-line); box-shadow: 0 0 0 1px rgba(236, 15, 124, .15), 0 18px 40px -24px rgba(236, 15, 124, .6); }
     .exercise-card.completed { opacity: .72; }
-    .thumb { width: 92px; aspect-ratio: 1; border-radius: 12px; overflow: hidden; background: #0c0b0e; }
-    .thumb video, .thumb img, .thumb iframe { width: 100%; height: 100%; object-fit: cover; display: block; border: 0; pointer-events: none; }
+    .thumb { width: 128px; aspect-ratio: 16 / 9; border-radius: 10px; overflow: hidden; background: #0c0b0e; }
+    .thumb video, .thumb img, .thumb iframe { width: 100%; height: 100%; object-fit: contain; display: block; border: 0; pointer-events: none; }
     .exercise-main { min-width: 0; }
     .exercise-main h3 { font-size: 1rem; font-weight: 700; line-height: 1.25; text-transform: uppercase; letter-spacing: .01em; }
     .exercise-num { color: var(--pink-2); margin-right: 4px; }
@@ -470,8 +470,11 @@
     .panel-body { padding: 18px; }
     .detail-panel { position: sticky; top: 20px; }
     .detail-shell { display: grid; gap: 16px; animation: fadeIn .3s var(--ease) both; }
-    .video-frame { position: relative; border-radius: 14px; overflow: hidden; background: #050406; aspect-ratio: 4 / 5; max-height: 460px; }
+    .video-frame { position: relative; border-radius: 14px; overflow: hidden; background: #050406; aspect-ratio: 16 / 9; }
     .video-frame video, .video-frame img, .video-frame iframe { width: 100%; height: 100%; object-fit: contain; display: block; border: 0; background: #050406; }
+    /* Videos e imagenes: el recuadro toma la forma real del archivo (sin franjas negras ni recortes). */
+    .video-frame:has(> video), .video-frame:has(> img.media-asset) { aspect-ratio: auto; }
+    .video-frame > video, .video-frame > img.media-asset { height: auto; max-height: 72vh; margin: 0 auto; }
     .video-embed { width: 100%; height: 100%; border: 0; }
     .placeholder { width: 100%; height: 100%; display: grid; place-items: center; align-content: center; gap: 10px; color: var(--muted); font-size: .8rem; }
     .placeholder img { width: 44%; max-width: 120px; border-radius: 50%; background: #fff; opacity: .9; }
@@ -663,10 +666,10 @@
       .stat { padding: 10px; }
       .stat strong { font-size: 1.1rem; }
       .form-grid, .editor-grid { grid-template-columns: minmax(0, 1fr); }
-      .exercise-card { grid-template-columns: 68px minmax(0, 1fr) auto; gap: 12px; padding: 10px; }
-      .thumb { width: 68px; }
+      .exercise-card { grid-template-columns: 96px minmax(0, 1fr) auto; gap: 12px; padding: 10px; }
+      .thumb { width: 96px; }
       body:not(.admin) .card-actions [data-rest] { display: none; }
-      body.admin .exercise-card { grid-template-columns: 68px minmax(0, 1fr); }
+      body.admin .exercise-card { grid-template-columns: 96px minmax(0, 1fr); }
       body.admin .card-actions { grid-column: 1 / -1; justify-content: space-between; }
       body.admin .card-actions .btn { flex: 1; }
       .check { width: 46px; height: 46px; }
@@ -681,7 +684,7 @@
       .modal-actions { flex-direction: column-reverse; }
       .danger-zone, .primary-zone { width: 100%; }
       .danger-zone .btn, .primary-zone .btn { flex: 1; }
-      .video-frame { aspect-ratio: 1; }
+      .video-frame > video, .video-frame > img.media-asset { max-height: 60vh; }
       .timer-display { font-size: 2.4rem; }
       .link-actions { grid-template-columns: minmax(0, 1fr); }
     }
@@ -1019,7 +1022,7 @@
     const SUPABASE_URL = window.REBECA_CONFIG?.SUPABASE_URL || "";
     const SUPABASE_ANON_KEY = window.REBECA_CONFIG?.SUPABASE_ANON_KEY || "";
     const DEFAULT_TOTAL_ROUNDS = 4;
-    const APP_VERSION = "33";
+    const APP_VERSION = "34";
     const params = new URLSearchParams(window.location.search);
     const isAdmin = params.get("admin") === "1";
     const routineParam = params.get("rutina") || "";
