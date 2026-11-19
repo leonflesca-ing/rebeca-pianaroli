@@ -414,7 +414,7 @@
     body.admin .layout { grid-template-columns: minmax(0, 1fr) minmax(0, 380px); }
     .exercise-card {
       display: grid;
-      grid-template-columns: 128px minmax(0, 1fr) auto;
+      grid-template-columns: 96px minmax(0, 1fr) auto;
       align-items: center;
       gap: 16px;
       padding: 12px;
@@ -428,7 +428,7 @@
     .exercise-card:hover { border-color: var(--line-2); }
     .exercise-card.active { border-color: var(--pink-line); box-shadow: 0 0 0 1px rgba(236, 15, 124, .15), 0 18px 40px -24px rgba(236, 15, 124, .6); }
     .exercise-card.completed { opacity: .72; }
-    .thumb { width: 128px; aspect-ratio: 16 / 9; border-radius: 10px; overflow: hidden; background: #0c0b0e; }
+    .thumb { width: 96px; aspect-ratio: 1; border-radius: 12px; overflow: hidden; background: #0c0b0e; }
     .thumb video, .thumb img, .thumb iframe { width: 100%; height: 100%; object-fit: contain; display: block; border: 0; pointer-events: none; }
     .exercise-main { min-width: 0; }
     .exercise-main h3 { font-size: 1rem; font-weight: 700; line-height: 1.25; text-transform: uppercase; letter-spacing: .01em; }
@@ -666,10 +666,10 @@
       .stat { padding: 10px; }
       .stat strong { font-size: 1.1rem; }
       .form-grid, .editor-grid { grid-template-columns: minmax(0, 1fr); }
-      .exercise-card { grid-template-columns: 96px minmax(0, 1fr) auto; gap: 12px; padding: 10px; }
-      .thumb { width: 96px; }
+      .exercise-card { grid-template-columns: 76px minmax(0, 1fr) auto; gap: 12px; padding: 10px; }
+      .thumb { width: 76px; }
       body:not(.admin) .card-actions [data-rest] { display: none; }
-      body.admin .exercise-card { grid-template-columns: 96px minmax(0, 1fr); }
+      body.admin .exercise-card { grid-template-columns: 76px minmax(0, 1fr); }
       body.admin .card-actions { grid-column: 1 / -1; justify-content: space-between; }
       body.admin .card-actions .btn { flex: 1; }
       .check { width: 46px; height: 46px; }
@@ -1022,7 +1022,7 @@
     const SUPABASE_URL = window.REBECA_CONFIG?.SUPABASE_URL || "";
     const SUPABASE_ANON_KEY = window.REBECA_CONFIG?.SUPABASE_ANON_KEY || "";
     const DEFAULT_TOTAL_ROUNDS = 4;
-    const APP_VERSION = "34";
+    const APP_VERSION = "35";
     const params = new URLSearchParams(window.location.search);
     const isAdmin = params.get("admin") === "1";
     const routineParam = params.get("rutina") || "";
